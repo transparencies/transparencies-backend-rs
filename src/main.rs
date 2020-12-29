@@ -12,18 +12,14 @@
 extern crate log;
 use human_panic::setup_panic;
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use stable_eyre::eyre::{eyre, Result, WrapErr};
 use std::process;
 
 // CLI
 use structopt::StructOpt;
 
-fn main() -> Result<(), Report> {
+#[tokio::main]
+async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
 
@@ -33,9 +29,8 @@ fn main() -> Result<(), Report> {
         setup_panic!(Metadata {
             name: env!("CARGO_PKG_NAME").into(),
             version: env!("CARGO_PKG_VERSION").into(),
-            authors: "the transparencies author".into(),
-            homepage: "https://github.com/transparencies/aoe2ratingoverlay-rs/issues"
-                .into(),
+            authors: "the transparencies authors".into(),
+            homepage: "https://github.com/transparencies/aoe2ratingoverlay-rs/issues".into(),
         });
     }
 
@@ -64,7 +59,7 @@ fn main() -> Result<(), Report> {
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match aoe2_rating_overlay::run(cli_args) {
+    match aoe2_rating_overlay::run(&cli_args).await {
         Err(e) => Err(e).wrap_err("aoe2_rating_overlay experienced a failure!"),
         Ok(k) => Ok(k),
     }

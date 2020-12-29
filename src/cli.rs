@@ -36,21 +36,16 @@ pub struct Args {
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
 
-    /// Input file
-    #[structopt(long = "template", parse(from_os_str))]
-    pub template_input_path: Option<PathBuf>,
+    // /// Input file
+    // #[structopt(long = "template", parse(from_os_str))]
+    // pub template_input_path: Option<PathBuf>,
 
-    /// Input file
-    #[structopt(long = "tconfig", parse(from_os_str))]
-    pub template_config_input_path: Option<PathBuf>,
-
-    /// Output file, stdout if not present
-    #[structopt(short = "o", long = "output", parse(from_os_str))]
-    pub output_path: Option<PathBuf>,
-
-    /// Filetype that should be used for output [yaml, json, toml]
-    #[structopt(long = "otype")]
-    pub output_type: Option<String>,
+    // /// Output file, stdout if not present
+    // #[structopt(short = "o", long = "output", parse(from_os_str))]
+    // pub output_path: Option<PathBuf>,
+    // /// Filetype that should be used for output [yaml, json, toml]
+    // #[structopt(long = "otype")]
+    // pub output_type: Option<String>,
     /* /// File name: only required when `out-type` is set to `file`
      * #[structopt(name = "FILE", required_if("out-type", "file"))]
      * pub file_name: Option<String>,
