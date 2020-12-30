@@ -13,7 +13,7 @@ use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 use ::serde::Deserialize;
 use std::time::Duration;
 
-use crate::api_responses::aoe2net::rating_history::RatingHistory;
+use response_datastructures::aoe2net::rating_history::RatingHistory;
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);

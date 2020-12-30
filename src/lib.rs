@@ -7,9 +7,10 @@
 #![allow(missing_docs)]
 #![allow(dead_code)]
 
-pub mod api_responses;
 pub mod cli;
-pub mod client;
+pub mod domain;
+pub mod persistence;
+pub mod presentation;
 
 use log::{debug, error, info, trace, warn};
 use stable_eyre::eyre::{eyre, Result, WrapErr};
@@ -19,7 +20,7 @@ pub async fn run(config: &cli::Args) -> eyre::Result<()> {
     debug!("CLI config: {:#?}", config);
     trace!("We are inside the run-function!");
 
-    let response = client::get_from_aoe2net().await?;
+    // let response = domain::api_handler::client::get_from_aoe2net().await?;
 
     println!("{:#?}", response);
 
