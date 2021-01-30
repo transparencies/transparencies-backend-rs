@@ -11,6 +11,7 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
+use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
 use stable_eyre::eyre::{eyre, Result, WrapErr};
 use std::process;
@@ -60,7 +61,7 @@ async fn main() -> eyre::Result<()> {
     // Calling run function in lib.rs
     // Handling the error if run returns an error
     match aoe2_rating_overlay::run(&cli_args).await {
-        Err(e) => Err(e).wrap_err("aoe2_rating_overlay experienced a failure!"),
+        Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }
 }

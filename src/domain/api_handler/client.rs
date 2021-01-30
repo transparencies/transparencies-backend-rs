@@ -11,12 +11,18 @@ use log::{debug, error, info, trace, warn};
 use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
 use ::serde::Deserialize;
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
-use response_datastructures::aoe2net::rating_history::RatingHistory;
+use super::response::aoe2net::rating_history::RatingHistory;
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+
+struct ApiRequest<'a> {
+    client: reqwest::Client,
+    root: &'a str,
+    endpoint: &'a str,
+}
 
 pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
     // Duration for timeouts
