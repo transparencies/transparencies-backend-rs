@@ -5,11 +5,13 @@ on:
     - staging
     - trying
     - master
+    - develop
   pull_request:
     branches:
     - staging
     - trying
     - master
+    - develop
 
 env:
   RUST_BACKTRACE: 1
