@@ -19,7 +19,7 @@ use std::process;
 // CLI
 use structopt::StructOpt;
 
-#[tokio::main]
+#[actix_rt::main]
 async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
@@ -36,7 +36,7 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Calling the command line parsing logic with the argument values
-    let cli_args = aoe2_rating_overlay::cli::Args::from_args();
+    let cli_args = overlay_server::cli::Args::from_args();
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
@@ -60,7 +60,7 @@ async fn main() -> eyre::Result<()> {
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match aoe2_rating_overlay::run(&cli_args).await {
+    match overlay_server::run(/*&cli_args*/)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }

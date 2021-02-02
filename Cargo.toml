@@ -52,12 +52,12 @@ structopt = "0.3"
 
 # HTTP
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
-warp = "0.3"
-actix-web = "3.3.2"
-actix-rt = "1.1.1"
+# warp = "0.3"
+actix-web = "3.3"
+actix-rt = "1.1"
 
 # async
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.1", features = ["full"] }
 futures = "0.3"
 
 # De-/Serialisation
@@ -79,7 +79,6 @@ assert_cmd = "1.0"
 predicates = "1.0"
 lazy_static = "1.4"
 pretty_assertions = "0.6"
-reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 
 [profile.dev]
 opt-level=0
