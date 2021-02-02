@@ -15,6 +15,7 @@ use human_panic::setup_panic;
 use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
 use stable_eyre::eyre::{eyre, Result, WrapErr};
+use std::env;
 use std::process;
 
 // Binding
@@ -29,10 +30,12 @@ use transparencies_backend_rs::configuration::get_configuration;
 // Startup
 use transparencies_backend_rs::startup::run;
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
+
+    env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
 
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]

@@ -1,13 +1,14 @@
 use crate::routes::{health_check, matchinfo};
 use actix_web::dev::Server;
 use actix_web::web::Data;
-use actix_web::{web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use log::{debug, error, info, trace, warn};
 
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
 /// Entrypoint for the library part of the Executable's main function
+
 pub fn run(
     listener: TcpListener,
     /*config: &cli::Args*/
@@ -22,8 +23,10 @@ pub fn run(
     let server = HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger)
-            .route("/health_check", web::get().to(health_check))
-            .route("/matchinfo", web::get().to(matchinfo))
+            // enable logger - always register actix-web Logger middleware last
+            .wrap(middleware::Logger::default())
+            .service(health_check)
+            .service(matchinfo)
     })
     .listen(listener)?
     .run();
