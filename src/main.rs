@@ -24,6 +24,8 @@ async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
 
+    let bind_adress = "127.0.0.1:0";
+
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]
     {
@@ -60,7 +62,7 @@ async fn main() -> eyre::Result<()> {
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match overlay_server::run(/*&cli_args*/)?.await {
+    match overlay_server::run(bind_adress /*&cli_args*/)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }
