@@ -1,12 +1,18 @@
 // tests/matchinfo.rs
 
-use actix_web::{http::StatusCode, test, web, App, HttpResponse};
+use actix_web::{
+    http::StatusCode,
+    test,
+    web,
+    App,
+    HttpResponse,
+};
 
 #[actix_rt::test]
 async fn matchinfo_works() {
-    let mut app = test::init_service(
-        App::new().service(web::resource("/matchinfo").to(|| async { HttpResponse::Ok() })),
-    )
+    let mut app = test::init_service(App::new().service(
+        web::resource("/matchinfo").to(|| async { HttpResponse::Ok() }),
+    ))
     .await;
 
     // Create request object

@@ -1,12 +1,18 @@
 // tests/health_check.rs
 
-use actix_web::{http::StatusCode, test, web, App, HttpResponse};
+use actix_web::{
+    http::StatusCode,
+    test,
+    web,
+    App,
+    HttpResponse,
+};
 
 #[actix_rt::test]
 async fn health_check_works() {
-    let mut app = test::init_service(
-        App::new().service(web::resource("/health_check").to(|| async { HttpResponse::Ok() })),
-    )
+    let mut app = test::init_service(App::new().service(
+        web::resource("/health_check").to(|| async { HttpResponse::Ok() }),
+    ))
     .await;
 
     // Create request object

@@ -9,21 +9,21 @@
 
 // #[test]
 // fn test_cli() {
-//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling binary failed");
-//     cmd.assert().failure();
+//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling
+// binary failed");     cmd.assert().failure();
 // }
 
 // #[test]
 // fn test_version() {
 //     let expected_version = "aoe2_rating_overlay 0.0.1\n";
-//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling binary failed");
-//     cmd.arg("--version").assert().stdout(expected_version);
+//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling
+// binary failed");     cmd.arg("--version").assert().stdout(expected_version);
 // }
 
 // #[test]
 // fn test_hazard_exit_code() {
-//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling binary failed");
-//     cmd.arg("hazard").assert().code(0);
+//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling
+// binary failed");     cmd.arg("hazard").assert().code(0);
 // }
 
 // #[test]
@@ -35,6 +35,6 @@
 //             return false;
 //         }
 //     });
-//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling binary failed");
-//     cmd.arg("hazard").assert().stdout(hazard_predicate);
+//     let mut cmd = Command::cargo_bin("aoe2_rating_overlay").expect("Calling
+// binary failed");     cmd.arg("hazard").assert().stdout(hazard_predicate);
 // }

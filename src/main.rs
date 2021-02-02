@@ -12,11 +12,23 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{eyre, Result, WrapErr};
-use std::env;
-use std::process;
+use stable_eyre::eyre::{
+    eyre,
+    Result,
+    WrapErr,
+};
+use std::{
+    env,
+    process,
+};
 
 // Binding
 use std::net::TcpListener;
@@ -69,7 +81,8 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Setting up any other configuration
-    let configuration = get_configuration().expect("Failed to read configuration.");
+    let configuration =
+        get_configuration().expect("Failed to read configuration.");
 
     // Binding address
     let address = format!(
@@ -79,13 +92,14 @@ async fn main() -> eyre::Result<()> {
     let listener = TcpListener::bind(address)?;
 
     // let response =
-    //     transparencies_backend_rs::domain::api_handler::client::get_from_aoe2net().await?;
+    //     transparencies_backend_rs::domain::api_handler::client::
+    // get_from_aoe2net().await?;
 
     // println!("{:#?}", response);
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match run(listener /*&cli_args*/)?.await {
+    match run(listener /* &cli_args */)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }

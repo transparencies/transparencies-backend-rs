@@ -1,12 +1,19 @@
-use ::serde::{Deserialize, Serialize};
+use ::serde::{
+    Deserialize,
+    Serialize,
+};
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct RatingHistoryList {
     #[serde(rename = "RatingHistory")]
     pub list: Vec<RatingHistory>,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct RatingHistory {
     pub drops: i64,
     pub num_losses: i64,
