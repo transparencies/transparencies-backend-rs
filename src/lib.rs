@@ -11,8 +11,6 @@
 pub mod cli;
 pub mod configuration;
 pub mod domain;
-pub mod persistence;
-pub mod presentation;
 pub mod routes;
 pub mod startup;
 
