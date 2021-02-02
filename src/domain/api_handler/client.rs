@@ -8,7 +8,7 @@ use std::{collections::HashMap, time::Duration};
 
 use crate::cli;
 
-use super::response::aoe2net::rating_history::RatingHistory;
+use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -27,7 +27,7 @@ struct ApiRequest {
 
 impl ApiRequest {}
 
-pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
+pub async fn get_from_aoe2net() -> eyre::Result<PlayerLastMatch> {
     // Duration for timeouts
     let request_timeout: Duration = Duration::new(5, 0);
     let connection_timeout: Duration = Duration::new(5, 0);
@@ -57,7 +57,7 @@ pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
         .query(&request.query)
         .send()
         .await?
-        .json::<Vec<RatingHistory>>()
+        .json::<PlayerLastMatch>()
         .await?;
 
     Ok(response)
