@@ -35,7 +35,6 @@ pub struct Args {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
-
     // /// Input file
     // #[structopt(long = "template", parse(from_os_str))]
     // pub template_input_path: Option<PathBuf>,
