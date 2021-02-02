@@ -1,11 +1,5 @@
 //! Everything regarding the commandline interface
 
-// TODO: Temporary, remove later
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(missing_docs)]
-#![allow(dead_code)]
-
 use std::path::PathBuf;
 use structopt::StructOpt;
 
