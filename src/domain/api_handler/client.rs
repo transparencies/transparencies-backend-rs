@@ -1,6 +1,4 @@
 //! Core client logic of the application
-#![deny(clippy::all)]
-#![deny(clippy::pedantic)]
 
 use log::{debug, error, info, trace, warn};
 use stable_eyre::eyre::{eyre, Report, Result, WrapErr};

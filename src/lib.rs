@@ -1,6 +1,7 @@
 //! Core logic of the application
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
+#![allow(clippy::module_name_repetitions)]
 // TODO: Temporary, remove later
 #![allow(dead_code)]
 #![allow(unused_imports)]
