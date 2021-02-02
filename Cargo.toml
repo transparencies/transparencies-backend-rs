@@ -1,5 +1,5 @@
 [package]
-name = "aoe2_rating_overlay"
+name = "overlay_server"
 publish = false
 version = "0.0.1"
 authors = ["the transparencies authors"]
@@ -13,6 +13,24 @@ categories = [""]
 description = """
 Your project description.
 """
+[package.metadata.release]
+upload-doc = true
+no-dev-version = true
+pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "overlay_server"     # The name of the target.
+path = "src/main.rs"        # The source file of the target.
+test = true                 # Is tested by default.
+doctest = true              # Documentation examples are tested by default.
+bench = true                # Is benchmarked by default.
+doc = true                  # Is documented by default.
+harness = true              # Use libtest harness.
+edition = "2018"            # The edition of the target.
+#required-features = []     # Features required to build this target (N/A for lib).
 
 [dependencies]
 # Error handling
@@ -35,6 +53,8 @@ structopt = "0.3"
 # HTTP
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 warp = "0.3"
+actix-web = "3.3.2"
+actix-rt = "1.1.1"
 
 # async
 tokio = { version = "1", features = ["full"] }
@@ -59,11 +79,7 @@ assert_cmd = "1.0"
 predicates = "1.0"
 lazy_static = "1.4"
 pretty_assertions = "0.6"
-
-[package.metadata.release]
-upload-doc = true
-no-dev-version = true
-pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 
 [profile.dev]
 opt-level=0
@@ -96,14 +112,3 @@ rpath = false
 lto = true
 debug-assertions = false
 codegen-units = 1
-
-[[bin]]
-name = "overlay-server"     # The name of the target.
-path = "src/main.rs"        # The source file of the target.
-test = true                 # Is tested by default.
-doctest = true              # Documentation examples are tested by default.
-bench = true                # Is benchmarked by default.
-doc = true                  # Is documented by default.
-harness = true              # Use libtest harness.
-edition = "2018"            # The edition of the target.
-#required-features = []     # Features required to build this target (N/A for lib).
