@@ -1,17 +1,17 @@
 [package]
-name = "overlay_server"
+name = "transparencies-backend-rs"
 publish = false
 version = "0.0.1"
 authors = ["the transparencies authors"]
 edition = "2018"
-repository = "https://github.com/transparencies/aoe2ratingoverlay-rs"
+repository = "https://github.com/transparencies/transparencies-backend-rs"
 documentation = ""
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 keywords = [""]
 categories = [""]
 description = """
-Your project description.
+A foundation for building dynamic stream overlays written in Rust
 """
 [package.metadata.release]
 upload-doc = true
@@ -22,15 +22,15 @@ pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 path = "src/lib.rs"
 
 [[bin]]
-name = "overlay_server"     # The name of the target.
-path = "src/main.rs"        # The source file of the target.
-test = true                 # Is tested by default.
-doctest = true              # Documentation examples are tested by default.
-bench = true                # Is benchmarked by default.
-doc = true                  # Is documented by default.
-harness = true              # Use libtest harness.
-edition = "2018"            # The edition of the target.
-#required-features = []     # Features required to build this target (N/A for lib).
+name = "transparencies-backend-rs"      # The name of the target.
+path = "src/main.rs"                    # The source file of the target.
+test = true                             # Is tested by default.
+doctest = true                          # Documentation examples are tested by default.
+bench = true                            # Is benchmarked by default.
+doc = true                              # Is documented by default.
+harness = true                          # Use libtest harness.
+edition = "2018"                        # The edition of the target.
+#required-features = []                 # Features required to build this target (N/A for lib).
 
 [dependencies]
 # Error handling

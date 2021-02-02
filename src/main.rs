@@ -23,10 +23,10 @@ use std::net::TcpListener;
 use structopt::StructOpt;
 
 // Configuration
-use overlay_server::configuration::get_configuration;
+use transparencies_backend_rs::configuration::get_configuration;
 
 // Startup
-use overlay_server::startup::run;
+use transparencies_backend_rs::startup::run;
 
 #[actix_rt::main]
 async fn main() -> eyre::Result<()> {
@@ -40,12 +40,12 @@ async fn main() -> eyre::Result<()> {
             name: env!("CARGO_PKG_NAME").into(),
             version: env!("CARGO_PKG_VERSION").into(),
             authors: "the transparencies authors".into(),
-            homepage: "https://github.com/transparencies/aoe2ratingoverlay-rs/issues".into(),
+            homepage: "https://github.com/transparencies/transparencies-backend-rs/issues".into(),
         });
     }
 
     // Calling the command line parsing logic with the argument values
-    let cli_args = overlay_server::cli::Args::from_args();
+    let cli_args = transparencies_backend_rs::cli::Args::from_args();
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
