@@ -15,6 +15,7 @@ struct ApiRequest<'a> {
     client: reqwest::Client,
     root: &'a str,
     endpoint: &'a str,
+    query: HashMap<String, String>,
 }
 
 pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
