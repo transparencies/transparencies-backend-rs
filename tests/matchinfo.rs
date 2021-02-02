@@ -3,7 +3,7 @@
 use actix_web::{http::StatusCode, test, web, App, HttpResponse};
 
 #[actix_rt::test]
-async fn health_check_works() {
+async fn matchinfo_works() {
     let mut app = test::init_service(
         App::new().service(web::resource("/matchinfo").to(|| async { HttpResponse::Ok() })),
     )
