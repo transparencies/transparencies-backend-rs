@@ -8,9 +8,12 @@
 #![allow(dead_code)]
 
 pub mod cli;
+pub mod configuration;
 pub mod domain;
 pub mod persistence;
 pub mod presentation;
+pub mod routes;
+pub mod startup;
 
 use futures::{FutureExt, StreamExt};
 use log::{debug, error, info, trace, warn};
@@ -21,63 +24,7 @@ use std::collections::HashMap;
 
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpResponse, HttpServer};
-
-pub async fn health_check() -> HttpResponse {
-    HttpResponse::Ok().finish()
-}
-
-/// Entrypoint for the library part of the Executable's main function
-pub fn run(address: &str /*config: &cli::Args*/) -> eyre::Result<Server, std::io::Error> {
-    // debug!("CLI config: {:#?}", config);
-    trace!("We are inside the run-function!");
-
-    // needed endpoints
-    // rating/?steam_id=<Steam-ID>
-    // rating/?profile_id=<ageofempires.com-Profile-ID>
-
-    let server = HttpServer::new(|| App::new().route("/health_check", web::get().to(health_check)))
-        .bind(address)?
-        .run();
-
-    Ok(server)
-}
-
-// Notes
-
-// WEBSOCKET
-// let routes = warp::path("rating")
-//     // The `ws()` filter will prepare the Websocket handshake.
-//     .and(warp::ws())
-//     .map(|ws: warp::ws::Ws| {
-//         // And then our closure will be called when it completes...
-//         ws.on_upgrade(|websocket| {
-//             // Just echo all messages back...
-//             let (tx, rx) = websocket.split();
-//             rx.forward(tx).map(|result| {
-//                 if let Err(e) = result {
-//                     eprintln!("websocket error: {:?}", e);
-//                 }
-//             })
-//         })
-//     });
-
-// let opt_query = warp::query::<MyObject>()
-//     .map(Some)
-//     .or_else(|_| async { Ok::<(Option<MyObject>,), std::convert::Infallible>((None,)) });
-
-// // get /rating?steam_id=<Steam-ID>
-// let rating = warp::get()
-//     .and(warp::path("rating"))
-//     .and(opt_query)
-//     .map(|p: Option<MyObject>| match p {
-//         Some(obj) => Response::builder().body(format!(
-//             "steam_id = {}, profile_id = {}",
-//             obj.steam_id, obj.profile_id
-//         )),
-//         None => Response::builder()
-//             .status(StatusCode::BAD_REQUEST)
-//             .body(String::from("Failed to decode query param.")),
-//     });
+use std::net::TcpListener;
 
 // ---
 // We have everything we need to go to API-Handler

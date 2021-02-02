@@ -16,15 +16,22 @@ use simple_log::LogConfigBuilder;
 use stable_eyre::eyre::{eyre, Result, WrapErr};
 use std::process;
 
+// Binding
+use std::net::TcpListener;
+
 // CLI
 use structopt::StructOpt;
+
+// Configuration
+use overlay_server::configuration::get_configuration;
+
+// Startup
+use overlay_server::startup::run;
 
 #[actix_rt::main]
 async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
-
-    let bind_adress = "127.0.0.1:0";
 
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]
@@ -58,11 +65,18 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Setting up any other configuration
-    // TODO
+    let configuration = get_configuration().expect("Failed to read configuration.");
+
+    // Binding address
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port
+    );
+    let listener = TcpListener::bind(address)?;
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match overlay_server::run(bind_adress /*&cli_args*/)?.await {
+    match run(listener /*&cli_args*/)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }
