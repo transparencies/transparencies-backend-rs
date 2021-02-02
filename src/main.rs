@@ -78,10 +78,10 @@ async fn main() -> eyre::Result<()> {
     );
     let listener = TcpListener::bind(address)?;
 
-    let response =
-        transparencies_backend_rs::domain::api_handler::client::get_from_aoe2net().await?;
+    // let response =
+    //     transparencies_backend_rs::domain::api_handler::client::get_from_aoe2net().await?;
 
-    println!("{:#?}", response);
+    // println!("{:#?}", response);
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
