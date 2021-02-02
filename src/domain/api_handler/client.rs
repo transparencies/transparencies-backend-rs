@@ -6,17 +6,26 @@ use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 use ::serde::Deserialize;
 use std::{collections::HashMap, time::Duration};
 
+use crate::cli;
+
 use super::response::aoe2net::rating_history::RatingHistory;
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-struct ApiRequest<'a> {
+#[derive(Default, Builder, Debug)]
+#[builder(setter(into))]
+struct ApiRequest {
+    #[builder(pattern = "immutable")]
     client: reqwest::Client,
-    root: &'a str,
-    endpoint: &'a str,
-    query: HashMap<String, String>,
+    #[builder(pattern = "immutable")]
+    root: String,
+    #[builder(pattern = "immutable")]
+    endpoint: String,
+    query: Vec<(String, String)>,
 }
+
+impl ApiRequest {}
 
 pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
     // Duration for timeouts
@@ -31,14 +40,21 @@ pub async fn get_from_aoe2net() -> eyre::Result<Vec<RatingHistory>> {
         .https_only(true)
         .build()?;
 
-    let response = client
-        .get("https://aoe2.net/api/player/ratinghistory")
-        .query(&[
-            ("game", "aoe2de"),
-            ("leaderboard_id", "3"),
-            ("steam_id", "76561199003184910"),
-            ("count", "5"),
+    let request: ApiRequest = ApiRequestBuilder::default()
+        .client(client)
+        .root("https://aoe2.net/api/")
+        .endpoint("player/lastmatch")
+        .query(vec![
+            ("game".to_string(), "aoe2de".to_string()),
+            ("steam_id".to_string(), "76561199003184910".to_string()),
         ])
+        .build()
+        .unwrap();
+
+    let response = request
+        .client
+        .get(&format!("{}{}", request.root, request.endpoint))
+        .query(&request.query)
         .send()
         .await?
         .json::<Vec<RatingHistory>>()

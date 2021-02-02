@@ -2,9 +2,6 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-struct MatchInfo {}
-
-#[derive(Serialize, Deserialize)]
 pub struct MatchInfoRequest {
     id_type: String,
     id_number: String,

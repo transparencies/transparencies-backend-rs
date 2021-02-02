@@ -75,6 +75,9 @@ serde-aux = "2.1"
 openapi_utils = "0.2"
 openapiv3 = "0.3"
 
+# Utility
+derive_builder = "0.9"
+
 [dev-dependencies]
 thiserror = "1.0"
 assert_cmd = "1.0"

@@ -14,6 +14,9 @@ pub mod domain;
 pub mod routes;
 pub mod startup;
 
+#[macro_use]
+extern crate derive_builder;
+
 use futures::{FutureExt, StreamExt};
 use log::{debug, error, info, trace, warn};
 use stable_eyre::eyre::{eyre, Result, WrapErr};
@@ -29,10 +32,6 @@ use std::net::TcpListener;
 // We have everything we need to go to API-Handler
 // to generate other API requests for a request from frontend
 // ---
-
-// let response = domain::api_handler::client::get_from_aoe2net().await?;
-
-// println!("{:#?}", response);
 
 // API_HANDLER
 // Get & deserialize yaml into struct
