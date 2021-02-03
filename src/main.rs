@@ -37,7 +37,7 @@ use std::net::TcpListener;
 use structopt::StructOpt;
 
 // Internal Configuration
-use transparencies_backend_rs::config::{
+use transparencies_backend_rs::setup::{
     cli::CommandLineSettings,
     configuration::get_configuration,
     startup::run_server,

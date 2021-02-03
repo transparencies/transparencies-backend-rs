@@ -20,7 +20,7 @@ use std::{
     time::Duration,
 };
 
-use crate::config::cli;
+use crate::setup::cli;
 
 use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
 

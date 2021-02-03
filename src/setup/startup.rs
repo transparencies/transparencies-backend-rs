@@ -18,7 +18,7 @@ use log::{
     warn,
 };
 
-use crate::config::cli::CommandLineSettings;
+use crate::setup::cli::CommandLineSettings;
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 

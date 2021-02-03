@@ -4,7 +4,7 @@ use std::convert::{
     TryInto,
 };
 
-use crate::config::cli::CommandLineSettings;
+use crate::setup::cli::CommandLineSettings;
 
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
