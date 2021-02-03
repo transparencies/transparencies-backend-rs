@@ -20,7 +20,8 @@ pub fn run(
         App::new()
             .wrap(TracingLogger)
             // enable logger - always register actix-web Logger middleware last
-            .wrap(middleware::Logger::default())
+            // TODO: Enable Logging
+            // .wrap(middleware::Logger::default())
             .service(health_check)
             .service(matchinfo)
     })
