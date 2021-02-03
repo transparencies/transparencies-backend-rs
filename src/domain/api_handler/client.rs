@@ -15,6 +15,7 @@ use stable_eyre::eyre::{
 };
 
 use ::serde::{
+    de::DeserializeOwned,
     Deserialize,
     Serialize,
 };
