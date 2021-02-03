@@ -23,28 +23,22 @@ use std::{
     time::Duration,
 };
 
-use crate::setup::cli;
-
-use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
-
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-struct ApiResponse<T> {
+pub struct ApiResponse<T> {
     response: T,
 }
 
 // println!("{:#?}", response);
 #[derive(Default, Builder, Debug)]
-#[builder(setter(into))]
-struct ApiRequest {
+#[builder(public, setter(into))]
+pub struct ApiRequest {
     #[builder(setter(skip))]
     client: reqwest::Client,
-    #[builder(pattern = "immutable")]
     root: String,
-    #[builder(pattern = "immutable")]
     endpoint: String,
     query: Vec<(String, String)>,
 }
@@ -84,15 +78,3 @@ impl ApiRequest {
         })
     }
 }
-
-// pub async fn get_from_aoe2net() -> eyre::Result<PlayerLastMatch> {
-//     let request: ApiRequest = ApiRequestBuilder::default()
-//         .root("https://aoe2.net/api/")
-//         .endpoint("player/lastmatch")
-//         .query(vec![
-//             ("game".to_string(), "aoe2de".to_string()),
-//             ("steam_id".to_string(), "76561199003184910".to_string()),
-//         ])
-//         .build()
-//         .unwrap();
-// }
