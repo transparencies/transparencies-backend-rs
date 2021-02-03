@@ -1,18 +1,38 @@
 //! Core client logic of the application
 
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
 use ::serde::Deserialize;
-use std::{collections::HashMap, time::Duration};
+use std::{
+    collections::HashMap,
+    time::Duration,
+};
 
 use crate::config::cli;
 
 use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
 
 // App-Name as USERAGENT
-static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+static APP_USER_AGENT: &str =
+    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+// let response =
+//     transparencies_backend_rs::domain::api_handler::client::
+// get_from_aoe2net().await?;
+
+// println!("{:#?}", response);
 #[derive(Default, Builder, Debug)]
 #[builder(setter(into))]
 struct ApiRequest {

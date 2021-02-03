@@ -12,10 +12,23 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{eyre, Result, WrapErr};
-use std::{env, process};
+use stable_eyre::eyre::{
+    eyre,
+    Result,
+    WrapErr,
+};
+use std::{
+    env,
+    process,
+};
 
 // Binding
 use std::net::TcpListener;
@@ -25,7 +38,9 @@ use structopt::StructOpt;
 
 // Internal Configuration
 use transparencies_backend_rs::config::{
-    cli::Args, configuration::get_configuration, startup::run,
+    cli::CommandLineSettings,
+    configuration::get_configuration,
+    startup::run,
 };
 
 #[actix_web::main]
@@ -33,7 +48,8 @@ async fn main() -> eyre::Result<()> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
 
-    env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
+    // TODO: Webserver logging
+    // env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
 
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]
@@ -46,17 +62,21 @@ async fn main() -> eyre::Result<()> {
         });
     }
 
+    // Setting up configuration
+    let mut configuration =
+        get_configuration().expect("Failed to read configuration.");
+
     // Calling the command line parsing logic with the argument values
-    let cli_args = Args::from_args();
+    configuration.cli = CommandLineSettings::from_args();
 
     // If `debug` flag is set, we use a logfile
-    if cli_args.debug {
+    if configuration.cli.debug {
         // Setting up logfile
         let log_setup = LogConfigBuilder::builder()
-            .path(&cli_args.log_file_path)
+            .path(&configuration.cli.log_file_path)
             .size(1 * 100)
             .roll_count(10)
-            .level(&cli_args.log_level)
+            .level(&configuration.cli.log_level)
             .output_file()
             .output_console()
             .build();
@@ -66,9 +86,6 @@ async fn main() -> eyre::Result<()> {
         trace!("Logs were set up.");
     }
 
-    // Setting up any other configuration
-    let configuration = get_configuration().expect("Failed to read configuration.");
-
     // Binding address
     let address = format!(
         "{}:{}",
@@ -76,15 +93,9 @@ async fn main() -> eyre::Result<()> {
     );
     let listener = TcpListener::bind(address)?;
 
-    // let response =
-    //     transparencies_backend_rs::domain::api_handler::client::
-    // get_from_aoe2net().await?;
-
-    // println!("{:#?}", response);
-
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match run(listener /* &cli_args */)?.await {
+    match run(listener, &configuration.cli)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }

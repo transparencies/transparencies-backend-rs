@@ -4,12 +4,12 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 /// StructOpt's struct for parsing commandline input
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, serde::Deserialize)]
 #[structopt(
     name = "transparencies-backend-rs",
     about = "Backend for dynamic stream overlays"
 )]
-pub struct Args {
+pub struct CommandLineSettings {
     // A flag, true if used in the command line. Note doc comment will
     // be used for the help message of the flag. The name of the
     // argument will be, by default, based on the name of the field.

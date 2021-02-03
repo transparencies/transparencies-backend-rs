@@ -15,14 +15,36 @@ pub mod routes;
 #[macro_use]
 extern crate derive_builder;
 
-use futures::{FutureExt, StreamExt};
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Result, WrapErr};
+use futures::{
+    FutureExt,
+    StreamExt,
+};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Result,
+    WrapErr,
+};
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::collections::HashMap;
 
-use actix_web::{dev::Server, web, App, HttpResponse, HttpServer};
+use actix_web::{
+    dev::Server,
+    web,
+    App,
+    HttpResponse,
+    HttpServer,
+};
 use std::net::TcpListener;
 
 // ---

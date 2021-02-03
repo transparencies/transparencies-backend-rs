@@ -4,6 +4,8 @@ use std::convert::{
     TryInto,
 };
 
+use crate::config::cli::CommandLineSettings;
+
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -14,6 +16,7 @@ pub struct ApplicationSettings {
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub application: ApplicationSettings,
+    pub cli: CommandLineSettings,
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
