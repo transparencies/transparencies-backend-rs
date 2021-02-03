@@ -12,23 +12,10 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{
-    eyre,
-    Result,
-    WrapErr,
-};
-use std::{
-    env,
-    process,
-};
+use stable_eyre::eyre::{eyre, Result, WrapErr};
+use std::{env, process};
 
 // Binding
 use std::net::TcpListener;
@@ -38,9 +25,7 @@ use structopt::StructOpt;
 
 // Internal Configuration
 use transparencies_backend_rs::setup::{
-    cli::CommandLineSettings,
-    configuration::get_configuration,
-    startup::run_server,
+    cli::CommandLineSettings, configuration::get_configuration, startup::run_server,
 };
 
 #[actix_web::main]
@@ -63,20 +48,19 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Setting up configuration
-    let mut configuration =
-        get_configuration().expect("Failed to read configuration.");
+    let configuration = get_configuration().expect("Failed to read configuration.");
 
     // Calling the command line parsing logic with the argument values
-    configuration.cli = CommandLineSettings::from_args();
+    let cli_args = CommandLineSettings::from_args();
 
     // If `debug` flag is set, we use a logfile
-    if configuration.cli.debug {
+    if cli_args.debug {
         // Setting up logfile
         let log_setup = LogConfigBuilder::builder()
-            .path(&configuration.cli.log_file_path)
+            .path(&cli_args.log_file_path)
             .size(1 * 100)
             .roll_count(10)
-            .level(&configuration.cli.log_level)
+            .level(&cli_args.log_level)
             .output_file()
             .output_console()
             .build();
@@ -95,7 +79,7 @@ async fn main() -> eyre::Result<()> {
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match run_server(listener, &configuration.cli)?.await {
+    match run_server(listener, &cli_args)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }
