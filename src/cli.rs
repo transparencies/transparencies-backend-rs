@@ -6,8 +6,8 @@ use structopt::StructOpt;
 /// StructOpt's struct for parsing commandline input
 #[derive(StructOpt, Debug)]
 #[structopt(
-    name = "aoe2_rating_overlay",
-    about = "Utility for generating a dynamic matchmaking overlay"
+    name = "transparencies-backend-rs",
+    about = "Backend for dynamic stream overlays"
 )]
 pub struct Args {
     // A flag, true if used in the command line. Note doc comment will
@@ -29,29 +29,4 @@ pub struct Args {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
-    /* /// Input file
-     * #[structopt(long = "template", parse(from_os_str))]
-     * pub template_input_path: Option<PathBuf>, */
-
-    /* /// Output file, stdout if not present
-     * #[structopt(short = "o", long = "output", parse(from_os_str))]
-     * pub output_path: Option<PathBuf>,
-     * /// Filetype that should be used for output [yaml, json, toml]
-     * #[structopt(long = "otype")]
-     * pub output_type: Option<String>, */
-    /* /// File name: only required when `out-type` is set to `file`
-     * #[structopt(name = "FILE", required_if("out-type", "file"))]
-     * pub file_name: Option<String>,
-     * #[structopt(subcommand)]
-     * pub cmd: Command, */
 }
-
-// #[derive(StructOpt, Debug)]
-// pub enum Command {
-//     /// Add value to item
-//     Add {},
-//     /// Edit value of item
-//     Edit {},
-//     /// Remove value from item
-//     Remove {},
-// }
