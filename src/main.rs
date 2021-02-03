@@ -40,7 +40,7 @@ use structopt::StructOpt;
 use transparencies_backend_rs::config::{
     cli::CommandLineSettings,
     configuration::get_configuration,
-    startup::run,
+    startup::run_server,
 };
 
 #[actix_web::main]
@@ -95,7 +95,7 @@ async fn main() -> eyre::Result<()> {
 
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match run(listener, &configuration.cli)?.await {
+    match run_server(listener, &configuration.cli)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }

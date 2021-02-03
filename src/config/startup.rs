@@ -24,7 +24,7 @@ use tracing_actix_web::TracingLogger;
 
 /// Entrypoint for the library part of the Executable's main function
 
-pub fn run(
+pub fn run_server(
     listener: TcpListener,
     config: &CommandLineSettings,
 ) -> eyre::Result<Server, std::io::Error> {
