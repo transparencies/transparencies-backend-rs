@@ -23,6 +23,8 @@ use std::{
     time::Duration,
 };
 
+use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
+
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -32,7 +34,6 @@ pub struct ApiResponse<T> {
     response: T,
 }
 
-// println!("{:#?}", response);
 #[derive(Default, Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct ApiRequest {

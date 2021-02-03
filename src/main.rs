@@ -37,10 +37,13 @@ use std::net::TcpListener;
 use structopt::StructOpt;
 
 // Internal Configuration
-use transparencies_backend_rs::setup::{
-    cli::CommandLineSettings,
-    configuration::get_configuration,
-    startup::run_server,
+use transparencies_backend_rs::{
+    domain::api_handler::client::ApiRequest,
+    setup::{
+        cli::CommandLineSettings,
+        configuration::get_configuration,
+        startup::run_server,
+    },
 };
 
 #[actix_web::main]
@@ -93,9 +96,12 @@ async fn main() -> eyre::Result<()> {
     );
     let listener = TcpListener::bind(address)?;
 
+    // Create Client
+    let api_client = ApiRequest::new();
+
     // Calling run function in lib.rs
     // Handling the error if run returns an error
-    match run_server(listener, &cli_args)?.await {
+    match run_server(listener, &cli_args, api_client)?.await {
         Err(e) => Err(e).wrap_err("overlay-server experienced a failure!"),
         Ok(k) => Ok(k),
     }

@@ -1,16 +1,31 @@
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
 use crate::domain::api_handler::{
     client::*,
     response::aoe2net::last_match::PlayerLastMatch,
 };
+// .root("https://aoe2.net/api/")
+// .endpoint("player/lastmatch")
+// .query(vec![
+//     ("game".to_string(), "aoe2de".to_string()),
+//     (id_type.to_string(), id_number.to_string()),
+// ])
 
-pub async fn get_from_aoe2net() -> eyre::Result<ApiResponse<PlayerLastMatch>> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MatchInfo {}
+
+pub async fn get_from_aoe2net(
+    root: String,
+    endpoint: String,
+    query: Vec<(String, String)>,
+) -> eyre::Result<ApiResponse<PlayerLastMatch>> {
     let request: ApiRequest = ApiRequestBuilder::default()
-        .root("https://aoe2.net/api/")
-        .endpoint("player/lastmatch")
-        .query(vec![
-            ("game".to_string(), "aoe2de".to_string()),
-            ("steam_id".to_string(), "76561199003184910".to_string()),
-        ])
+        .root(root)
+        .endpoint(endpoint)
+        .query(query)
         .build()
         .unwrap();
 

@@ -18,7 +18,10 @@ use log::{
     warn,
 };
 
-use crate::setup::cli::CommandLineSettings;
+use crate::{
+    domain::api_handler::client::*,
+    setup::cli::CommandLineSettings,
+};
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
 
@@ -27,9 +30,13 @@ use tracing_actix_web::TracingLogger;
 pub fn run_server(
     listener: TcpListener,
     config: &CommandLineSettings,
+    api_client: ApiRequest,
 ) -> eyre::Result<Server, std::io::Error> {
     debug!("CLI config: {:#?}", config);
     trace!("We are inside the run-function!");
+
+    // Share api client among all App instances
+    let api_client = Data::new(api_client);
 
     // Create server with Endpoints
     let server = HttpServer::new(move || {
@@ -40,6 +47,7 @@ pub fn run_server(
             // .wrap(middleware::Logger::default())
             .service(health_check)
             .service(matchinfo)
+            .app_data(api_client.clone())
     })
     .listen(listener)?
     .run();
