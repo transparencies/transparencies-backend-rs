@@ -1,32 +1,17 @@
 //! Core client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
 use ::serde::Deserialize;
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
+use std::{collections::HashMap, time::Duration};
 
-use crate::cli;
+use crate::config::cli;
 
 use crate::domain::api_handler::response::aoe2net::last_match::PlayerLastMatch;
 
 // App-Name as USERAGENT
-static APP_USER_AGENT: &str =
-    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 #[derive(Default, Builder, Debug)]
 #[builder(setter(into))]

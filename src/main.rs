@@ -12,23 +12,10 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{
-    eyre,
-    Result,
-    WrapErr,
-};
-use std::{
-    env,
-    process,
-};
+use stable_eyre::eyre::{eyre, Result, WrapErr};
+use std::{env, process};
 
 // Binding
 use std::net::TcpListener;
@@ -36,11 +23,10 @@ use std::net::TcpListener;
 // CLI
 use structopt::StructOpt;
 
-// Configuration
-use transparencies_backend_rs::configuration::get_configuration;
-
-// Startup
-use transparencies_backend_rs::startup::run;
+// Internal Configuration
+use transparencies_backend_rs::config::{
+    cli::Args, configuration::get_configuration, startup::run,
+};
 
 #[actix_web::main]
 async fn main() -> eyre::Result<()> {
@@ -61,7 +47,7 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Calling the command line parsing logic with the argument values
-    let cli_args = transparencies_backend_rs::cli::Args::from_args();
+    let cli_args = Args::from_args();
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
@@ -81,8 +67,7 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Setting up any other configuration
-    let configuration =
-        get_configuration().expect("Failed to read configuration.");
+    let configuration = get_configuration().expect("Failed to read configuration.");
 
     // Binding address
     let address = format!(
