@@ -1,5 +1,8 @@
 use serde_aux::field_attributes::deserialize_number_from_string;
-use std::convert::{TryFrom, TryInto};
+use std::convert::{
+    TryFrom,
+    TryInto,
+};
 
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
@@ -15,11 +18,14 @@ pub struct Settings {
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let mut settings = config::Config::default();
-    let base_path = std::env::current_dir().expect("Failed to determine the current directory");
+    let base_path = std::env::current_dir()
+        .expect("Failed to determine the current directory");
     let configuration_directory = base_path.join("configuration");
 
     // Read the "default" configuration file
-    settings.merge(config::File::from(configuration_directory.join("base")).required(true))?;
+    settings.merge(
+        config::File::from(configuration_directory.join("base")).required(true),
+    )?;
 
     // Detect the running environment.
     // Default to `local` if unspecified.
@@ -30,7 +36,8 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
     // Layer on the environment-specific values.
     settings.merge(
-        config::File::from(configuration_directory.join(environment.as_str())).required(true),
+        config::File::from(configuration_directory.join(environment.as_str()))
+            .required(true),
     )?;
 
     // Add in settings from environment variables (with a prefix of APP and '__'

@@ -8,9 +8,9 @@
 #![allow(missing_docs)]
 #![allow(dead_code)]
 
-pub mod setup;
 pub mod domain;
 pub mod routes;
+pub mod setup;
 
 #[macro_use]
 extern crate derive_builder;

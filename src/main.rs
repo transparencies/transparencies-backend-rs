@@ -12,10 +12,23 @@
 #[macro_use]
 extern crate log;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use stable_eyre::eyre::{eyre, Result, WrapErr};
-use std::{env, process};
+use stable_eyre::eyre::{
+    eyre,
+    Result,
+    WrapErr,
+};
+use std::{
+    env,
+    process,
+};
 
 // Binding
 use std::net::TcpListener;
@@ -25,7 +38,9 @@ use structopt::StructOpt;
 
 // Internal Configuration
 use transparencies_backend_rs::setup::{
-    cli::CommandLineSettings, configuration::get_configuration, startup::run_server,
+    cli::CommandLineSettings,
+    configuration::get_configuration,
+    startup::run_server,
 };
 
 #[actix_web::main]
@@ -48,7 +63,8 @@ async fn main() -> eyre::Result<()> {
     }
 
     // Setting up configuration
-    let configuration = get_configuration().expect("Failed to read configuration.");
+    let configuration =
+        get_configuration().expect("Failed to read configuration.");
 
     // Calling the command line parsing logic with the argument values
     let cli_args = CommandLineSettings::from_args();
