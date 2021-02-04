@@ -28,7 +28,11 @@ jobs:
         uses: actions-rs/toolchain@v1.0.6
         with:
           toolchain: stable
+          profile: minimal
           override: true
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1.0.1
@@ -46,7 +50,11 @@ jobs:
         uses: actions-rs/toolchain@v1.0.6
         with:
           toolchain: stable
+          profile: minimal
           override: true
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1.0.1
@@ -68,11 +76,14 @@ jobs:
           override: true
           components: rustfmt
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1.0.1
         with:
-          command: fmt
-          args: --all -- --check
+          command: +nightly fmt
+          args: --all -- --check --config-path rustfmt-nightly.toml
 
   clippy:
     name: Clippy
@@ -84,10 +95,13 @@ jobs:
       - name: Install stable toolchain with clippy available
         uses: actions-rs/toolchain@v1.0.6
         with:
-          profile: minimal
           toolchain: stable
+          profile: minimal
           override: true
           components: clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1.0.1
@@ -100,6 +114,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Install stable toolchain with clippy available
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
+
       - name: Build
         run: cargo build --verbose
 
@@ -114,7 +139,11 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          profile: minimal
           override: true
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
