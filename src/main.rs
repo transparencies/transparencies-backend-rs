@@ -13,10 +13,22 @@
 extern crate log;
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use std::{env, process};
-use warp::{http::StatusCode, Filter};
+use std::{
+    env,
+    process,
+};
+use warp::{
+    http::StatusCode,
+    Filter,
+};
 
 // CLI
 use structopt::StructOpt;
@@ -25,7 +37,10 @@ use structopt::StructOpt;
 use transparencies_backend_rs::{
     domain::api_handler::client::ApiRequest,
     routes::health_check,
-    setup::{cli::CommandLineSettings, configuration::get_configuration},
+    setup::{
+        cli::CommandLineSettings,
+        configuration::get_configuration,
+    },
 };
 
 #[tokio::main]
@@ -53,7 +68,8 @@ async fn main() {
     }
 
     // Setting up configuration
-    let _configuration = get_configuration().expect("Failed to read configuration.");
+    let _configuration =
+        get_configuration().expect("Failed to read configuration.");
 
     // Calling the command line parsing logic with the argument values
     let cli_args = CommandLineSettings::from_args();
@@ -94,18 +110,24 @@ async fn main() {
 mod filters {
     use super::{
         handlers,
-        models::{Db, ListOptions, Todo},
+        models::{
+            Db,
+            ListOptions,
+            Todo,
+        },
     };
     use warp::Filter;
 
     pub fn transparencies(
-    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+    {
         health_check()
         // .or(matchinfo())
     }
 
     /// GET /health_check
-    pub fn health_check() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+    pub fn health_check(
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
     {
         warp::path!("health_check")
             .and(warp::get())
@@ -127,10 +149,15 @@ mod filters {
 /// with the exact arguments we'd expect from each filter in the chain.
 /// No tuples are needed, it's auto flattened for the functions.
 mod handlers {
-    use super::models::{Db, MatchInfoRequest, Todo};
+    use super::models::{
+        Db,
+        MatchInfoRequest,
+        Todo,
+    };
     use std::convert::Infallible;
     use transparencies_backend_rs::domain::api_handler::{
-        client::*, response::aoe2net::last_match::PlayerLastMatch,
+        client::*,
+        response::aoe2net::last_match::PlayerLastMatch,
     };
     use warp::http::StatusCode;
 
@@ -138,7 +165,9 @@ mod handlers {
         Ok(warp::reply())
     }
 
-    pub async fn return_matchinfo(opts: MatchInfoRequest) -> Result<impl warp::Reply, Infallible> {
+    pub async fn return_matchinfo(
+        opts: MatchInfoRequest
+    ) -> Result<impl warp::Reply, Infallible> {
         let request: ApiRequest = ApiRequestBuilder::default()
             .root("https://aoe2.net/api/")
             .endpoint("player/lastmatch")
@@ -234,7 +263,10 @@ mod handlers {
 }
 
 mod models {
-    use serde::{Deserialize, Serialize};
+    use serde::{
+        Deserialize,
+        Serialize,
+    };
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
@@ -269,11 +301,17 @@ mod models {
 
 #[cfg(test)]
 mod tests {
-    use warp::{http::StatusCode, test::request};
+    use warp::{
+        http::StatusCode,
+        test::request,
+    };
 
     use super::{
         filters,
-        models::{self, Todo},
+        models::{
+            self,
+            Todo,
+        },
     };
 
     #[tokio::test]
