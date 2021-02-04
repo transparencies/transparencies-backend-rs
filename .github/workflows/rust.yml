@@ -82,7 +82,7 @@ jobs:
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1.0.1
         with:
-          command: +nightly fmt
+          command: fmt
           args: --all -- --check --config-path rustfmt-nightly.toml
 
   clippy:
