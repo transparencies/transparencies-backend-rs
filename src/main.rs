@@ -125,7 +125,7 @@ mod filters {
         // .or(matchinfo())
     }
 
-    /// GET /health_check
+    /// GET /`health_check`
     pub fn health_check(
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
     {
@@ -156,7 +156,10 @@ mod handlers {
     };
     use std::convert::Infallible;
     use transparencies_backend_rs::domain::api_handler::{
-        client::*,
+        client::{
+            ApiRequest,
+            ApiRequestBuilder,
+        },
         response::aoe2net::last_match::PlayerLastMatch,
     };
     use warp::http::StatusCode;
