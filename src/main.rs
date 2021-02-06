@@ -15,10 +15,22 @@ extern crate log;
 
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use std::{env, process};
-use warp::{http::StatusCode, Filter};
+use std::{
+    env,
+    process,
+};
+use warp::{
+    http::StatusCode,
+    Filter,
+};
 
 // CLI
 use structopt::StructOpt;
@@ -26,8 +38,14 @@ use structopt::StructOpt;
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::api_handler::client::ApiRequest,
-    server::{filters, models},
-    setup::{cli::CommandLineSettings, configuration::get_configuration},
+    server::{
+        filters,
+        models,
+    },
+    setup::{
+        cli::CommandLineSettings,
+        configuration::get_configuration,
+    },
 };
 
 #[tokio::main]
