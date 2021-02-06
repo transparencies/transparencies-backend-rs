@@ -8,6 +8,7 @@ use crate::server::{
 
 use warp::Filter;
 
+#[must_use]
 pub fn transparencies(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     health_check().or(matchinfo())

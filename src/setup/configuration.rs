@@ -55,6 +55,7 @@ pub enum Environment {
 }
 
 impl Environment {
+    #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
             Environment::Local => "local",

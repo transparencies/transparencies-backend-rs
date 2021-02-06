@@ -53,6 +53,7 @@ pub struct ApiRequest {
 }
 
 impl ApiRequest {
+    #[must_use]
     pub fn new() -> Self {
         // Duration for timeouts
         let request_timeout: Duration = Duration::new(5, 0);

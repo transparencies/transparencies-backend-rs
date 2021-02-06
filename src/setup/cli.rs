@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-/// StructOpt's struct for parsing commandline input
+/// `StructOpt`'s struct for parsing commandline input
 #[derive(StructOpt, Debug, serde::Deserialize)]
 #[structopt(
     name = "transparencies-backend-rs",

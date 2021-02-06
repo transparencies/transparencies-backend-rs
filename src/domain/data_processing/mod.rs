@@ -4,7 +4,11 @@ use serde::{
 };
 
 use crate::domain::api_handler::{
-    client::*,
+    client::{
+        ApiRequest,
+        ApiRequestBuilder,
+        ApiResponse,
+    },
     response::aoe2net::last_match::PlayerLastMatch,
 };
 // .root("https://aoe2.net/api/")
