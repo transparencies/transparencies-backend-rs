@@ -66,7 +66,7 @@ impl ApiRequest {
         }
     }
 
-    pub async fn execute<R>(&self) -> eyre::Result<ApiResponse<R>>
+    pub async fn execute<R>(&self) -> Result<ApiResponse<R>>
     where R: serde::Serialize + for<'de> serde::Deserialize<'de> {
         Ok(ApiResponse {
             response: self
