@@ -1,2 +1,4 @@
-# aoe2_rating_overlay-rs
-## foundation for building dynamic stream overlays
+# transparencies-backend-rs
+
+## A backend for dynamic stream overlays written in Rust
+    

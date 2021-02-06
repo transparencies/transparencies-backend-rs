@@ -47,7 +47,7 @@ doc *ARGS:
 
 # Runs the formatter on all Rust files.
 format:
-	@cargo +nightly fmt -- --config-path rustfmt-nightly.toml
+	@cargo +nightly fmt -- --config-path rustfmt.toml
 
 # Runs the linter.
 lint: check

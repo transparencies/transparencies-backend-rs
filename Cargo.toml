@@ -1,49 +1,90 @@
 [package]
-name = "aoe2_rating_overlay"
+name = "transparencies-backend-rs"
 publish = false
 version = "0.0.1"
 authors = ["the transparencies authors"]
 edition = "2018"
-repository = "https://github.com/transparencies/aoe2ratingoverlay-rs"
+repository = "https://github.com/transparencies/transparencies-backend-rs"
 documentation = ""
 readme = "README.md"
 license = "AGPL-3.0-or-later"
 keywords = [""]
 categories = [""]
 description = """
-Your project description.
+A foundation for building dynamic stream overlays written in Rust
 """
-
-[workspace]
-members = []
-
-[dependencies]
-# Templating
-askama = "0.10"
-
-# Error handling
-human-panic = "1.0"
-eyre = "0.6"
-stable-eyre = "0.2"
-
-# Logging
-log = "0.4"
-simple-log = "1.0"
-
-# CLI
-structopt = "0.3"
-
-[dev-dependencies]
-thiserror = "1.0"
-assert_cmd = "1.0"
-predicates = "1.0"
-lazy_static = "1.4"
-pretty_assertions = "0.6"
-
 [package.metadata.release]
 upload-doc = true
 no-dev-version = true
 pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "transparencies-backend-rs"      # The name of the target.
+path = "src/main.rs"                    # The source file of the target.
+test = true                             # Is tested by default.
+doctest = true                          # Documentation examples are tested by default.
+bench = true                            # Is benchmarked by default.
+doc = true                              # Is documented by default.
+harness = true                          # Use libtest harness.
+edition = "2018"                        # The edition of the target.
+#required-features = []                 # Features required to build this target (N/A for lib).
+
+[dependencies]
+# Error handling
+human-panic = "1.0.3"
+eyre = "0.6.5"
+stable-eyre = "0.2.2"
+
+# Logging
+log = "0.4.14"
+simple-log = "1.0.1"
+
+# CLI
+structopt = "0.3.21"
+
+# Configuration
+config = "0.10.1"
+# config_struct = "0.5"
+# ron = "0.6"
+
+# HTTP
+reqwest = { version = "0.11.0", features = ["json", "rustls-tls"] }
+warp = "0.3.0"
+
+# async
+tokio = { version = "1.1.0", features = ["full"] }
+futures = "0.3.12"
+
+# De-/Serialisation
+serde = { version = "1.0.123", features = ["derive"] }
+serde_json = "1.0.62"
+serde_yaml = "0.8.16"
+serde_any = { git = "https://github.com/simonsan/serde_any.git", version = "0.5.1", default-features = false, features = ["yaml", "toml", "json"]}
+serde-aux = "2.1.1"
+
+# Templating
+# askama = "0.10"
+
+# OpenAPI
+openapi_utils = "0.2.0"
+openapiv3 = "0.3.2"
+
+# Utility
+derive_builder = "0.9.0"
+
+# Validation
+validators-derive = "0.22.3"
+validators = "0.22.3"
+
+[dev-dependencies]
+thiserror = "1.0.23"
+assert_cmd = "1.0.3"
+predicates = "1.0.7"
+lazy_static = "1.4.0"
+pretty_assertions = "0.6.1"
 
 [profile.dev]
 opt-level=0
