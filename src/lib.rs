@@ -9,33 +9,17 @@
 #![allow(dead_code)]
 
 pub mod domain;
-pub mod routes;
+pub mod server;
 pub mod setup;
 
 #[macro_use]
 extern crate derive_builder;
 
-use futures::{
-    FutureExt,
-    StreamExt,
-};
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Result,
-    WrapErr,
-};
+use futures::{FutureExt, StreamExt};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Result, WrapErr};
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use std::net::TcpListener;
