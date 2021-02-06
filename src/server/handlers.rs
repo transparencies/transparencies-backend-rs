@@ -24,6 +24,7 @@ pub async fn return_health_check() -> Result<impl warp::Reply, Infallible> {
     Ok(warp::reply())
 }
 
+// GET / Test: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
 pub async fn return_matchinfo(
     opts: MatchInfoRequest
 ) -> Result<impl warp::Reply, Infallible> {
@@ -35,39 +36,17 @@ pub async fn return_matchinfo(
     let build_request: Option<ApiRequest> = match opts.id_number {
         Some(id_number) => match opts.id_type {
             Some(id_type) => match id_type.as_str() {
-                "steam_id" => {
-                    // MatchInfoRequestType::SteamId((id_type,
-                    // id_number));
-
-                    Some(
-                        ApiRequestBuilder::default()
-                            .root("https://aoe2.net/api/")
-                            .endpoint("player/lastmatch")
-                            .query(vec![
-                                ("game".to_string(), "aoe2de".to_string()),
-                                (id_type, id_number),
-                            ])
-                            .build()
-                            .unwrap(),
-                    )
-                }
-                "profile_id" => {
-                    // MatchInfoRequestType::AoeNetProfile((
-                    //     id_type, id_number,
-                    // ));
-
-                    Some(
-                        ApiRequestBuilder::default()
-                            .root("https://aoe2.net/api/")
-                            .endpoint("player/lastmatch")
-                            .query(vec![
-                                ("game".to_string(), "aoe2de".to_string()),
-                                (id_type, id_number),
-                            ])
-                            .build()
-                            .unwrap(),
-                    )
-                }
+                "steam_id" | "profile_id" => Some(
+                    ApiRequestBuilder::default()
+                        .root("https://aoe2.net/api/")
+                        .endpoint("player/lastmatch")
+                        .query(vec![
+                            ("game".to_string(), "aoe2de".to_string()),
+                            (id_type, id_number),
+                        ])
+                        .build()
+                        .unwrap(),
+                ),
                 _ => None,
             },
             None => {
