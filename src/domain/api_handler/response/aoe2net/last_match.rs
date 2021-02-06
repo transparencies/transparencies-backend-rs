@@ -1,9 +1,6 @@
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use ::serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename = "PlayerLastMatch")]
 pub struct PlayerLastMatch {
     pub country: String,
@@ -13,19 +10,19 @@ pub struct PlayerLastMatch {
     pub steam_id: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LastMatch {
-    pub average_rating: Option<::serde_json::Value>,
+    pub average_rating: ::serde_json::Value,
     pub cheats: bool,
     pub ending_age: i64,
-    pub expansion: Option<::serde_json::Value>,
+    pub expansion: ::serde_json::Value,
     pub finished: i64,
     pub full_tech_tree: bool,
     pub game_type: i64,
-    pub has_custom_content: Option<::serde_json::Value>,
+    pub has_custom_content: ::serde_json::Value,
     pub has_password: bool,
     pub leaderboard_id: i64,
-    pub lobby_id: Option<::serde_json::Value>,
+    pub lobby_id: ::serde_json::Value,
     pub lock_speed: bool,
     pub lock_teams: bool,
     pub map_size: i64,
@@ -36,13 +33,13 @@ pub struct LastMatch {
     pub num_players: i64,
     pub num_slots: i64,
     pub opened: i64,
-    pub players: Players,
+    pub players: Vec<Players>,
     pub pop: i64,
     pub ranked: bool,
     pub rating_type: i64,
     pub resources: i64,
-    pub rms: Option<::serde_json::Value>,
-    pub scenario: Option<::serde_json::Value>,
+    pub rms: ::serde_json::Value,
+    pub scenario: ::serde_json::Value,
     pub server: String,
     pub shared_exploration: bool,
     pub speed: i64,
@@ -58,241 +55,126 @@ pub struct LastMatch {
     pub visibility: i64,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Players {
     pub civ: i64,
-    pub clan: Option<::serde_json::Value>,
+    pub clan: ::serde_json::Value,
     pub color: i64,
-    pub country: Option<::serde_json::Value>,
-    pub drops: Option<::serde_json::Value>,
-    pub games: Option<::serde_json::Value>,
+    pub country: ::serde_json::Value,
+    pub drops: ::serde_json::Value,
+    pub games: ::serde_json::Value,
     pub name: String,
     pub profile_id: i64,
     pub rating: i64,
-    pub rating_change: Option<::serde_json::Value>,
+    pub rating_change: ::serde_json::Value,
     pub slot: i64,
     pub slot_type: i64,
     pub steam_id: String,
-    pub streak: Option<::serde_json::Value>,
+    pub streak: ::serde_json::Value,
     pub team: i64,
-    pub wins: Option<::serde_json::Value>,
+    pub wins: ::serde_json::Value,
     pub won: bool,
 }
 
-// #[test]
-// fn ensure_player_last_match_roundtrips() {
-//     let t = <PlayerLastMatch>::default();
-//     let j = serde_json::to_string(&t).unwrap();
-//     let r: PlayerLastMatch = serde_json::from_str(&j).unwrap();
-//     assert_eq!(t, r);
-// }
+#[test]
+fn ensure_player_last_match_roundtrips() {
+    let t = <PlayerLastMatch>::default();
+    let j = serde_json::to_string(&t).unwrap();
+    let r: PlayerLastMatch = serde_json::from_str(&j).unwrap();
+    assert_eq!(t, r);
+}
 
 #[test]
 fn ensure_player_last_match_from_sample() {
     let sample = r#"
 {
-   "profile_id":196240,
-   "steam_id":"76561197984749679",
-   "name":"GL.TheViper",
-   "country":"NO",
-   "last_match":{
-      "match_id":"67645178",
-      "lobby_id":null,
-      "match_uuid":"c63271e4-5679-9c4a-b4fd-be498d3ddab6",
-      "version":"44834",
-      "name":"TG",
-      "num_players":8,
-      "num_slots":8,
-      "average_rating":null,
-      "cheats":false,
-      "full_tech_tree":false,
-      "ending_age":0,
-      "expansion":null,
-      "game_type":0,
-      "has_custom_content":null,
-      "has_password":true,
-      "lock_speed":true,
-      "lock_teams":true,
-      "map_size":4,
-      "map_type":9,
-      "pop":200,
-      "ranked":false,
-      "leaderboard_id":0,
-      "rating_type":0,
-      "resources":0,
-      "rms":null,
-      "scenario":null,
-      "server":"westindia",
-      "shared_exploration":false,
-      "speed":2,
-      "starting_age":0,
-      "team_together":true,
-      "team_positions":false,
-      "treaty_length":0,
-      "turbo":false,
-      "victory":9,
-      "victory_time":1,
-      "visibility":0,
-      "opened":1612285928,
-      "started":1612285928,
-      "finished":1612288145,
-      "players":[
-         {
-            "profile_id":197964,
-            "steam_id":"76561198179087382",
-            "name":"_WWP_Yo",
-            "clan":null,
-            "country":null,
-            "slot":1,
-            "slot_type":1,
-            "rating":2753,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":2,
-            "team":1,
-            "civ":26,
-            "won":false
-         },
-         {
-            "profile_id":226575,
-            "steam_id":"76561198313422112",
-            "name":"_WWP_lyx",
-            "clan":null,
-            "country":null,
-            "slot":2,
-            "slot_type":1,
-            "rating":2696,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":3,
-            "team":1,
-            "civ":32,
-            "won":false
-         },
-         {
-            "profile_id":208611,
-            "steam_id":"76561198325239137",
-            "name":"Villese",
-            "clan":null,
-            "country":null,
-            "slot":3,
-            "slot_type":1,
-            "rating":2683,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":8,
-            "team":4,
-            "civ":27,
-            "won":true
-         },
-         {
-            "profile_id":215442,
-            "steam_id":"76561198366260409",
-            "name":"_WWP_Vivi",
-            "clan":null,
-            "country":null,
-            "slot":4,
-            "slot_type":1,
-            "rating":2777,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":1,
-            "team":1,
-            "civ":4,
-            "won":false
-         },
-         {
-            "profile_id":210601,
-            "steam_id":"76561198259118630",
-            "name":"_WWP_Paladin",
-            "clan":null,
-            "country":null,
-            "slot":5,
-            "slot_type":1,
-            "rating":2774,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":5,
-            "team":1,
-            "civ":22,
-            "won":false
-         },
-         {
-            "profile_id":265517,
-            "steam_id":"76561198198305605",
-            "name":"_WWP_Daniel",
-            "clan":null,
-            "country":null,
-            "slot":6,
-            "slot_type":1,
-            "rating":2501,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":6,
-            "team":4,
-            "civ":1,
-            "won":true
-         },
-         {
-            "profile_id":431744,
-            "steam_id":"76561198077768177",
-            "name":"Rubenstock",
-            "clan":null,
-            "country":null,
-            "slot":7,
-            "slot_type":1,
-            "rating":2632,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":7,
-            "team":4,
-            "civ":23,
-            "won":true
-         },
-         {
-            "profile_id":196240,
-            "steam_id":"76561197984749679",
-            "name":"GL.TheViper",
-            "clan":null,
-            "country":null,
-            "slot":8,
-            "slot_type":1,
-            "rating":2555,
-            "rating_change":null,
-            "games":null,
-            "wins":null,
-            "streak":null,
-            "drops":null,
-            "color":4,
-            "team":4,
-            "civ":10,
-            "won":true
-         }
-      ]
-   }
-}
-    "#;
+  "profile_id":459658,
+  "steam_id":"76561199003184910",
+  "name":"DS_HOANG |AOEBuilds.com",
+  "country":"VN",
+  "last_match":{
+    "match_id":"68003885",
+    "lobby_id":null,
+    "match_uuid":"9cd3ea05-9992-8c4f-9d2a-3b08bfab7232",
+    "version":"44834",
+    "name":"AUTOMATCH",
+    "num_players":2,
+    "num_slots":2,
+    "average_rating":null,
+    "cheats":false,
+    "full_tech_tree":false,
+    "ending_age":5,
+    "expansion":null,
+    "game_type":0,
+    "has_custom_content":null,
+    "has_password":true,
+    "lock_speed":true,
+    "lock_teams":true,
+    "map_size":0,
+    "map_type":9,
+    "pop":200,
+    "ranked":true,
+    "leaderboard_id":3,
+    "rating_type":2,
+    "resources":1,
+    "rms":null,
+    "scenario":null,
+    "server":"ukwest",
+    "shared_exploration":false,
+    "speed":2,
+    "starting_age":2,
+    "team_together":true,
+    "team_positions":true,
+    "treaty_length":0,
+    "turbo":false,
+    "victory":1,
+    "victory_time":0,
+    "visibility":0,
+    "opened":1612408426,
+    "started":1612408426,
+    "finished":1612409832,
+    "players":[
+      {
+        "profile_id":459658,
+        "steam_id":"76561199003184910",
+        "name":"DS_HOANG |AOEBuilds.com",
+        "clan":null,
+        "country":null,
+        "slot":1,
+        "slot_type":1,
+        "rating":2231,
+        "rating_change":null,
+        "games":null,
+        "wins":null,
+        "streak":null,
+        "drops":null,
+        "color":2,
+        "team":1,
+        "civ":7,
+        "won":true
+      },
+      {
+        "profile_id":3088115,
+        "steam_id":"76561199074390395",
+        "name":"bruh",
+        "clan":null,
+        "country":null,
+        "slot":2,
+        "slot_type":1,
+        "rating":2294,
+        "rating_change":null,
+        "games":null,
+        "wins":null,
+        "streak":null,
+        "drops":null,
+        "color":3,
+        "team":2,
+        "civ":24,
+        "won":false
+      }
+    ]
+  }
+}"#;
 
     let _: PlayerLastMatch = serde_json::from_str(&sample).unwrap();
 }

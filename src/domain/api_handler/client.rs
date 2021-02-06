@@ -32,7 +32,7 @@ static APP_USER_AGENT: &str =
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ApiResponse<T> {
-    response: T,
+    pub response: T,
 }
 
 #[derive(Default, Builder, Debug)]

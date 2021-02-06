@@ -52,15 +52,15 @@ config = "0.10.1"
 
 # HTTP
 reqwest = { version = "0.11.0", features = ["json", "rustls-tls"] }
-warp = "0.3"
+warp = "0.3.0"
 
 # async
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.1.0", features = ["full"] }
 futures = "0.3.12"
 
 # De-/Serialisation
 serde = { version = "1.0.123", features = ["derive"] }
-serde_json = "1.0.61"
+serde_json = "1.0.62"
 serde_yaml = "0.8.16"
 serde_any = { git = "https://github.com/simonsan/serde_any.git", version = "0.5.1", default-features = false, features = ["yaml", "toml", "json"]}
 serde-aux = "2.1.1"
@@ -76,8 +76,8 @@ openapiv3 = "0.3.2"
 derive_builder = "0.9.0"
 
 # Validation
-validator = "0.12.0"
-validator_derive = "0.12.0"
+validators-derive = "0.22.3"
+validators = "0.22.3"
 
 [dev-dependencies]
 thiserror = "1.0.23"

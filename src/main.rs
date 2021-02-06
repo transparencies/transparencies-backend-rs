@@ -11,24 +11,13 @@
 // Error handling
 #[macro_use]
 extern crate log;
+
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
-use std::{
-    env,
-    process,
-};
-use warp::{
-    http::StatusCode,
-    Filter,
-};
+use std::{env, process};
+use warp::{http::StatusCode, Filter};
 
 // CLI
 use structopt::StructOpt;
@@ -37,10 +26,7 @@ use structopt::StructOpt;
 use transparencies_backend_rs::{
     domain::api_handler::client::ApiRequest,
     routes::health_check,
-    setup::{
-        cli::CommandLineSettings,
-        configuration::get_configuration,
-    },
+    setup::{cli::CommandLineSettings, configuration::get_configuration},
 };
 
 #[tokio::main]
@@ -99,7 +85,7 @@ async fn main() {
     let routes = api.with(warp::log("transparencies"));
 
     warp::serve(routes)
-        // Activate after certificates have been received from Let's Encrypt
+        // TODO: Activate after certificates have been received from Let's Encrypt
         // .tls()
         // .cert_path("examples/tls/cert.pem")
         // .key_path("examples/tls/key.rsa")
@@ -108,21 +94,18 @@ async fn main() {
 }
 
 mod filters {
+    use crate::models::MatchInfoRequest;
+
     use super::{
         handlers,
-        models::{
-            Db,
-            ListOptions,
-            Todo,
-        },
+        models::{Db, ListOptions, Todo},
     };
     use warp::Filter;
 
     pub fn transparencies(
     ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
     {
-        health_check()
-        // .or(matchinfo())
+        health_check().or(matchinfo())
     }
 
     /// GET /`health_check`
@@ -134,14 +117,15 @@ mod filters {
             .and_then(handlers::return_health_check)
     }
 
-    // /// GET /matchinfo?idtype=steamid&idnumber=12318931981421
-    // pub fn matchinfo() -> impl Filter<Extract = impl warp::Reply, Error =
-    // warp::Rejection> + Clone {     warp::path!("todos")
-    //         .and(warp::get())
-    //         .and(warp::query::<ListOptions>())
-    //         .and(with_db(db))
-    //         .and_then(handlers::list_todos)
-    // }
+    /// GET /matchinfo?idtype=steamid&idnumber=12318931981421
+    pub fn matchinfo(
+    ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+    {
+        warp::path!("matchinfo")
+            .and(warp::get())
+            .and(warp::query::<MatchInfoRequest>())
+            .and_then(handlers::return_matchinfo)
+    }
 }
 
 /// These are our API handlers, the ends of each filter chain.
@@ -149,20 +133,19 @@ mod filters {
 /// with the exact arguments we'd expect from each filter in the chain.
 /// No tuples are needed, it's auto flattened for the functions.
 mod handlers {
-    use super::models::{
-        Db,
-        MatchInfoRequest,
-        Todo,
-    };
+    use super::models::{Db, MatchInfoRequest, Todo};
     use std::convert::Infallible;
     use transparencies_backend_rs::domain::api_handler::{
-        client::{
-            ApiRequest,
-            ApiRequestBuilder,
-        },
+        client::{ApiRequest, ApiRequestBuilder},
         response::aoe2net::last_match::PlayerLastMatch,
     };
     use warp::http::StatusCode;
+
+    enum MatchInfoRequestType {
+        SteamId((String, String)),
+        AoeNetProfile((String, String)),
+        Invalid,
+    }
 
     pub async fn return_health_check() -> Result<impl warp::Reply, Infallible> {
         Ok(warp::reply())
@@ -171,20 +154,66 @@ mod handlers {
     pub async fn return_matchinfo(
         opts: MatchInfoRequest
     ) -> Result<impl warp::Reply, Infallible> {
-        let request: ApiRequest = ApiRequestBuilder::default()
-            .root("https://aoe2.net/api/")
-            .endpoint("player/lastmatch")
-            .query(vec![
-                ("game".to_string(), "aoe2de".to_string()),
-                (
-                    opts.id_type.unwrap().to_string(),
-                    opts.id_number.unwrap().to_string(),
-                ),
-            ])
-            .build()
-            .unwrap();
+        debug!(
+            "MatchInfoRequest: {:?} with {:?}",
+            opts.id_type, opts.id_number
+        );
 
-        let response = request.execute::<PlayerLastMatch>().await.unwrap();
+        let build_request: Option<ApiRequest> = match opts.id_number {
+            Some(id_number) => match opts.id_type {
+                Some(id_type) => match id_type.as_str() {
+                    "steam_id" => {
+                        // MatchInfoRequestType::SteamId((id_type,
+                        // id_number));
+
+                        Some(
+                            ApiRequestBuilder::default()
+                                .root("https://aoe2.net/api/")
+                                .endpoint("player/lastmatch")
+                                .query(vec![
+                                    ("game".to_string(), "aoe2de".to_string()),
+                                    (id_type, id_number),
+                                ])
+                                .build()
+                                .unwrap(),
+                        )
+                    }
+                    "profile_id" => {
+                        // MatchInfoRequestType::AoeNetProfile((
+                        //     id_type, id_number,
+                        // ));
+
+                        Some(
+                            ApiRequestBuilder::default()
+                                .root("https://aoe2.net/api/")
+                                .endpoint("player/lastmatch")
+                                .query(vec![
+                                    ("game".to_string(), "aoe2de".to_string()),
+                                    (id_type, id_number),
+                                ])
+                                .build()
+                                .unwrap(),
+                        )
+                    }
+                    _ => None,
+                },
+                None => {
+                    todo!()
+                }
+            },
+            None => {
+                todo!()
+            }
+        };
+
+        let api_response;
+
+        if let Some(request) = build_request {
+            api_response = request.execute::<PlayerLastMatch>().await.unwrap();
+            Ok(warp::reply::json(&api_response.response))
+        } else {
+            todo!()
+        }
 
         // Just return a JSON array of todos, applying the limit and offset.
         // let todos = db.lock().await;
@@ -194,7 +223,8 @@ mod handlers {
         //     .skip(opts.offset.unwrap_or(0))
         //     .take(opts.limit.unwrap_or(std::usize::MAX))
         //     .collect();
-        Ok(warp::reply::json(&response))
+
+        // Ok(StatusCode::OK)
     }
 
     // pub async fn create_todo(create: Todo, db: Db) -> Result<impl
@@ -266,10 +296,7 @@ mod handlers {
 }
 
 mod models {
-    use serde::{
-        Deserialize,
-        Serialize,
-    };
+    use serde::{Deserialize, Serialize};
     use std::sync::Arc;
     use tokio::sync::Mutex;
 
@@ -304,76 +331,70 @@ mod models {
 
 #[cfg(test)]
 mod tests {
-    use warp::{
-        http::StatusCode,
-        test::request,
-    };
+    use warp::{http::StatusCode, test::request};
 
     use super::{
         filters,
-        models::{
-            self,
-            Todo,
-        },
+        models::{self, Todo},
     };
 
-    #[tokio::test]
-    async fn test_post() {
-        let db = models::blank_db();
-        let api = filters::todos(db);
+    // #[tokio::test]
+    // async fn test_post() {
+    //     let db = models::blank_db();
+    //     let api = filters::todos(db);
 
-        let resp = request()
-            .method("POST")
-            .path("/todos")
-            .json(&Todo {
-                id: 1,
-                text: "test 1".into(),
-                completed: false,
-            })
-            .reply(&api)
-            .await;
+    //     let resp = request()
+    //         .method("POST")
+    //         .path("/todos")
+    //         .json(&Todo {
+    //             id: 1,
+    //             text: "test 1".into(),
+    //             completed: false,
+    //         })
+    //         .reply(&api)
+    //         .await;
 
-        assert_eq!(resp.status(), StatusCode::CREATED);
-    }
+    //     assert_eq!(resp.status(), StatusCode::CREATED);
+    // }
 
-    #[tokio::test]
-    async fn test_post_conflict() {
-        let db = models::blank_db();
-        db.lock().await.push(todo1());
-        let api = filters::todos(db);
+    // #[tokio::test]
+    // async fn test_post_conflict() {
+    //     let db = models::blank_db();
+    //     db.lock().await.push(todo1());
+    //     let api = filters::todos(db);
 
-        let resp = request()
-            .method("POST")
-            .path("/todos")
-            .json(&todo1())
-            .reply(&api)
-            .await;
+    //     let resp = request()
+    //         .method("POST")
+    //         .path("/todos")
+    //         .json(&todo1())
+    //         .reply(&api)
+    //         .await;
 
-        assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
-    }
+    //     assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    // }
 
-    #[tokio::test]
-    async fn test_put_unknown() {
-        let _ = pretty_env_logger::try_init();
-        let db = models::blank_db();
-        let api = filters::todos(db);
+    // #[tokio::test]
+    // async fn test_put_unknown() {
+    //     let _ = pretty_env_logger::try_init();
+    //     let db = models::blank_db();
+    //     let api = filters::todos(db);
 
-        let resp = request()
-            .method("PUT")
-            .path("/todos/1")
-            .header("authorization", "Bearer admin")
-            .json(&todo1())
-            .reply(&api)
-            .await;
+    //     let resp = request()
+    //         .method("PUT")
+    //         .path("/todos/1")
+    //         .header("authorization", "Bearer admin")
+    //         .json(&todo1())
+    //         .reply(&api)
+    //         .await;
 
-        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
-    }
+    //     assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    // }
 
-    fn todo1() -> Todo {
-        Todo {
-            id: 1,
-            text: "test 1".into(),
-            completed: false,
-        }
-    }
+    // fn todo1() -> Todo {
+    //     Todo {
+    //         id: 1,
+    //         text: "test 1".into(),
+    //         completed: false,
+    //     }
+    // }
 }
