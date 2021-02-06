@@ -14,10 +14,22 @@ extern crate log;
 
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use std::{env, process};
-use warp::{http::StatusCode, Filter};
+use std::{
+    env,
+    process,
+};
+use warp::{
+    http::StatusCode,
+    Filter,
+};
 
 // CLI
 use structopt::StructOpt;
@@ -25,13 +37,20 @@ use structopt::StructOpt;
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::api_handler::client::ApiRequest,
-    server::{filters, models},
-    setup::{cli::CommandLineSettings, configuration::get_configuration},
+    server::{
+        filters,
+        models,
+    },
+    setup::{
+        cli::CommandLineSettings,
+        configuration::get_configuration,
+    },
 };
 
 #[tokio::main]
 async fn main() {
     // Install the panic and error report handlers
+    // TODO: Temporary disabled due to return value
     // stable_eyre::install();
 
     // Webserver logging
@@ -77,11 +96,8 @@ async fn main() {
         trace!("Logs were set up.");
     }
 
-    let _db = models::blank_db();
-
     let api = filters::transparencies();
 
-    // View access logs by setting `RUST_LOG=todos`.
     let routes = api.with(warp::log("transparencies"));
 
     warp::serve(routes)
@@ -95,65 +111,38 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
-    use warp::{http::StatusCode, test::request};
+    use transparencies_backend_rs::server::{
+        self,
+        filters,
+    };
+    use warp::{
+        http::StatusCode,
+        test::request,
+    };
 
-    // #[tokio::test]
-    // async fn test_post() {
-    //     let db = models::blank_db();
-    //     let api = filters::todos(db);
+    #[tokio::test]
+    async fn test_health_check_is_reachable() {
+        let api = filters::health_check();
 
-    //     let resp = request()
-    //         .method("POST")
-    //         .path("/todos")
-    //         .json(&Todo {
-    //             id: 1,
-    //             text: "test 1".into(),
-    //             completed: false,
-    //         })
-    //         .reply(&api)
-    //         .await;
+        let resp = request()
+            .method("GET")
+            .path("/health_check")
+            .reply(&api)
+            .await;
 
-    //     assert_eq!(resp.status(), StatusCode::CREATED);
-    // }
+        assert_eq!(resp.status(), StatusCode::OK);
+    }
 
-    // #[tokio::test]
-    // async fn test_post_conflict() {
-    //     let db = models::blank_db();
-    //     db.lock().await.push(todo1());
-    //     let api = filters::todos(db);
+    #[tokio::test]
+    async fn test_matchinfo_is_reachable() {
+        let api = filters::matchinfo();
 
-    //     let resp = request()
-    //         .method("POST")
-    //         .path("/todos")
-    //         .json(&todo1())
-    //         .reply(&api)
-    //         .await;
+        let resp = request()
+            .method("GET")
+            .path("/matchinfo?id_type=profile_id&id_number=459658")
+            .reply(&api)
+            .await;
 
-    //     assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
-    // }
-
-    // #[tokio::test]
-    // async fn test_put_unknown() {
-    //     let _ = pretty_env_logger::try_init();
-    //     let db = models::blank_db();
-    //     let api = filters::todos(db);
-
-    //     let resp = request()
-    //         .method("PUT")
-    //         .path("/todos/1")
-    //         .header("authorization", "Bearer admin")
-    //         .json(&todo1())
-    //         .reply(&api)
-    //         .await;
-
-    //     assert_eq!(resp.status(), StatusCode::NOT_FOUND);
-    // }
-
-    // fn todo1() -> Todo {
-    //     Todo {
-    //         id: 1,
-    //         text: "test 1".into(),
-    //         completed: false,
-    //     }
-    // }
+        assert_eq!(resp.status(), StatusCode::OK);
+    }
 }
