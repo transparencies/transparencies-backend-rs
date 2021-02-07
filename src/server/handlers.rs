@@ -1,22 +1,13 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::api_handler::{
-    client::{
-        ApiRequest,
-        ApiRequestBuilder,
-    },
+    client::{ApiRequest, ApiRequestBuilder},
     response::aoe2net::last_match::PlayerLastMatch,
 };
 
 use crate::server::models::MatchInfoRequest;
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use std::convert::Infallible;
 use warp::http::StatusCode;
 
@@ -38,7 +29,7 @@ pub async fn return_matchinfo(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
-                        .root("https://aoe2.net/api/")
+                        .root("https://aoe2.net/api")
                         .endpoint("player/lastmatch")
                         .query(vec![
                             ("game".to_string(), "aoe2de".to_string()),
@@ -58,13 +49,10 @@ pub async fn return_matchinfo(
         }
     };
 
-    let api_response;
-
     if let Some(request) = build_request {
-        api_response = request.execute::<PlayerLastMatch>().await.unwrap();
+        let api_response = request.execute::<PlayerLastMatch>().await.unwrap();
         Ok(warp::reply::json(&api_response.response))
-    }
-    else {
+    } else {
         todo!()
     }
 }

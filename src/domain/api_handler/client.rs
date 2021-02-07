@@ -1,35 +1,13 @@
 //! Core client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use ::serde::{
-    de::DeserializeOwned,
-    Deserialize,
-    Serialize,
-};
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
+use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{collections::HashMap, time::Duration};
 
 use crate::domain::api_handler::response::{
-    aoc_ref::{
-        platforms,
-        players,
-        teams,
-    },
+    aoc_ref::{platforms, players, teams},
     aoe2net::last_match::PlayerLastMatch,
 };
 
@@ -37,12 +15,120 @@ use crate::domain::api_handler::response::{
 static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
+#[derive(Debug, Clone)]
+pub enum FileFormat {
+    Toml,
+    Json,
+    Yaml,
+    Ron,
+    Xml,
+    Url,
+    Uninitialized,
+}
+
+impl Default for FileFormat {
+    fn default() -> Self {
+        Self::Uninitialized
+    }
+}
+
+#[derive(Builder, Debug, Clone)]
+pub struct File {
+    name: String,
+    ext: FileFormat,
+}
+
+impl Default for File {
+    fn default() -> Self {
+        Self {
+            name: String::new(),
+            ext: FileFormat::default(),
+        }
+    }
+}
+
+impl std::fmt::Display for File {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
+        todo!();
+    }
+}
+
+// root: https://raw.githubusercontent.com
+// user: SiegeEngineers
+// repo: aoc-reference-data
+// uri: master/data
+// file: File {
+//         name: players
+//         ext: FileFormat::Yaml
+// }
+// https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
+// &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri, &self.file)
+#[derive(Builder, Debug)]
+#[builder(public, setter(into))]
+pub struct GithubFileRequest {
+    #[builder(setter(skip))]
+    client: reqwest::Client,
+    root: String,
+    user: String,
+    repo: String,
+    uri: String,
+    file: File,
+}
+
+impl Default for GithubFileRequest {
+    fn default() -> Self {
+        // Duration for timeouts
+        let request_timeout: Duration = Duration::new(5, 0);
+        let connection_timeout: Duration = Duration::new(5, 0);
+
+        Self {
+            client: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(request_timeout)
+                .connect_timeout(connection_timeout)
+                .use_rustls_tls()
+                .https_only(true)
+                .build()
+                .unwrap(),
+            root: String::new(),
+            user: String::new(),
+            repo: String::new(),
+            uri: String::new(),
+            file: File::default(),
+        }
+    }
+}
+
+impl GithubFileRequest {
+    pub async fn execute<R>(&self) -> Result<Response<R>>
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
+        Ok(Response {
+            response: self
+                .client
+                .get(&format!(
+                    "{}/{}/{}/{}/{}",
+                    &self.root, &self.user, &self.repo, &self.uri, &self.file
+                ))
+                .query(&self.query)
+                .send()
+                .await?
+                .json::<R>()
+                .await?,
+        })
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ApiResponse<T> {
+pub struct Response<T> {
     pub response: T,
 }
 
-#[derive(Default, Builder, Debug)]
+#[derive(Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct ApiRequest {
     #[builder(setter(skip))]
@@ -52,9 +138,8 @@ pub struct ApiRequest {
     query: Vec<(String, String)>,
 }
 
-impl ApiRequest {
-    #[must_use]
-    pub fn new() -> Self {
+impl Default for ApiRequest {
+    fn default() -> Self {
         // Duration for timeouts
         let request_timeout: Duration = Duration::new(5, 0);
         let connection_timeout: Duration = Duration::new(5, 0);
@@ -73,13 +158,17 @@ impl ApiRequest {
             query: Vec::new(),
         }
     }
+}
 
-    pub async fn execute<R>(&self) -> Result<ApiResponse<R>>
-    where R: for<'de> serde::Deserialize<'de> {
-        Ok(ApiResponse {
+impl ApiRequest {
+    pub async fn execute<R>(&self) -> Result<Response<R>>
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
+        Ok(Response {
             response: self
                 .client
-                .get(&format!("{}{}", &self.root, &self.endpoint))
+                .get(&format!("{}/{}", &self.root, &self.endpoint))
                 .query(&self.query)
                 .send()
                 .await?
