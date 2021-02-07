@@ -1,0 +1,8 @@
+# TODOS
+
+## Matchinfo branch
+[ ] Call from `handler` into `data_processing` with `MatchInfoRequest` data
+[ ] GET API data from aoe2net
+    [ ] make all requests that are needed for getting all valuable information for matchinfo 
+[ ] GET yaml file(s) from github (periodically?) [teams, platforms, players]
+[ ] Merge various data sources into a `MatchInfo` datastructure

@@ -22,7 +22,7 @@ pub fn health_check(
         .and_then(return_health_check)
 }
 
-/// GET /matchinfo?idtype=steamid&idnumber=12318931981421
+/// GET  /matchinfo?id_type=profile_id&id_number=459658
 pub fn matchinfo(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("matchinfo")
