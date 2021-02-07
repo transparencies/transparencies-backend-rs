@@ -1,13 +1,22 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::api_handler::{
-    client::{ApiRequest, ApiRequestBuilder},
+    client::{
+        ApiRequest,
+        ApiRequestBuilder,
+    },
     response::aoe2net::last_match::PlayerLastMatch,
 };
 
 use crate::server::models::MatchInfoRequest;
 
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use std::convert::Infallible;
 use warp::http::StatusCode;
 
@@ -52,7 +61,8 @@ pub async fn return_matchinfo(
     if let Some(request) = build_request {
         let api_response = request.execute::<PlayerLastMatch>().await.unwrap();
         Ok(warp::reply::json(&api_response.response))
-    } else {
+    }
+    else {
         todo!()
     }
 }

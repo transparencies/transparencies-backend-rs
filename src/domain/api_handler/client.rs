@@ -1,13 +1,35 @@
 //! Core client logic of the application
 
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, time::Duration};
+use ::serde::{
+    de::DeserializeOwned,
+    Deserialize,
+    Serialize,
+};
+use std::{
+    collections::HashMap,
+    time::Duration,
+};
 
 use crate::domain::api_handler::response::{
-    aoc_ref::{platforms, players, teams},
+    aoc_ref::{
+        platforms,
+        players,
+        teams,
+    },
     aoe2net::last_match::PlayerLastMatch,
 };
 
@@ -65,7 +87,8 @@ impl std::fmt::Display for File {
 //         ext: FileFormat::Yaml
 // }
 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
-// &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri, &self.file)
+// &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri,
+// &self.file)
 #[derive(Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct GithubFileRequest {
@@ -104,9 +127,7 @@ impl Default for GithubFileRequest {
 
 impl GithubFileRequest {
     pub async fn execute<R>(&self) -> Result<Response<R>>
-    where
-        R: for<'de> serde::Deserialize<'de>,
-    {
+    where R: for<'de> serde::Deserialize<'de> {
         Ok(Response {
             response: self
                 .client
@@ -162,9 +183,7 @@ impl Default for ApiRequest {
 
 impl ApiRequest {
     pub async fn execute<R>(&self) -> Result<Response<R>>
-    where
-        R: for<'de> serde::Deserialize<'de>,
-    {
+    where R: for<'de> serde::Deserialize<'de> {
         Ok(Response {
             response: self
                 .client

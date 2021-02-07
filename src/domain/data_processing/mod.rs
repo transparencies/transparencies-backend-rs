@@ -1,7 +1,14 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 use crate::domain::api_handler::{
-    client::{ApiRequest, ApiRequestBuilder, Response},
+    client::{
+        ApiRequest,
+        ApiRequestBuilder,
+        Response,
+    },
     response::aoe2net::last_match::PlayerLastMatch,
 };
 
