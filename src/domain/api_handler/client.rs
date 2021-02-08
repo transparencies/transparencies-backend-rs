@@ -128,6 +128,8 @@ impl Default for GithubFileRequest {
 impl GithubFileRequest {
     pub async fn execute<R>(&self) -> Result<Response<R>>
     where R: for<'de> serde::Deserialize<'de> {
+        // TODO: Create Response from Request
+        // Deserialize depending on `FileFormat` into Response
         Ok(Response {
             response: self
                 .client
@@ -135,7 +137,6 @@ impl GithubFileRequest {
                     "{}/{}/{}/{}/{}",
                     &self.root, &self.user, &self.repo, &self.uri, &self.file
                 ))
-                .query(&self.query)
                 .send()
                 .await?
                 .json::<R>()
@@ -182,18 +183,16 @@ impl Default for ApiRequest {
 }
 
 impl ApiRequest {
-    pub async fn execute<R>(&self) -> Result<Response<R>>
+    pub async fn execute<R>(&self) -> Result<R>
     where R: for<'de> serde::Deserialize<'de> {
-        Ok(Response {
-            response: self
-                .client
-                .get(&format!("{}/{}", &self.root, &self.endpoint))
-                .query(&self.query)
-                .send()
-                .await?
-                .json::<R>()
-                .await?,
-        })
+        Ok(self
+            .client
+            .get(&format!("{}/{}", &self.root, &self.endpoint))
+            .query(&self.query)
+            .send()
+            .await?
+            .json::<R>()
+            .await?)
     }
 }
 

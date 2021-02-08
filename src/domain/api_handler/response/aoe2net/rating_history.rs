@@ -4,7 +4,16 @@ use ::serde::{
 };
 
 #[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
+    Default,
+    Clone,
+    Debug,
+    PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
 )]
 pub struct RatingHistoryList {
     #[serde(rename = "RatingHistory")]
@@ -12,7 +21,16 @@ pub struct RatingHistoryList {
 }
 
 #[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
+    Default,
+    Clone,
+    Debug,
+    PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
 )]
 pub struct RatingHistory {
     pub drops: i64,

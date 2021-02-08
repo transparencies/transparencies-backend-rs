@@ -1,7 +1,7 @@
 use crate::server::{
     handlers::{
-        return_health_check,
-        return_matchinfo,
+        return_health_check_to_client,
+        return_matchinfo_to_client,
     },
     models::MatchInfoRequest,
 };
@@ -19,7 +19,7 @@ pub fn health_check(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::path!("health_check")
         .and(warp::get())
-        .and_then(return_health_check)
+        .and_then(return_health_check_to_client)
 }
 
 /// GET  /matchinfo?id_type=profile_id&id_number=459658
@@ -28,5 +28,5 @@ pub fn matchinfo(
     warp::path!("matchinfo")
         .and(warp::get())
         .and(warp::query::<MatchInfoRequest>())
-        .and_then(return_matchinfo)
+        .and_then(return_matchinfo_to_client)
 }

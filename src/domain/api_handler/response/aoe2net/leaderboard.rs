@@ -1,17 +1,20 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename = "Leaderboard")]
 pub struct Leaderboard {
     pub count: i64,
-    pub leaderboard: Leaderboard2,
+    pub leaderboard: LeaderboardPlayer,
     pub leaderboard_id: i64,
     pub start: i64,
     pub total: i64,
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize)]
-pub struct Leaderboard2 {
+#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LeaderboardPlayer {
     pub clan: String,
     pub country: String,
     pub drops: i64,
