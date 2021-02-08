@@ -144,7 +144,7 @@ pub async fn process_matchinfo_request(
                                     .leaderboard_id
                                     .to_string(),
                             ),
-                            ("count".to_string(), "2".to_string()),
+                            ("count".to_string(), "1".to_string()),
                         ])
                         .build()
                         .unwrap(),
