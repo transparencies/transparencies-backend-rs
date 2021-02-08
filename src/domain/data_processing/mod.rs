@@ -18,8 +18,8 @@ use crate::{
             },
             aoe2net::{
                 last_match::PlayerLastMatch,
-                leaderboard::Leaderboard,
-                rating_history::RatingHistoryList,
+                leaderboard::LeaderboardInfo,
+                rating_history::RatingHistory,
             },
         },
     },
@@ -45,8 +45,8 @@ pub struct MatchInfo {}
 #[derive(Debug, Default, Serialize)]
 pub struct MatchDataResponses {
     last_match: PlayerLastMatch,
-    leaderboard: Leaderboard,
-    rating_history: RatingHistoryList,
+    leaderboard: LeaderboardInfo,
+    rating_history: Vec<RatingHistory>,
 }
 
 pub struct AocDataLists {
@@ -144,7 +144,7 @@ pub async fn process_matchinfo_request(
                                     .leaderboard_id
                                     .to_string(),
                             ),
-                            ("count".to_string(), "1".to_string()),
+                            ("count".to_string(), "2".to_string()),
                         ])
                         .build()
                         .unwrap(),
@@ -169,7 +169,8 @@ pub async fn process_matchinfo_request(
     }
 
     if let Some(request) = leaderboard_request {
-        responses.leaderboard = request.execute::<Leaderboard>().await.unwrap();
+        responses.leaderboard =
+            request.execute::<LeaderboardInfo>().await.unwrap();
     }
     else {
         todo!()
@@ -177,7 +178,7 @@ pub async fn process_matchinfo_request(
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
-            request.execute::<RatingHistoryList>().await.unwrap();
+            request.execute::<Vec<RatingHistory>>().await.unwrap();
     }
     else {
         todo!()

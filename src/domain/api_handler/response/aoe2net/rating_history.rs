@@ -4,16 +4,7 @@ use ::serde::{
 };
 
 #[derive(
-    Default,
-    Clone,
-    Debug,
-    PartialEq,
-    PartialOrd,
-    Eq,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
+    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
 pub struct RatingHistoryList {
     #[serde(rename = "RatingHistory")]
@@ -21,16 +12,7 @@ pub struct RatingHistoryList {
 }
 
 #[derive(
-    Default,
-    Clone,
-    Debug,
-    PartialEq,
-    PartialOrd,
-    Eq,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
+    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
 pub struct RatingHistory {
     pub drops: i64,
@@ -52,48 +34,8 @@ fn ensure_rating_history_roundtrips() {
 #[test]
 fn ensure_rating_history_from_sample() {
     let sample = r#"
-[
-   {
-      "rating":2345,
-      "num_wins":1715,
-      "num_losses":1260,
-      "streak":7,
-      "drops":41,
-      "timestamp":1608795056
-   },
-   {
-      "rating":2344,
-      "num_wins":1714,
-      "num_losses":1260,
-      "streak":6,
-      "drops":41,
-      "timestamp":1608791810
-   },
-   {
-      "rating":2330,
-      "num_wins":1713,
-      "num_losses":1260,
-      "streak":5,
-      "drops":41,
-      "timestamp":1608789352
-   },
-   {
-      "rating":2315,
-      "num_wins":1712,
-      "num_losses":1260,
-      "streak":4,
-      "drops":41,
-      "timestamp":1608784971
-   },
-   {
-      "rating":2310,
-      "num_wins":1711,
-      "num_losses":1260,
-      "streak":3,
-      "drops":41,
-      "timestamp":1608782368
-   }
-]
+[{"rating":1263,"num_wins":80,"num_losses":14,"streak":-5,"drops":1,"timestamp":1611394467},{"rating":1263,"num_wins":80,"num_losses":13,"streak":-4,"drops":1,"timestamp":1611393418}]
+
     "#;
 
     let _: Vec<RatingHistory> = serde_json::from_str(&sample).unwrap();
