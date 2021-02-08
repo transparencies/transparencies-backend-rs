@@ -1,43 +1,29 @@
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     domain::api_handler::{
-        client::{
-            ApiRequest,
-            ApiRequestBuilder,
-            Response,
-        },
+        client::{ApiRequest, ApiRequestBuilder, Response},
         response::{
             aoc_ref::{
-                platforms::PlatformsList,
-                players::PlayersList,
+                platforms::PlatformsList, players::PlayersList,
                 teams::TeamsList,
             },
             aoe2net::{
-                last_match::PlayerLastMatch,
-                leaderboard::LeaderboardInfo,
+                last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
                 rating_history::RatingHistory,
             },
         },
     },
     server::models::MatchInfoRequest,
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+
+use std::time::Duration;
+
+// App-Name as USERAGENT
+static APP_USER_AGENT: &str =
+    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MatchInfo {}
@@ -63,6 +49,19 @@ pub async fn process_matchinfo_request(
         par.id_type, par.id_number
     );
 
+    // Duration for timeouts
+    let request_timeout: Duration = Duration::new(5, 0);
+    let connection_timeout: Duration = Duration::new(5, 0);
+
+    let client = reqwest::Client::builder()
+        .user_agent(APP_USER_AGENT)
+        .timeout(request_timeout)
+        .connect_timeout(connection_timeout)
+        .use_rustls_tls()
+        .https_only(true)
+        .build()
+        .unwrap();
+
     let mut responses = MatchDataResponses::default();
 
     // GET `LastMatch` data
@@ -71,6 +70,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
+                        .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/lastmatch")
                         .query(vec![
@@ -97,6 +97,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
+                        .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("leaderboard")
                         .query(vec![
@@ -131,6 +132,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
+                        .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/ratinghistory")
                         .query(vec![
@@ -163,24 +165,21 @@ pub async fn process_matchinfo_request(
     if let Some(request) = last_match_request {
         responses.last_match =
             request.execute::<PlayerLastMatch>().await.unwrap();
-    }
-    else {
+    } else {
         todo!()
     }
 
     if let Some(request) = leaderboard_request {
         responses.leaderboard =
             request.execute::<LeaderboardInfo>().await.unwrap();
-    }
-    else {
+    } else {
         todo!()
     }
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
             request.execute::<Vec<RatingHistory>>().await.unwrap();
-    }
-    else {
+    } else {
         todo!()
     }
 

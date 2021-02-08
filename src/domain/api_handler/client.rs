@@ -1,35 +1,13 @@
 //! Core client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use ::serde::{
-    de::DeserializeOwned,
-    Deserialize,
-    Serialize,
-};
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
+use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{collections::HashMap, time::Duration};
 
 use crate::domain::api_handler::response::{
-    aoc_ref::{
-        platforms,
-        players,
-        teams,
-    },
+    aoc_ref::{platforms, players, teams},
     aoe2net::last_match::PlayerLastMatch,
 };
 
@@ -127,7 +105,9 @@ impl Default for GithubFileRequest {
 
 impl GithubFileRequest {
     pub async fn execute<R>(&self) -> Result<Response<R>>
-    where R: for<'de> serde::Deserialize<'de> {
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
         // TODO: Create Response from Request
         // Deserialize depending on `FileFormat` into Response
         Ok(Response {
@@ -153,7 +133,7 @@ pub struct Response<T> {
 #[derive(Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct ApiRequest {
-    #[builder(setter(skip))]
+    // #[builder(setter(skip))]
     client: reqwest::Client,
     root: String,
     endpoint: String,
@@ -184,7 +164,9 @@ impl Default for ApiRequest {
 
 impl ApiRequest {
     pub async fn execute<R>(&self) -> Result<R>
-    where R: for<'de> serde::Deserialize<'de> {
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
         Ok(self
             .client
             .get(&format!("{}/{}", &self.root, &self.endpoint))
