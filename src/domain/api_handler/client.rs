@@ -33,6 +33,8 @@ use crate::domain::api_handler::response::{
     aoe2net::last_match::PlayerLastMatch,
 };
 
+use std::fmt;
+
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -51,6 +53,15 @@ pub enum FileFormat {
 impl Default for FileFormat {
     fn default() -> Self {
         Self::Uninitialized
+    }
+}
+
+impl std::fmt::Display for FileFormat {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
+        write!(f, "{}", self.to_lowercase().to_string())
     }
 }
 
@@ -74,7 +85,7 @@ impl std::fmt::Display for File {
         &self,
         f: &mut std::fmt::Formatter<'_>,
     ) -> std::fmt::Result {
-        todo!();
+        write!(f, "{}.{}", self.name, self.ext)
     }
 }
 
