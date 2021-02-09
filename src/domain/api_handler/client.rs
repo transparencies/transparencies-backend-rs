@@ -61,7 +61,7 @@ impl std::fmt::Display for FileFormat {
         &self,
         f: &mut std::fmt::Formatter<'_>,
     ) -> std::fmt::Result {
-        write!(f, "{}", self.to_lowercase().to_string())
+        write!(f, "{}", self.to_string().to_lowercase())
     }
 }
 
