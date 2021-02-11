@@ -25,7 +25,7 @@
         - [ ] at the start of the server
         - [ ] once per hour
         - [ ] non-persistent, but only overwrite internally if parsing new datastructure was successful
-            - [ ] create in-memory DB (Arc<Mutex<RefData>> or some other in-memory thread-safe storage)
+            - [ ] create in-memory DB (`Arc<Mutex<RefData>>` or some other in-memory thread-safe storage)
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
 - [ ] Refactoring: create only new clients for each new api-root not for each request to us
