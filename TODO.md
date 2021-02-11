@@ -1,6 +1,7 @@
 # TODOS
 
 ## Release 1.0.0
+
 [X] Call from `handler` into `data_processing` with `MatchInfoRequest` data
 [ ] GET API data from aoe2net
     [ ] make all requests that are needed for getting all valuable information for matchinfo
@@ -9,6 +10,10 @@
         faster if nothing is new? (client -> sends us `last_game_id` the overlay shows -> we check against `last_match`
         [ ] if `last_match` show finished match we wait 3-5 minutes until frontend fades out
         [ ] Q: how to get away from client-side polling? (frequent requests to `last_match` and WS to client? worth?)
+            [ ] maybe let clients subscribe to us and frequently poll aoe2.net for these subscribed client ids? (high load on AoE2.net)
+                - only query `last-match` endpoint and if something changed, then fire other requests will reduce load
+                - maybe frontend should send us `match_id` that it is currently showing so we always have its `last_match` 
+                  and can easily compare with `last_match` from aoe2.net
     [ ] Q: can we cache anything?
     [ ] Q: how can we make creating requests easier and less boilerplate?
 [ ] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
@@ -20,6 +25,7 @@
         [ ] at the start of the server
         [ ] once per hour
         [ ] non-persistent, but only overwrite internally if parsing new datastructure was successful
+            [ ] create in-memory DB (Arc<Mutex<RefData>> or some other in-memory thread-safe storage)
 [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
 [ ] Refactoring: create only new clients for each new api-root not for each request to us
@@ -30,3 +36,8 @@
 [ ] implement `todo!()`s
 [ ] implement useful tests/raise test-coverage to a (valuable) maximum
 [ ] create good documentation (!!!)
+
+## Release 1.1.0
+
+[ ] User database (PostgreSQL/MariaDB), user log-in and dashboard
+[ ] Transparency management in user dashboard
