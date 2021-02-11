@@ -28,13 +28,18 @@
             - [ ] create in-memory DB (`Arc<Mutex<RefData>>` or some other in-memory thread-safe storage)
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
-- [ ] Refactoring: create only new clients for each new api-root not for each request to us
-    - [ ] only if that would make overall performance better (<1.2 sec per request)(?)
+- [ ] Refactoring
+    - [ ]create only new clients for each new api-root not for each request to us
+        - [ ] only if that would make overall performance better (<1.2 sec per request)(?)
     - [ ] what (other) architectural changes need to be made to support many clients on our api(?)
     - [ ] async stuff done right?
+    - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
+    - [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
 - [ ] Implement good error handling
+    - [ ] use crates error types for better `Error handling` e.g. `reqwest::Error`
 - [ ] implement `todo!()`s
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
+    - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
 - [ ] create good documentation (!!!)
 
 ## Release 1.1.0 - User management and persistence
