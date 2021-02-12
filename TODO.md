@@ -14,8 +14,8 @@
                 - only query `last-match` endpoint and if something changed, then fire other requests will reduce load
                 - maybe frontend should send us `match_id` that it is currently showing so we always have its `last_match` 
                   and can easily compare with `last_match` from aoe2.net
-    [ ] Q: can we cache anything?
-    [ ] Q: how can we make creating requests easier and less boilerplate?
+    - [ ] Q: can we cache anything?
+    - [ ] Q: how can we make creating requests easier and less boilerplate?
 - [ ] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
     - Sources:
         - [ ] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
@@ -29,7 +29,7 @@
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
 - [ ] Refactoring
-    - [ ]create only new clients for each new api-root not for each request to us
+    - [ ] create only new clients for each new api-root not for each request to us
         - [ ] only if that would make overall performance better (<1.2 sec per request)(?)
     - [ ] what (other) architectural changes need to be made to support many clients on our api(?)
     - [ ] async stuff done right?
