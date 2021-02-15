@@ -114,7 +114,7 @@ async fn main() {
 
     let client = ApiClient::default();
 
-    let api = filters::transparencies(client.clone());
+    let api = filters::transparencies(client.aoe2net.clone());
 
     let routes = api.with(warp::log("transparencies"));
 
