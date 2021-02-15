@@ -1,11 +1,8 @@
-use ::serde::{
-    Deserialize,
-    Serialize,
-};
+use ::serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename = "PlayerLastMatch")]
 pub struct PlayerLastMatch {
+    pub clan: String,
     pub country: String,
     pub last_match: LastMatch,
     pub name: String,
@@ -68,7 +65,7 @@ pub struct Players {
     pub games: ::serde_json::Value,
     pub name: String,
     pub profile_id: i64,
-    pub rating: i64,
+    pub rating: ::serde_json::Value,
     pub rating_change: ::serde_json::Value,
     pub slot: i64,
     pub slot_type: i64,
@@ -94,12 +91,13 @@ fn ensure_player_last_match_from_sample() {
   "profile_id":459658,
   "steam_id":"76561199003184910",
   "name":"DS_HOANG |AOEBuilds.com",
+  "clan":"Biry",
   "country":"VN",
   "last_match":{
-    "match_id":"68003885",
+    "match_id":"70872238",
     "lobby_id":null,
-    "match_uuid":"9cd3ea05-9992-8c4f-9d2a-3b08bfab7232",
-    "version":"44834",
+    "match_uuid":"0d6ea86e-b917-cd43-a27f-836dfb6aa37d",
+    "version":"45340",
     "name":"AUTOMATCH",
     "num_players":2,
     "num_slots":2,
@@ -122,7 +120,7 @@ fn ensure_player_last_match_from_sample() {
     "resources":1,
     "rms":null,
     "scenario":null,
-    "server":"ukwest",
+    "server":"southeastasia",
     "shared_exploration":false,
     "speed":2,
     "starting_age":2,
@@ -133,19 +131,19 @@ fn ensure_player_last_match_from_sample() {
     "victory":1,
     "victory_time":0,
     "visibility":0,
-    "opened":1612408426,
-    "started":1612408426,
-    "finished":1612409832,
+    "opened":1613401916,
+    "started":1613401916,
+    "finished":1613403371,
     "players":[
       {
-        "profile_id":459658,
-        "steam_id":"76561199003184910",
-        "name":"DS_HOANG |AOEBuilds.com",
+        "profile_id":226575,
+        "steam_id":"76561198313422112",
+        "name":"_WWP_lyx",
         "clan":null,
         "country":null,
         "slot":1,
         "slot_type":1,
-        "rating":2231,
+        "rating":null,
         "rating_change":null,
         "games":null,
         "wins":null,
@@ -153,31 +151,32 @@ fn ensure_player_last_match_from_sample() {
         "drops":null,
         "color":2,
         "team":1,
-        "civ":7,
+        "civ":25,
         "won":true
       },
       {
-        "profile_id":3088115,
-        "steam_id":"76561199074390395",
-        "name":"bruh",
+        "profile_id":459658,
+        "steam_id":"76561199003184910",
+        "name":"DS_HOANG |AOEBuilds.com",
         "clan":null,
         "country":null,
         "slot":2,
         "slot_type":1,
-        "rating":2294,
+        "rating":null,
         "rating_change":null,
         "games":null,
         "wins":null,
         "streak":null,
         "drops":null,
-        "color":3,
+        "color":1,
         "team":2,
-        "civ":24,
+        "civ":7,
         "won":false
       }
     ]
   }
-}"#;
+}
+    "#;
 
     let _: PlayerLastMatch = serde_json::from_str(&sample).unwrap();
 }
