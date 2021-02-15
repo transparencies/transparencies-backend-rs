@@ -1,35 +1,13 @@
 //! Core client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use ::serde::{
-    de::DeserializeOwned,
-    Deserialize,
-    Serialize,
-};
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
+use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{collections::HashMap, time::Duration};
 
 use crate::domain::api_handler::response::{
-    aoc_ref::{
-        platforms,
-        players,
-        teams,
-    },
+    aoc_ref::{platforms, players, teams},
     aoe2net::last_match::PlayerLastMatch,
 };
 
@@ -124,56 +102,63 @@ impl Default for ApiClient {
 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
 // &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri,
 // &self.file)
-// #[derive(Builder, Debug)]
-// #[builder(public, setter(into))]
-// pub struct GithubFileRequest {
-//     #[builder(setter(skip))]
-//     client: ApiClient,
-//     root: String,
-//     user: String,
-//     repo: String,
-//     uri: String,
-//     file: File,
-// }
+#[derive(Builder, Debug)]
+#[builder(public, setter(into))]
+pub struct GithubFileRequest {
+    #[builder(setter(skip))]
+    client: reqwest::Client,
+    root: String,
+    user: String,
+    repo: String,
+    uri: String,
+    file: File,
+}
 
-// impl Default for GithubFileRequest {
-//     fn default() -> Self {
-//         // Duration for timeouts
-//         let request_timeout: Duration = Duration::new(5, 0);
-//         let connection_timeout: Duration = Duration::new(5, 0);
+impl Default for GithubFileRequest {
+    fn default() -> Self {
+        // Duration for timeouts
+        let request_timeout: Duration = Duration::new(5, 0);
+        let connection_timeout: Duration = Duration::new(5, 0);
 
-//         Self {
-//             client: ApiClient::default(),
-//             root: String::new(),
-//             user: String::new(),
-//             repo: String::new(),
-//             uri: String::new(),
-//             file: File::default(),
-//         }
-//     }
-// }
+        Self {
+            client: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(request_timeout)
+                .connect_timeout(connection_timeout)
+                .use_rustls_tls()
+                .https_only(true)
+                .build()
+                .unwrap(),
+            root: String::new(),
+            user: String::new(),
+            repo: String::new(),
+            uri: String::new(),
+            file: File::default(),
+        }
+    }
+}
 
-// impl GithubFileRequest {
-//     pub async fn execute<R>(&self) -> Result<Response<R>>
-//     where
-//         R: for<'de> serde::Deserialize<'de>,
-//     {
-//         // TODO: Create Response from Request
-//         // Deserialize depending on `FileFormat` into Response
-//         Ok(Response {
-//             response: self
-//                 .client
-//                 .get(&format!(
-//                     "{}/{}/{}/{}/{}",
-//                     &self.root, &self.user, &self.repo, &self.uri, &self.file
-//                 ))
-//                 .send()
-//                 .await?
-//                 .json::<R>()
-//                 .await?,
-//         })
-//     }
-// }
+impl GithubFileRequest {
+    pub async fn execute<R>(&self) -> Result<Response<R>>
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
+        todo!();
+        // TODO: Create Response from Request
+        // Deserialize depending on `FileFormat` into Response
+        // Ok(Response {
+        //     response: self
+        //         .client
+        //         .get(&format!(
+        //             "{}/{}/{}/{}/{}",
+        //             &self.root, &self.user, &self.repo, &self.uri, &self.file
+        //         ))
+        //         .send()
+        //         .await
+        //         .unwrap(),
+        // })
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Response<T> {
@@ -203,7 +188,9 @@ impl Default for ApiRequest {
 
 impl ApiRequest {
     pub async fn execute<R>(&self) -> Result<R>
-    where R: for<'de> serde::Deserialize<'de> {
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
         Ok(self
             .client
             .get(&format!("{}/{}", &self.root, &self.endpoint))
@@ -217,22 +204,6 @@ impl ApiRequest {
 
 // TODO: Pull file(s) from github
 // e.g. https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
-
-// #[derive(Debug, Clone)]
-// pub struct DataLists {
-//     pub player_list: Vec<players::Players>,
-//     pub team_list: Vec<teams::Teams>,
-//     pub platform_list: Vec<platforms::Platforms>,
-// }
-
-// impl DataLists {
-//     pub fn new() -> Self {
-//         DataLists {
-//             player_list: Vec::new(),
-//             team_list: Vec::new(),
-//             platform_list: Vec::new(),
-//         }
-//     }
 
 //     /// Fills members of a DataLists object with data deserialised from
 //     /// file paths that were given via the command line arguments
