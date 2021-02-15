@@ -1,4 +1,7 @@
-use ::serde::{Deserialize, Serialize};
+use ::serde::{
+    Deserialize,
+    Serialize,
+};
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PlayerLastMatch {
