@@ -89,6 +89,30 @@ impl std::fmt::Display for File {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ApiClient {
+    pub aoe2net: reqwest::Client,
+}
+
+impl Default for ApiClient {
+    fn default() -> Self {
+        // Duration for timeouts
+        let request_timeout: Duration = Duration::new(5, 0);
+        let connection_timeout: Duration = Duration::new(600, 0);
+
+        Self {
+            aoe2net: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(request_timeout)
+                .connect_timeout(connection_timeout)
+                .use_rustls_tls()
+                .https_only(true)
+                .build()
+                .unwrap(),
+        }
+    }
+}
+
 // root: https://raw.githubusercontent.com
 // user: SiegeEngineers
 // repo: aoc-reference-data
@@ -100,61 +124,56 @@ impl std::fmt::Display for File {
 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
 // &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri,
 // &self.file)
-#[derive(Builder, Debug)]
-#[builder(public, setter(into))]
-pub struct GithubFileRequest {
-    #[builder(setter(skip))]
-    client: reqwest::Client,
-    root: String,
-    user: String,
-    repo: String,
-    uri: String,
-    file: File,
-}
+// #[derive(Builder, Debug)]
+// #[builder(public, setter(into))]
+// pub struct GithubFileRequest {
+//     #[builder(setter(skip))]
+//     client: ApiClient,
+//     root: String,
+//     user: String,
+//     repo: String,
+//     uri: String,
+//     file: File,
+// }
 
-impl Default for GithubFileRequest {
-    fn default() -> Self {
-        // Duration for timeouts
-        let request_timeout: Duration = Duration::new(5, 0);
-        let connection_timeout: Duration = Duration::new(5, 0);
+// impl Default for GithubFileRequest {
+//     fn default() -> Self {
+//         // Duration for timeouts
+//         let request_timeout: Duration = Duration::new(5, 0);
+//         let connection_timeout: Duration = Duration::new(5, 0);
 
-        Self {
-            client: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(request_timeout)
-                .connect_timeout(connection_timeout)
-                .use_rustls_tls()
-                .https_only(true)
-                .build()
-                .unwrap(),
-            root: String::new(),
-            user: String::new(),
-            repo: String::new(),
-            uri: String::new(),
-            file: File::default(),
-        }
-    }
-}
+//         Self {
+//             client: ApiClient::default(),
+//             root: String::new(),
+//             user: String::new(),
+//             repo: String::new(),
+//             uri: String::new(),
+//             file: File::default(),
+//         }
+//     }
+// }
 
-impl GithubFileRequest {
-    pub async fn execute<R>(&self) -> Result<Response<R>>
-    where R: for<'de> serde::Deserialize<'de> {
-        // TODO: Create Response from Request
-        // Deserialize depending on `FileFormat` into Response
-        Ok(Response {
-            response: self
-                .client
-                .get(&format!(
-                    "{}/{}/{}/{}/{}",
-                    &self.root, &self.user, &self.repo, &self.uri, &self.file
-                ))
-                .send()
-                .await?
-                .json::<R>()
-                .await?,
-        })
-    }
-}
+// impl GithubFileRequest {
+//     pub async fn execute<R>(&self) -> Result<Response<R>>
+//     where
+//         R: for<'de> serde::Deserialize<'de>,
+//     {
+//         // TODO: Create Response from Request
+//         // Deserialize depending on `FileFormat` into Response
+//         Ok(Response {
+//             response: self
+//                 .client
+//                 .get(&format!(
+//                     "{}/{}/{}/{}/{}",
+//                     &self.root, &self.user, &self.repo, &self.uri, &self.file
+//                 ))
+//                 .send()
+//                 .await?
+//                 .json::<R>()
+//                 .await?,
+//         })
+//     }
+// }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Response<T> {
@@ -173,19 +192,8 @@ pub struct ApiRequest {
 
 impl Default for ApiRequest {
     fn default() -> Self {
-        // Duration for timeouts
-        let request_timeout: Duration = Duration::new(5, 0);
-        let connection_timeout: Duration = Duration::new(5, 0);
-
         Self {
-            client: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(request_timeout)
-                .connect_timeout(connection_timeout)
-                .use_rustls_tls()
-                .https_only(true)
-                .build()
-                .unwrap(),
+            client: reqwest::Client::default(),
             root: String::new(),
             endpoint: String::new(),
             query: Vec::new(),

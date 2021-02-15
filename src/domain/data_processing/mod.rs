@@ -2,6 +2,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use tokio::sync::Mutex;
 
 use crate::{
     domain::api_handler::{
@@ -39,7 +40,12 @@ use stable_eyre::eyre::{
     WrapErr,
 };
 
-use std::time::Duration;
+use std::{
+    sync::Arc,
+    time::Duration,
+};
+
+use super::api_handler::client::ApiClient;
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
@@ -62,25 +68,15 @@ pub struct AocDataLists {
 }
 
 pub async fn process_matchinfo_request(
-    par: MatchInfoRequest
+    par: MatchInfoRequest,
+    client: Arc<Mutex<ApiClient>>,
 ) -> Result<MatchDataResponses> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
-    // Duration for timeouts
-    let request_timeout: Duration = Duration::new(5, 0);
-    let connection_timeout: Duration = Duration::new(5, 0);
-
-    let client = reqwest::Client::builder()
-        .user_agent(APP_USER_AGENT)
-        .timeout(request_timeout)
-        .connect_timeout(connection_timeout)
-        .use_rustls_tls()
-        .https_only(true)
-        .build()
-        .unwrap();
+    let client: ApiClient = client.lock().await.clone();
 
     let mut responses = MatchDataResponses::default();
 
@@ -90,7 +86,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
-                        .client(client.clone())
+                        .client(client.aoe2net.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/lastmatch")
                         .query(vec![
@@ -117,7 +113,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
-                        .client(client.clone())
+                        .client(client.aoe2net.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("leaderboard")
                         .query(vec![
@@ -152,7 +148,7 @@ pub async fn process_matchinfo_request(
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
                     ApiRequestBuilder::default()
-                        .client(client.clone())
+                        .client(client.aoe2net.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/ratinghistory")
                         .query(vec![

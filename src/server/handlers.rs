@@ -2,6 +2,7 @@
 
 use crate::domain::api_handler::{
     client::{
+        ApiClient,
         ApiRequest,
         ApiRequestBuilder,
     },
@@ -22,7 +23,11 @@ use log::{
     trace,
     warn,
 };
-use std::convert::Infallible;
+use std::{
+    convert::Infallible,
+    sync::Arc,
+};
+use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
 pub async fn return_health_check_to_client(
@@ -32,9 +37,12 @@ pub async fn return_health_check_to_client(
 
 // GET / Test: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
 pub async fn return_matchinfo_to_client(
-    opts: MatchInfoRequest
+    opts: MatchInfoRequest,
+    client: Arc<Mutex<ApiClient>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    let processed_match_info = process_matchinfo_request(opts).await.unwrap();
+    let processed_match_info = process_matchinfo_request(opts, client.clone())
+        .await
+        .unwrap();
 
     Ok(warp::reply::json(&processed_match_info))
     // Ok(warp::reply())

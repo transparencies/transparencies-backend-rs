@@ -1,9 +1,12 @@
+use pretty_assertions::{
+    assert_eq,
+    assert_ne,
+};
 use transparencies_backend_rs::server::filters;
 use warp::{
     http::StatusCode,
     test::request,
 };
-use pretty_assertions::{assert_eq, assert_ne};
 
 #[tokio::test]
 async fn health_check_is_reachable() {

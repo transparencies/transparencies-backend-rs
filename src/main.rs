@@ -35,9 +35,24 @@ use warp::{
 // CLI
 use structopt::StructOpt;
 
+// Threads
+use std::sync::Arc;
+
+use tokio::{
+    io::AsyncReadExt,
+    sync::Mutex,
+    time::{
+        self,
+        Duration,
+    },
+};
+
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::api_handler::client::ApiRequest,
+    domain::api_handler::client::{
+        ApiClient,
+        ApiRequest,
+    },
     server::{
         filters,
         models,
@@ -97,7 +112,9 @@ async fn main() {
         trace!("Logs were set up.");
     }
 
-    let api = filters::transparencies();
+    let client = Arc::new(Mutex::new(ApiClient::default()));
+
+    let api = filters::transparencies(client.clone());
 
     let routes = api.with(warp::log("transparencies"));
 
