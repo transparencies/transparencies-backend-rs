@@ -1,26 +1,49 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use tokio::sync::Mutex;
 
 use crate::{
     domain::api_handler::{
-        client::{ApiRequest, ApiRequestBuilder, Response},
+        client::{
+            ApiRequest,
+            ApiRequestBuilder,
+            Response,
+        },
         response::{
             aoc_ref::{
-                platforms::PlatformsList, players::PlayersList,
+                platforms::PlatformsList,
+                players::PlayersList,
                 teams::TeamsList,
             },
             aoe2net::{
-                last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
+                last_match::PlayerLastMatch,
+                leaderboard::LeaderboardInfo,
                 rating_history::RatingHistory,
             },
         },
     },
     server::models::MatchInfoRequest,
 };
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 use super::api_handler::client::ApiClient;
 
@@ -152,21 +175,24 @@ pub async fn process_matchinfo_request(
     if let Some(request) = last_match_request {
         responses.last_match =
             request.execute::<PlayerLastMatch>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
     if let Some(request) = leaderboard_request {
         responses.leaderboard =
             request.execute::<LeaderboardInfo>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
             request.execute::<Vec<RatingHistory>>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
