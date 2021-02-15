@@ -112,7 +112,7 @@ async fn main() {
         trace!("Logs were set up.");
     }
 
-    let client = Arc::new(Mutex::new(ApiClient::default()));
+    let client = ApiClient::default();
 
     let api = filters::transparencies(client.clone());
 

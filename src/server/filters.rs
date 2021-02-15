@@ -3,10 +3,7 @@ use std::sync::Arc;
 use crate::{
     domain::api_handler::client::ApiClient,
     server::{
-        handlers::{
-            return_health_check_to_client,
-            return_matchinfo_to_client,
-        },
+        handlers::{return_health_check_to_client, return_matchinfo_to_client},
         models::MatchInfoRequest,
     },
 };
@@ -16,7 +13,7 @@ use warp::Filter;
 
 #[must_use]
 pub fn transparencies(
-    client: Arc<Mutex<ApiClient>>
+    client: ApiClient
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     health_check().or(matchinfo(client.clone()))
 }
@@ -31,7 +28,7 @@ pub fn health_check(
 
 /// GET  /matchinfo?id_type=profile_id&id_number=459658
 pub fn matchinfo(
-    client: Arc<Mutex<ApiClient>>
+    client: ApiClient
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let client_filter = warp::any().map(move || client.clone());
 
