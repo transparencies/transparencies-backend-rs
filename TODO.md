@@ -7,6 +7,8 @@
 - [ ] GET API data from aoe2net
     - [ ] make all requests that are needed for getting all valuable information for matchinfo
     - [ ] Add a language parameter to call from the frontend to use translations
+        - [ ] GET and CACHE commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and
+              let them be updated every now and then (maybe even same thread as Github files)
 - [ ] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
     - Sources:
         - [X] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
@@ -19,7 +21,8 @@
             - [ ] create in-memory DB (`Arc<Mutex<RefData>>` or some other in-memory thread-safe storage)
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
-- [ ] Procedure:
+    - [ ] Q: What's the best way in Rust to automatically map Datastructures
+- [ ] Overall Procedure:
     - [ ] Client: SUBSCRIBE lastmatch(player_id=197751)
     - [ ] Server: CREATE Observable
     - [ ] Server: SEND initial state to CLIENT
@@ -35,7 +38,7 @@
 - [ ] async stuff done right?
 - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
 - [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
-    - already partly done
+      __Note:__ already partly done
 
 ### Error Handling
 - [ ] Implement good error handling
@@ -48,6 +51,8 @@
 - [ ] Send `log entry` to Client for better error handling on client-side
 - [ ] Special cases done right?
     - [ ] Data structure does not match with data from aoe2net
+        - [ ] Q: take a look for a `serde` attribute to mark fields in structs that are not as important for our processing,
+              so we don't throw a parsing error if non-essential fields don't match/exist
     - [ ] New players without ranking
     - [ ] Deranked players
     - [ ] Coop games
