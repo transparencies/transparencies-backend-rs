@@ -22,14 +22,6 @@
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
     - [ ] Q: What's the best way in Rust to automatically map Datastructures
-- [ ] Overall Procedure:
-    - [ ] Client: SUBSCRIBE lastmatch(player_id=197751)
-    - [ ] Server: CREATE Observable
-    - [ ] Server: SEND initial state to CLIENT
-    - [ ] Server: POLL AoE2.net / Caching
-    - [ ] Server: UPDATE Observable
-    - [ ] Server: ON UPDATE of Observable send PATCH with DELTA to CLIENT
-    - [ ] Client: UPDATE internal data structure with PATCH
 
 ### Refactoring
 - [X] create only new clients for each new api-root not for each request to us
@@ -64,13 +56,26 @@
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
 
+### Benchmarking
+- [ ] Q: how is our backend reacting to 100+ concurrent API requests?
+
 ### Documentation
 - [ ] create good documentation (!!!)
 
-## Release 1.1.0 - User management and persistence
+## Release 1.1.0 - SUBSCRIPTION requests
+
+### Intended Procedure
+- [ ] Client: SUBSCRIBE lastmatch(player_id=197751)
+- [ ] Server: CREATE Observable
+- [ ] Server: SEND initial state to CLIENT
+- [ ] Server: POLL AoE2.net / Caching
+- [ ] Server: UPDATE Observable
+- [ ] Server: ON UPDATE of Observable send PATCH with DELTA to CLIENT
+- [ ] Client: UPDATE internal data structure with PATCH
+
+### Performance optimisation
+
+## Release 1.2.0 - User management and persistence
 
 - [ ] User database (PostgreSQL/MariaDB), user log-in and dashboard
 - [ ] Transparency management in user dashboard
-
-### Performance optimisation
-- [ ] 
