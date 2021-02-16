@@ -2,11 +2,14 @@ pub mod platforms;
 pub mod players;
 pub mod teams;
 
-#[derive(Debug, Clone, Default)]
+use ::serde::Serialize;
+use serde::de::DeserializeOwned;
+
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct RefDataLists {
-    pub players: Vec<players::Players>,
-    pub teams: Vec<teams::Teams>,
-    pub platforms: Vec<platforms::Platforms>,
+    pub players: Box<[players::Players]>,
+    pub teams: Box<[teams::Teams]>,
+    pub platforms: Box<[platforms::Platforms]>,
 }
 
 impl RefDataLists {

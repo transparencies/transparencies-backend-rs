@@ -7,6 +7,7 @@ use log::{
     trace,
     warn,
 };
+use reqwest::Request;
 use stable_eyre::eyre::{
     eyre,
     Report,
@@ -35,11 +36,16 @@ use crate::domain::api_handler::response::{
 
 use std::fmt;
 
+use strum::AsRefStr;
+
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-#[derive(Debug, Clone)]
+static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
+static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
+
+#[derive(Debug, Clone, AsRefStr)]
 pub enum FileFormat {
     Toml,
     Json,
@@ -49,6 +55,10 @@ pub enum FileFormat {
     Url,
     Uninitialized,
 }
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct Response<T> {
+    pub response: T,
+}
 
 impl Default for FileFormat {
     fn default() -> Self {
@@ -56,19 +66,19 @@ impl Default for FileFormat {
     }
 }
 
-impl std::fmt::Display for FileFormat {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
-        write!(f, "{}", self.to_string().to_lowercase())
-    }
-}
+// impl std::fmt::Display for FileFormat {
+//     fn fmt(
+//         &self,
+//         f: &mut std::fmt::Formatter<'_>,
+//     ) -> std::fmt::Result {
+//         write!(f, "{}", self.to_string().to_lowercase())
+//     }
+// }
 
-#[derive(Builder, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct File {
-    name: String,
-    ext: FileFormat,
+    pub name: String,
+    pub ext: FileFormat,
 }
 
 impl Default for File {
@@ -85,26 +95,31 @@ impl std::fmt::Display for File {
         &self,
         f: &mut std::fmt::Formatter<'_>,
     ) -> std::fmt::Result {
-        write!(f, "{}.{}", self.name, self.ext)
+        write!(f, "{}.{}", self.name, self.ext.as_ref().to_lowercase())
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct ApiClient {
     pub aoe2net: reqwest::Client,
+    pub github: reqwest::Client,
 }
 
 impl Default for ApiClient {
     fn default() -> Self {
-        // Duration for timeouts
-        let request_timeout: Duration = Duration::new(5, 0);
-        let connection_timeout: Duration = Duration::new(600, 0);
-
         Self {
             aoe2net: reqwest::Client::builder()
                 .user_agent(APP_USER_AGENT)
-                .timeout(request_timeout)
-                .connect_timeout(connection_timeout)
+                .timeout(CLIENT_REQUEST_TIMEOUT)
+                .connect_timeout(Duration::from_secs(60))
+                .use_rustls_tls()
+                .https_only(true)
+                .build()
+                .unwrap(),
+            github: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(CLIENT_REQUEST_TIMEOUT)
+                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
                 .use_rustls_tls()
                 .https_only(true)
                 .build()
@@ -138,15 +153,11 @@ pub struct GithubFileRequest {
 
 impl Default for GithubFileRequest {
     fn default() -> Self {
-        // Duration for timeouts
-        let request_timeout: Duration = Duration::new(5, 0);
-        let connection_timeout: Duration = Duration::new(5, 0);
-
         Self {
             client: reqwest::Client::builder()
                 .user_agent(APP_USER_AGENT)
-                .timeout(request_timeout)
-                .connect_timeout(connection_timeout)
+                .timeout(CLIENT_REQUEST_TIMEOUT)
+                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
                 .use_rustls_tls()
                 .https_only(true)
                 .build()
@@ -161,28 +172,16 @@ impl Default for GithubFileRequest {
 }
 
 impl GithubFileRequest {
-    pub async fn execute<R>(&self) -> Result<Response<R>>
-    where R: for<'de> serde::Deserialize<'de> {
-        todo!();
-        // TODO: Create Response from Request
-        // Deserialize depending on `FileFormat` into Response
-        // Ok(Response {
-        //     response: self
-        //         .client
-        //         .get(&format!(
-        //             "{}/{}/{}/{}/{}",
-        //             &self.root, &self.user, &self.repo, &self.uri, &self.file
-        //         ))
-        //         .send()
-        //         .await
-        //         .unwrap(),
-        // })
+    pub async fn execute(&self) -> Result<reqwest::Response> {
+        Ok(self
+            .client
+            .get(&format!(
+                "{}/{}/{}/{}/{}",
+                &self.root, &self.user, &self.repo, &self.uri, &self.file
+            ))
+            .send()
+            .await?)
     }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct Response<T> {
-    pub response: T,
 }
 
 #[derive(Builder, Debug)]

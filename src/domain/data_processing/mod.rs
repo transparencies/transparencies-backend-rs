@@ -45,7 +45,21 @@ use std::{
     time::Duration,
 };
 
-use super::api_handler::client::ApiClient;
+use super::api_handler::{
+    client::{
+        ApiClient,
+        File,
+        FileFormat,
+        GithubFileRequest,
+        GithubFileRequestBuilder,
+    },
+    response::aoc_ref::{
+        platforms,
+        players,
+        teams,
+        RefDataLists,
+    },
+};
 
 // App-Name as USERAGENT
 static APP_USER_AGENT: &str =
@@ -56,9 +70,10 @@ pub struct MatchInfo {}
 
 #[derive(Debug, Default, Serialize)]
 pub struct MatchDataResponses {
-    last_match: PlayerLastMatch,
-    leaderboard: LeaderboardInfo,
-    rating_history: Vec<RatingHistory>,
+    last_match: Box<PlayerLastMatch>,
+    leaderboard: Box<LeaderboardInfo>,
+    rating_history: Box<Vec<RatingHistory>>,
+    github: Box<RefDataLists>,
 }
 
 pub async fn process_matchinfo_request(
@@ -172,7 +187,7 @@ pub async fn process_matchinfo_request(
 
     if let Some(request) = last_match_request {
         responses.last_match =
-            request.execute::<PlayerLastMatch>().await.unwrap();
+            Box::new(request.execute::<PlayerLastMatch>().await.unwrap());
     }
     else {
         todo!()
@@ -180,7 +195,7 @@ pub async fn process_matchinfo_request(
 
     if let Some(request) = leaderboard_request {
         responses.leaderboard =
-            request.execute::<LeaderboardInfo>().await.unwrap();
+            Box::new(request.execute::<LeaderboardInfo>().await.unwrap());
     }
     else {
         todo!()
@@ -188,16 +203,99 @@ pub async fn process_matchinfo_request(
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
-            request.execute::<Vec<RatingHistory>>().await.unwrap();
+            Box::new(request.execute::<Vec<RatingHistory>>().await.unwrap());
     }
     else {
         todo!()
     }
 
+    // DEBUG: Send Github files to frontend
+    // responses.github = Box::new(process_aoc_ref_data_request().await?);
+
     // let data: MatchInfo;
 
     Ok(responses)
 }
+
+pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
+    let mut github_responses = RefDataLists::default();
+
+    let files: Vec<File> = vec![
+        File {
+            name: "players".to_string(),
+            ext: FileFormat::Yaml,
+        },
+        File {
+            name: "platforms".to_string(),
+            ext: FileFormat::Json,
+        },
+        File {
+            name: "teams".to_string(),
+            ext: FileFormat::Json,
+        },
+    ];
+
+    for file in files {
+        let request: Option<GithubFileRequest> = Some(
+            GithubFileRequestBuilder::default()
+                .root("https://raw.githubusercontent.com")
+                .user("SiegeEngineers")
+                .repo("aoc-reference-data")
+                .uri("master/data")
+                .file(file.clone())
+                .build()
+                .unwrap(),
+        );
+
+        if let Some(request) = request {
+            let response = Box::new(request.execute().await?);
+
+            match file.ext {
+                FileFormat::Json => match file.name.as_str() {
+                    "platforms" => {
+                        github_responses.platforms = response
+                            .json::<Vec<platforms::Platforms>>()
+                            .await?
+                            .into_boxed_slice()
+                    }
+                    "teams" => {
+                        github_responses.teams = response
+                            .json::<Vec<teams::Teams>>()
+                            .await?
+                            .into_boxed_slice()
+                    }
+                    _ => {}
+                },
+                FileFormat::Yaml => match file.name.as_str() {
+                    "players" => {
+                        github_responses.players =
+                            serde_yaml::from_slice::<Vec<players::Players>>(
+                                &response.bytes().await?,
+                            )
+                            .unwrap()
+                            .into_boxed_slice()
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+        else {
+            todo!()
+        }
+    }
+
+    Ok(github_responses)
+}
+
+// root: https://raw.githubusercontent.com
+// user: SiegeEngineers
+// repo: aoc-reference-data
+// uri: master/data
+// file: File {
+//         name: players
+//         ext: FileFormat::Yaml
+// }
 
 // pub async fn get_from_aoe2net(
 //     root: String,

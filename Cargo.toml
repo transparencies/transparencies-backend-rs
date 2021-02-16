@@ -53,6 +53,7 @@ config = "0.10.1"
 # HTTP
 reqwest = { version = "0.11.0", features = ["json", "rustls-tls"] }
 warp = "0.3.0"
+hyper = "0.14.4"
 
 # async
 tokio = { version = "1.2.0", features = ["full"] }
@@ -64,6 +65,7 @@ serde_json = "1.0.62"
 serde_yaml = "0.8.17"
 #serde_any = { git = "https://github.com/simonsan/serde_any.git", version = "0.5.1", default-features = false, features = ["yaml", "toml", "json"]}
 serde-aux = "2.1.1"
+bytes = "1.0.1"
 
 # Templating
 # askama = "0.10"
@@ -75,6 +77,7 @@ openapiv3 = "0.3.2"
 # Utility
 derive_builder = "0.9.0"
 itertools = "0.10.0"
+strum = { version = "0.20", features = ["derive"] }
 
 # Validation
 #validators-derive = "0.22.3"
