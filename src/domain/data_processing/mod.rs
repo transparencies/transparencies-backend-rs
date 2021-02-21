@@ -1,64 +1,33 @@
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use crate::{
     domain::api_handler::{
-        client::{
-            ApiRequest,
-            ApiRequestBuilder,
-            Response,
-        },
+        client::{ApiRequest, ApiRequestBuilder, Response},
         response::{
             aoc_ref::{
-                platforms::PlatformsList,
-                players::PlayersList,
+                platforms::PlatformsList, players::PlayersList,
                 teams::TeamsList,
             },
             aoe2net::{
-                last_match::PlayerLastMatch,
-                leaderboard::LeaderboardInfo,
+                last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
                 rating_history::RatingHistory,
             },
         },
     },
     server::models::MatchInfoRequest,
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use std::{
-    sync::Arc,
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 
 use super::api_handler::{
     client::{
-        ApiClient,
-        File,
-        FileFormat,
-        GithubFileRequest,
+        ApiClient, File, FileFormat, GithubFileRequest,
         GithubFileRequestBuilder,
     },
-    response::aoc_ref::{
-        platforms,
-        players,
-        teams,
-        RefDataLists,
-    },
+    response::aoc_ref::{platforms, players, teams, RefDataLists},
 };
 
 // App-Name as USERAGENT
@@ -70,10 +39,10 @@ pub struct MatchInfo {}
 
 #[derive(Debug, Default, Serialize)]
 pub struct MatchDataResponses {
-    last_match: Box<PlayerLastMatch>,
-    leaderboard: Box<LeaderboardInfo>,
-    rating_history: Box<Vec<RatingHistory>>,
-    github: Box<RefDataLists>,
+    last_match: PlayerLastMatch,
+    leaderboard: LeaderboardInfo,
+    rating_history: Vec<RatingHistory>,
+    github: RefDataLists,
 }
 
 pub async fn process_matchinfo_request(
@@ -187,30 +156,27 @@ pub async fn process_matchinfo_request(
 
     if let Some(request) = last_match_request {
         responses.last_match =
-            Box::new(request.execute::<PlayerLastMatch>().await.unwrap());
-    }
-    else {
+            request.execute::<PlayerLastMatch>().await.unwrap();
+    } else {
         todo!()
     }
 
     if let Some(request) = leaderboard_request {
         responses.leaderboard =
-            Box::new(request.execute::<LeaderboardInfo>().await.unwrap());
-    }
-    else {
+            request.execute::<LeaderboardInfo>().await.unwrap();
+    } else {
         todo!()
     }
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
-            Box::new(request.execute::<Vec<RatingHistory>>().await.unwrap());
-    }
-    else {
+            request.execute::<Vec<RatingHistory>>().await.unwrap();
+    } else {
         todo!()
     }
 
     // DEBUG: Send Github files to frontend
-    // responses.github = Box::new(process_aoc_ref_data_request().await?);
+    responses.github = process_aoc_ref_data_request().await?;
 
     // let data: MatchInfo;
 
@@ -248,21 +214,19 @@ pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
         );
 
         if let Some(request) = request {
-            let response = Box::new(request.execute().await?);
+            let response = request.execute().await?;
 
             match file.ext {
                 FileFormat::Json => match file.name.as_str() {
                     "platforms" => {
-                        github_responses.platforms = response
-                            .json::<Vec<platforms::Platforms>>()
-                            .await?
-                            .into_boxed_slice()
+                        github_responses.platforms =
+                            response.json::<Vec<platforms::Platforms>>().await?
+                        // .into_boxed_slice()
                     }
                     "teams" => {
-                        github_responses.teams = response
-                            .json::<Vec<teams::Teams>>()
-                            .await?
-                            .into_boxed_slice()
+                        github_responses.teams =
+                            response.json::<Vec<teams::Teams>>().await?
+                        // .into_boxed_slice()
                     }
                     _ => {}
                 },
@@ -273,14 +237,13 @@ pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
                                 &response.bytes().await?,
                             )
                             .unwrap()
-                            .into_boxed_slice()
+                        // .into_boxed_slice()
                     }
                     _ => {}
                 },
                 _ => {}
             }
-        }
-        else {
+        } else {
             todo!()
         }
     }
