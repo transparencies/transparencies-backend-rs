@@ -9,7 +9,7 @@
     - [ ] Add a language parameter to call from the frontend to use translations
 - [ ] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and 
       let them be updated every now and then
-      - spawn another thread fo this task and don't use the github one (client encapsulation, easier debugging)
+      - spawn another thread for this task and don't use the github one (client encapsulation, easier debugging)
 - [x] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
     - Sources:
         - [X] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
