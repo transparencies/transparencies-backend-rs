@@ -1,7 +1,10 @@
 //! Collects all the configurational settings done with `config` crate
 
 use serde_aux::field_attributes::deserialize_number_from_string;
-use std::convert::{TryFrom, TryInto};
+use std::convert::{
+    TryFrom,
+    TryInto,
+};
 /// Contains server settings (e.g. port, hostname)
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
@@ -19,7 +22,8 @@ pub struct Settings {
     pub application: ApplicationSettings,
 }
 
-/// Parses the settings from our configuration files and returns a `Settings` struct
+/// Parses the settings from our configuration files and returns a `Settings`
+/// struct
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let mut settings = config::Config::default();
     let base_path = std::env::current_dir()

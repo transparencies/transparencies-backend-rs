@@ -1,8 +1,15 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::api_handler::{
-    client::{ApiClient, ApiRequest, ApiRequestBuilder},
-    response::{aoc_ref::RefDataLists, aoe2net::last_match::PlayerLastMatch},
+    client::{
+        ApiClient,
+        ApiRequest,
+        ApiRequestBuilder,
+    },
+    response::{
+        aoc_ref::RefDataLists,
+        aoe2net::last_match::PlayerLastMatch,
+    },
 };
 
 use crate::domain::data_processing::process_match_info_request;
@@ -12,8 +19,17 @@ use crate::{
     server::models::MatchInfoRequest,
 };
 
-use log::{debug, error, info, trace, warn};
-use std::{convert::Infallible, sync::Arc};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use std::{
+    convert::Infallible,
+    sync::Arc,
+};
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
@@ -23,14 +39,16 @@ pub async fn return_health_check_to_client(
     Ok(warp::reply())
 }
 
-/// Handler function to return data from the match_info processing serialized as JSON to `/matchinfo` endpoint
+/// Handler function to return data from the match_info processing serialized as
+/// JSON to `/matchinfo` endpoint
 ///
 /// GET Endpoint
 /// Possible test url: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
 ///
 /// - opts: options struct that contains the parameters that the client gave us
 /// - aoe_net_client: Our reusable aoe.net Client
-/// - ref_data: We take an `Arc<Mutex<T>>` as parameter which is mimicking our in-memory DB for the files from Github
+/// - ref_data: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
+///   in-memory DB for the files from Github
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
     aoe_net_client: reqwest::Client,

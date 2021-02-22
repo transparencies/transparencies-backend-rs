@@ -1,14 +1,36 @@
 //! Core client logic of the application
 
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use reqwest::Request;
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, time::Duration};
+use ::serde::{
+    de::DeserializeOwned,
+    Deserialize,
+    Serialize,
+};
+use std::{
+    collections::HashMap,
+    time::Duration,
+};
 
 use crate::domain::api_handler::response::{
-    aoc_ref::{platforms, players, teams},
+    aoc_ref::{
+        platforms,
+        players,
+        teams,
+    },
     aoe2net::last_match::PlayerLastMatch,
 };
 
@@ -16,12 +38,13 @@ use std::fmt;
 
 use strum::AsRefStr;
 
-/// App-Name as USERAGENT
+/// Our app name as USERAGENT for the clients
 pub(crate) static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-/// Time-outs for http-clients
+/// Timeout for http-client requests
 pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
+/// Timeout for http-connections
 pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Debug, Clone, AsRefStr)]
@@ -44,15 +67,6 @@ impl Default for FileFormat {
         Self::Uninitialized
     }
 }
-
-// impl std::fmt::Display for FileFormat {
-//     fn fmt(
-//         &self,
-//         f: &mut std::fmt::Formatter<'_>,
-//     ) -> std::fmt::Result {
-//         write!(f, "{}", self.to_string().to_lowercase())
-//     }
-// }
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -106,18 +120,6 @@ impl Default for ApiClient {
         }
     }
 }
-
-// root: https://raw.githubusercontent.com
-// user: SiegeEngineers
-// repo: aoc-reference-data
-// uri: master/data
-// file: File {
-//         name: players
-//         ext: FileFormat::Yaml
-// }
-// https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
-// &format!("{}/{}/{}/{}/{}", &self.root, &self.user, &self.repo, &self.uri,
-// &self.file)
 #[derive(Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct GithubFileRequest {
@@ -186,9 +188,7 @@ impl Default for ApiRequest {
 
 impl ApiRequest {
     pub async fn execute<R>(&self) -> Result<R>
-    where
-        R: for<'de> serde::Deserialize<'de>,
-    {
+    where R: for<'de> serde::Deserialize<'de> {
         Ok(self
             .client
             .get(&format!("{}/{}", &self.root, &self.endpoint))

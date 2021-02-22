@@ -1,7 +1,10 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
