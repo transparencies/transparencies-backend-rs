@@ -1,37 +1,70 @@
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use tokio::sync::Mutex;
 
 use crate::{
     domain::api_handler::{
-        client::{ApiRequest, ApiRequestBuilder, Response},
+        client::{
+            ApiRequest,
+            ApiRequestBuilder,
+            Response,
+        },
         response::{
             aoc_ref::{
-                platforms::PlatformsList, players::PlayersList,
+                platforms::PlatformsList,
+                players::PlayersList,
                 teams::TeamsList,
             },
             aoe2net::{
-                last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
+                last_match::PlayerLastMatch,
+                leaderboard::LeaderboardInfo,
                 rating_history::RatingHistory,
             },
         },
     },
     server::models::MatchInfoRequest,
 };
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 use super::api_handler::{
     client::{
-        ApiClient, File, FileFormat, GithubFileRequest,
+        ApiClient,
+        File,
+        FileFormat,
+        GithubFileRequest,
         GithubFileRequestBuilder,
     },
-    response::aoc_ref::{platforms, players, teams, RefDataLists},
+    response::aoc_ref::{
+        platforms,
+        players,
+        teams,
+        RefDataLists,
+    },
 };
 
 use super::api_handler::client::{
-    APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -158,21 +191,24 @@ pub async fn process_match_info_request(
     if let Some(request) = last_match_request {
         responses.last_match =
             request.execute::<PlayerLastMatch>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
     if let Some(request) = leaderboard_request {
         responses.leaderboard =
             request.execute::<LeaderboardInfo>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
     if let Some(request) = rating_history_request {
         responses.rating_history =
             request.execute::<Vec<RatingHistory>>().await.unwrap();
-    } else {
+    }
+    else {
         todo!()
     }
 
@@ -233,8 +269,8 @@ pub async fn process_aoc_ref_data_request(
                     }
                     _ => {}
                 },
-                FileFormat::Yaml => match file.name.as_str() {
-                    "players" => {
+                FileFormat::Yaml => {
+                    if let "players" = file.name.as_str() {
                         (reference_db.lock().await).players =
                             serde_yaml::from_slice::<Vec<players::Players>>(
                                 &response.bytes().await?,
@@ -242,11 +278,15 @@ pub async fn process_aoc_ref_data_request(
                             .unwrap()
                         // .into_boxed_slice()
                     }
-                    _ => {}
-                },
-                _ => {}
+                }
+                FileFormat::Toml => {}
+                FileFormat::Ron => {}
+                FileFormat::Xml => {}
+                FileFormat::Url => {}
+                FileFormat::Uninitialized => {}
             }
-        } else {
+        }
+        else {
             todo!()
         }
     }
