@@ -1,3 +1,5 @@
+pub mod match_info;
+
 use serde::{
     Deserialize,
     Serialize,
