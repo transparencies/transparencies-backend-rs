@@ -258,28 +258,27 @@ pub async fn process_aoc_ref_data_request(
             match file.ext {
                 FileFormat::Json => match file.name.as_str() {
                     "platforms" => {
-                        reference_db.lock().await.platforms =
+                        let mut locked = reference_db.lock().await;
+                        locked.platforms =
                             response.json::<Vec<platforms::Platforms>>().await?
-                        // .into_boxed_slice()
                     }
                     "teams" => {
-                        reference_db.lock().await.teams =
+                        let mut locked = reference_db.lock().await;
+                        locked.teams =
                             response.json::<Vec<teams::Teams>>().await?
-                        // .into_boxed_slice()
                     }
                     _ => {}
                 },
-                FileFormat::Yaml => match file.name.as_str() {
-                    "players" => {
-                        reference_db.lock().await.players =
+                FileFormat::Yaml => {
+                    if let "players" = file.name.as_str() {
+                        let mut locked = reference_db.lock().await;
+                        locked.players =
                             serde_yaml::from_slice::<Vec<players::Players>>(
                                 &response.bytes().await?,
                             )
                             .unwrap()
-                        // .into_boxed_slice()
                     }
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         }
@@ -290,29 +289,3 @@ pub async fn process_aoc_ref_data_request(
 
     Ok(())
 }
-
-// root: https://raw.githubusercontent.com
-// user: SiegeEngineers
-// repo: aoc-reference-data
-// uri: master/data
-// file: File {
-//         name: players
-//         ext: FileFormat::Yaml
-// }
-
-// pub async fn get_from_aoe2net(
-//     root: String,
-//     endpoint: String,
-//     query: Vec<(String, String)>,
-// ) -> eyre::Result<Response<PlayerLastMatch>> {
-//     let request: ApiRequest = ApiRequestBuilder::default()
-//         .root(root)
-//         .endpoint(endpoint)
-//         .query(query)
-//         .build()
-//         .unwrap();
-
-//     let response = request.execute::<PlayerLastMatch>().await?;
-
-//     Ok(response)
-// }

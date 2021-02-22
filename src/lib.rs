@@ -9,6 +9,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(missing_docs)]
+#![allow(clippy::too_many_lines)]
 
 pub mod domain;
 pub mod server;
