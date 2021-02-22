@@ -39,15 +39,16 @@ pub async fn return_health_check_to_client(
     Ok(warp::reply())
 }
 
-/// Handler function to return data from the match_info processing serialized as
-/// JSON to `/matchinfo` endpoint
+/// Handler function to return data from the `match_info` processing serialized
+/// as JSON to `/matchinfo` endpoint
 ///
 /// GET Endpoint
-/// Possible test url: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
+/// Possible test url: <http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658>
 ///
-/// - opts: options struct that contains the parameters that the client gave us
-/// - aoe_net_client: Our reusable aoe.net Client
-/// - ref_data: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
+/// - `opts`: options struct that contains the parameters that the client gave
+///   us
+/// - `aoe_net_client`: Our reusable aoe.net Client
+/// - `ref_data`: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
 ///   in-memory DB for the files from Github
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
@@ -63,5 +64,4 @@ pub async fn return_matchinfo_to_client(
     .unwrap();
 
     Ok(warp::reply::json(&processed_match_info))
-    // Ok(warp::reply())
 }
