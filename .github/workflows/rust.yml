@@ -4,13 +4,13 @@ on:
     branches:
     - staging
     - trying
-    - master
+    - main
     - develop
   pull_request:
     branches:
     - staging
     - trying
-    - master
+    - main
     - develop
 
 env:
