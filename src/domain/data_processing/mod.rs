@@ -48,6 +48,7 @@ pub struct MatchDataResponses {
 pub async fn process_matchinfo_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
+    ref_data: Arc<Mutex<RefDataLists>>,
 ) -> Result<MatchDataResponses> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
@@ -176,16 +177,16 @@ pub async fn process_matchinfo_request(
     }
 
     // DEBUG: Send Github files to frontend
-    responses.github = process_aoc_ref_data_request().await?;
+    responses.github = ref_data.lock().await.clone();
 
     // let data: MatchInfo;
 
     Ok(responses)
 }
 
-pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
-    let mut github_responses = RefDataLists::default();
-
+pub async fn process_aoc_ref_data_request(
+    reference_db: Arc<Mutex<RefDataLists>>
+) -> Result<()> {
     let files: Vec<File> = vec![
         File {
             name: "players".to_string(),
@@ -219,12 +220,12 @@ pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
             match file.ext {
                 FileFormat::Json => match file.name.as_str() {
                     "platforms" => {
-                        github_responses.platforms =
+                        reference_db.lock().await.platforms =
                             response.json::<Vec<platforms::Platforms>>().await?
                         // .into_boxed_slice()
                     }
                     "teams" => {
-                        github_responses.teams =
+                        reference_db.lock().await.teams =
                             response.json::<Vec<teams::Teams>>().await?
                         // .into_boxed_slice()
                     }
@@ -232,7 +233,7 @@ pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
                 },
                 FileFormat::Yaml => match file.name.as_str() {
                     "players" => {
-                        github_responses.players =
+                        reference_db.lock().await.players =
                             serde_yaml::from_slice::<Vec<players::Players>>(
                                 &response.bytes().await?,
                             )
@@ -248,7 +249,7 @@ pub async fn process_aoc_ref_data_request() -> Result<RefDataLists> {
         }
     }
 
-    Ok(github_responses)
+    Ok(())
 }
 
 // root: https://raw.githubusercontent.com

@@ -15,22 +15,10 @@ extern crate log;
 
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use simple_log::LogConfigBuilder;
-use std::{
-    env,
-    process,
-};
-use warp::{
-    http::StatusCode,
-    Filter,
-};
+use std::{env, process};
+use warp::{http::StatusCode, Filter};
 
 // CLI
 use structopt::StructOpt;
@@ -41,26 +29,18 @@ use std::sync::Arc;
 use tokio::{
     io::AsyncReadExt,
     sync::Mutex,
-    time::{
-        self,
-        Duration,
-    },
+    time::{self, Duration},
 };
 
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::api_handler::client::{
-        ApiClient,
-        ApiRequest,
+    domain::api_handler::client::{ApiClient, ApiRequest},
+    domain::{
+        api_handler::response::aoc_ref::RefDataLists,
+        data_processing::process_aoc_ref_data_request,
     },
-    server::{
-        filters,
-        models,
-    },
-    setup::{
-        cli::CommandLineSettings,
-        configuration::get_configuration,
-    },
+    server::{filters, models},
+    setup::{cli::CommandLineSettings, configuration::get_configuration},
 };
 
 #[tokio::main]
@@ -112,9 +92,25 @@ async fn main() {
         trace!("Logs were set up.");
     }
 
+    let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
+    let aoc_reference_data_clone = aoc_reference_data.clone();
+
+    tokio::spawn(async move {
+        loop {
+            process_aoc_ref_data_request(aoc_reference_data_clone.clone())
+                .await
+                .unwrap();
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+
     let client = ApiClient::default();
 
-    let api = filters::transparencies(client.aoe2net.clone());
+    let api = filters::transparencies(
+        client.aoe2net.clone(),
+        aoc_reference_data.clone(),
+    );
 
     let routes = api.with(warp::log("transparencies"));
 
