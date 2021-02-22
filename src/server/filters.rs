@@ -1,3 +1,5 @@
+//! Our API endpoints
+
 use std::sync::Arc;
 
 use crate::{
