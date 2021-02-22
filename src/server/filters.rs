@@ -25,7 +25,7 @@ pub fn transparencies(
     aoe_net_client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    health_check().or(matchinfo(aoe_net_client.clone(), ref_data.clone()))
+    health_check().or(matchinfo(aoe_net_client, ref_data))
 }
 
 /// GET `/health_check`
