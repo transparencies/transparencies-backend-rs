@@ -7,7 +7,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(missing_docs)]
-#![allow(dead_code)]
+#![allow(clippy::too_many_lines)]
 
 // Error handling
 #[macro_use]
