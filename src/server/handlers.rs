@@ -1,8 +1,15 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::api_handler::{
-    client::{ApiClient, ApiRequest, ApiRequestBuilder},
-    response::{aoc_ref::RefDataLists, aoe2net::last_match::PlayerLastMatch},
+    client::{
+        ApiClient,
+        ApiRequest,
+        ApiRequestBuilder,
+    },
+    response::{
+        aoc_ref::RefDataLists,
+        aoe2net::last_match::PlayerLastMatch,
+    },
 };
 
 use crate::domain::data_processing::process_matchinfo_request;
@@ -12,8 +19,17 @@ use crate::{
     server::models::MatchInfoRequest,
 };
 
-use log::{debug, error, info, trace, warn};
-use std::{convert::Infallible, sync::Arc};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use std::{
+    convert::Infallible,
+    sync::Arc,
+};
 use tokio::sync::Mutex;
 use warp::http::StatusCode;
 

@@ -1,9 +1,15 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::api_handler::{client::ApiClient, response::aoc_ref::RefDataLists},
+    domain::api_handler::{
+        client::ApiClient,
+        response::aoc_ref::RefDataLists,
+    },
     server::{
-        handlers::{return_health_check_to_client, return_matchinfo_to_client},
+        handlers::{
+            return_health_check_to_client,
+            return_matchinfo_to_client,
+        },
         models::MatchInfoRequest,
     },
 };
