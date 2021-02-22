@@ -7,31 +7,20 @@
 - [ ] GET API data from aoe2net
     - [ ] make all requests that are needed for getting all valuable information for matchinfo
     - [ ] Add a language parameter to call from the frontend to use translations
-        - [ ] GET and CACHE commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and
-              let them be updated every now and then (maybe even same thread as Github files)
-- [ ] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
+- [ ] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and 
+      let them be updated every now and then
+      - spawn another thread fo this task and don't use the github one (client encapsulation, easier debugging)
+- [x] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
     - Sources:
         - [X] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml
         - [X] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/platforms.json
         - [X] https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/teams.json
-    - [ ] periodically:
-        - [ ] at the start of the server
-        - [ ] once per hour
-        - [ ] non-persistent, but only overwrite internally if parsing new datastructure was successful
-            - [ ] create in-memory DB (`Arc<Mutex<RefData>>` or some other in-memory thread-safe storage)
+    - [x] periodically:
+        - [x] at the start of the server
+        - [x] once every 10 minutes
 - [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
     - [ ] Q: What's the best way in Rust to automatically map Datastructures
-
-### Refactoring
-- [X] create only new clients for each new api-root not for each request to us
-- [ ] Q: how can we make creating requests easier and less boilerplate? (trait objects, etc.)
-- [ ] what (other) architectural changes need to be made to support many clients on our api(?)
-- [ ] async stuff done right?
-- [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
-- [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
-      __Note:__ already partly done
-    - [ ] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Error Handling
 - [ ] Implement good error handling
@@ -41,6 +30,7 @@
     - [ ] use `eyre` consistently for results with reports in binary part (?)
     - [ ] use `.map_err` and return HTTP status codes
 - [ ] implement `todo!()`s
+- [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have at least one working version
 - [ ] Send `log entry` to Client for better error handling on client-side
 - [ ] Special cases done right?
     - [ ] Data structure does not match with data from aoe2net
@@ -57,11 +47,22 @@
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
 
-### Benchmarking
-- [ ] Q: how is our backend reacting to 100+ concurrent API requests?
+### Refactoring
+- [X] create only new clients for each new api-root not for each request to us
+- [ ] Q: how can we make creating requests easier and less boilerplate? (trait objects, etc.)
+- [ ] what (other) architectural changes need to be made to support many clients on our api(?)
+- [ ] async stuff done right?
+- [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
+- [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
+      __Note:__ already partly done
+    - [ ] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Documentation
 - [ ] create good documentation (!!!)
+
+### Benchmarking
+- [ ] Q: how is our backend reacting to 100+ concurrent API requests?
+
 
 ## Release 1.1.0 - SUBSCRIPTION requests
 
