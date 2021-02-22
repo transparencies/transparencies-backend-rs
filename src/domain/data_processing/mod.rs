@@ -61,9 +61,11 @@ use super::api_handler::{
     },
 };
 
-// App-Name as USERAGENT
-static APP_USER_AGENT: &str =
-    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
+use super::api_handler::client::{
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MatchInfo {}
@@ -219,7 +221,8 @@ pub async fn process_matchinfo_request(
 }
 
 pub async fn process_aoc_ref_data_request(
-    reference_db: Arc<Mutex<RefDataLists>>
+    git_client: reqwest::Client,
+    reference_db: Arc<Mutex<RefDataLists>>,
 ) -> Result<()> {
     let files: Vec<File> = vec![
         File {
@@ -239,6 +242,7 @@ pub async fn process_aoc_ref_data_request(
     for file in files {
         let request: Option<GithubFileRequest> = Some(
             GithubFileRequestBuilder::default()
+                .client(git_client.clone())
                 .root("https://raw.githubusercontent.com")
                 .user("SiegeEngineers")
                 .repo("aoc-reference-data")

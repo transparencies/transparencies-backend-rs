@@ -38,12 +38,13 @@ use std::fmt;
 
 use strum::AsRefStr;
 
-// App-Name as USERAGENT
-static APP_USER_AGENT: &str =
+/// App-Name as USERAGENT
+pub(crate) static APP_USER_AGENT: &str =
     concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
-static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
+/// Time-outs for http-clients
+pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
+pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Debug, Clone, AsRefStr)]
 pub enum FileFormat {
@@ -142,7 +143,7 @@ impl Default for ApiClient {
 #[derive(Builder, Debug)]
 #[builder(public, setter(into))]
 pub struct GithubFileRequest {
-    #[builder(setter(skip))]
+    // #[builder(setter(skip))]
     client: reqwest::Client,
     root: String,
     user: String,

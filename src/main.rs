@@ -121,20 +121,24 @@ async fn main() {
     let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
     let aoc_reference_data_clone = aoc_reference_data.clone();
 
+    let api_clients = ApiClient::default();
+    let git_client_clone = api_clients.github.clone();
+
     tokio::spawn(async move {
         loop {
-            process_aoc_ref_data_request(aoc_reference_data_clone.clone())
-                .await
-                .unwrap();
+            process_aoc_ref_data_request(
+                git_client_clone.clone(),
+                aoc_reference_data_clone.clone(),
+            )
+            .await
+            .unwrap();
 
             time::sleep(Duration::from_secs(600)).await;
         }
     });
 
-    let client = ApiClient::default();
-
     let api = filters::transparencies(
-        client.aoe2net.clone(),
+        api_clients.aoe2net.clone(),
         aoc_reference_data.clone(),
     );
 
