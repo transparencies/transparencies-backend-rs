@@ -258,25 +258,25 @@ pub async fn process_aoc_ref_data_request(
             match file.ext {
                 FileFormat::Json => match file.name.as_str() {
                     "platforms" => {
-                        (reference_db.lock().await).platforms =
+                        let mut locked = reference_db.lock().await;
+                        locked.platforms =
                             response.json::<Vec<platforms::Platforms>>().await?
-                        // .into_boxed_slice()
                     }
                     "teams" => {
-                        (reference_db.lock().await).teams =
+                        let mut locked = reference_db.lock().await;
+                        locked.teams =
                             response.json::<Vec<teams::Teams>>().await?
-                        // .into_boxed_slice()
                     }
                     _ => {}
                 },
                 FileFormat::Yaml => {
                     if let "players" = file.name.as_str() {
-                        (reference_db.lock().await).players =
+                        let mut locked = reference_db.lock().await;
+                        locked.players =
                             serde_yaml::from_slice::<Vec<players::Players>>(
                                 &response.bytes().await?,
                             )
                             .unwrap()
-                        // .into_boxed_slice()
                     }
                 }
                 _ => {}
