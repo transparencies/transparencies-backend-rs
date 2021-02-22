@@ -1,12 +1,6 @@
-use pretty_assertions::{
-    assert_eq,
-    assert_ne,
-};
+use pretty_assertions::{assert_eq, assert_ne};
 use transparencies_backend_rs::server::filters;
-use warp::{
-    http::StatusCode,
-    test::request,
-};
+use warp::{http::StatusCode, test::request};
 
 #[tokio::test]
 async fn health_check_is_reachable() {
@@ -21,15 +15,15 @@ async fn health_check_is_reachable() {
     assert_eq!(resp.status(), StatusCode::OK);
 }
 
-#[tokio::test]
-async fn matchinfo_is_reachable() {
-    let api = filters::matchinfo();
+// #[tokio::test]
+// async fn matchinfo_is_reachable() {
+//     let api = filters::matchinfo();
 
-    let resp = request()
-        .method("GET")
-        .path("/matchinfo?id_type=profile_id&id_number=459658")
-        .reply(&api)
-        .await;
+//     let resp = request()
+//         .method("GET")
+//         .path("/matchinfo?id_type=profile_id&id_number=459658")
+//         .reply(&api)
+//         .await;
 
-    assert_eq!(resp.status(), StatusCode::OK);
-}
+//     assert_eq!(resp.status(), StatusCode::OK);
+// }
