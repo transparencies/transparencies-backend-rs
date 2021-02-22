@@ -279,11 +279,7 @@ pub async fn process_aoc_ref_data_request(
                         // .into_boxed_slice()
                     }
                 }
-                FileFormat::Toml => {}
-                FileFormat::Ron => {}
-                FileFormat::Xml => {}
-                FileFormat::Url => {}
-                FileFormat::Uninitialized => {}
+                _ => {}
             }
         }
         else {
