@@ -35,9 +35,30 @@ use warp::{
 // CLI
 use structopt::StructOpt;
 
+// Threads
+use std::sync::Arc;
+
+use tokio::{
+    io::AsyncReadExt,
+    sync::Mutex,
+    time::{
+        self,
+        Duration,
+    },
+};
+
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::api_handler::client::ApiRequest,
+    domain::{
+        api_handler::{
+            client::{
+                ApiClient,
+                ApiRequest,
+            },
+            response::aoc_ref::RefDataLists,
+        },
+        data_processing::process_aoc_ref_data_request,
+    },
     server::{
         filters,
         models,
@@ -97,7 +118,29 @@ async fn main() {
         trace!("Logs were set up.");
     }
 
-    let api = filters::transparencies();
+    let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
+    let aoc_reference_data_clone = aoc_reference_data.clone();
+
+    let api_clients = ApiClient::default();
+    let git_client_clone = api_clients.github.clone();
+
+    tokio::spawn(async move {
+        loop {
+            process_aoc_ref_data_request(
+                git_client_clone.clone(),
+                aoc_reference_data_clone.clone(),
+            )
+            .await
+            .unwrap();
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+
+    let api = filters::transparencies(
+        api_clients.aoe2net.clone(),
+        aoc_reference_data.clone(),
+    );
 
     let routes = api.with(warp::log("transparencies"));
 

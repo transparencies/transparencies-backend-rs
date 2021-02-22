@@ -40,10 +40,10 @@ cross_seq:
 # Runs the development routines.
 dev: format lint doc test
 
-# Builds the crate documentation.
+# Opens the crate documentation.
 # @cargo +nightly doc --all-features {{ARGS}}
 doc *ARGS:
-	@cargo +nightly doc --all-features --no-deps {{ARGS}}
+	@cargo doc --all-features --no-deps --open {{ARGS}}
 
 # Runs the formatter on all Rust files.
 format:

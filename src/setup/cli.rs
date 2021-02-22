@@ -21,7 +21,7 @@ pub struct CommandLineSettings {
     #[structopt(long = "log-file", default_value = "./logs/aoe-data-util.log")]
     pub log_file_path: String,
 
-    /// Log file path
+    /// Log level
     #[structopt(long = "log-level", default_value = "debug")]
     pub log_level: String,
 

@@ -2,13 +2,22 @@
 
 use crate::domain::api_handler::{
     client::{
+        ApiClient,
         ApiRequest,
         ApiRequestBuilder,
     },
-    response::aoe2net::last_match::PlayerLastMatch,
+    response::{
+        aoc_ref::RefDataLists,
+        aoe2net::last_match::PlayerLastMatch,
+    },
 };
 
-use crate::server::models::MatchInfoRequest;
+use crate::domain::data_processing::process_match_info_request;
+
+use crate::{
+    domain::data_processing::MatchDataResponses,
+    server::models::MatchInfoRequest,
+};
 
 use log::{
     debug,
@@ -17,54 +26,42 @@ use log::{
     trace,
     warn,
 };
-use std::convert::Infallible;
+use std::{
+    convert::Infallible,
+    sync::Arc,
+};
+use tokio::sync::Mutex;
 use warp::http::StatusCode;
 
-pub async fn return_health_check() -> Result<impl warp::Reply, Infallible> {
+/// Small `health_check` function to return 200 on `health_check` endpoint
+pub async fn return_health_check_to_client(
+) -> Result<impl warp::Reply, Infallible> {
     Ok(warp::reply())
 }
 
-// GET / Test: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
-pub async fn return_matchinfo(
-    opts: MatchInfoRequest
+/// Handler function to return data from the match_info processing serialized as
+/// JSON to `/matchinfo` endpoint
+///
+/// GET Endpoint
+/// Possible test url: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658
+///
+/// - opts: options struct that contains the parameters that the client gave us
+/// - aoe_net_client: Our reusable aoe.net Client
+/// - ref_data: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
+///   in-memory DB for the files from Github
+pub async fn return_matchinfo_to_client(
+    opts: MatchInfoRequest,
+    aoe_net_client: reqwest::Client,
+    ref_data: Arc<Mutex<RefDataLists>>,
 ) -> Result<impl warp::Reply, Infallible> {
-    debug!(
-        "MatchInfoRequest: {:?} with {:?}",
-        opts.id_type, opts.id_number
-    );
+    let processed_match_info = process_match_info_request(
+        opts,
+        aoe_net_client.clone(),
+        ref_data.clone(),
+    )
+    .await
+    .unwrap();
 
-    let build_request: Option<ApiRequest> = match opts.id_number {
-        Some(id_number) => match opts.id_type {
-            Some(id_type) => match id_type.as_str() {
-                "steam_id" | "profile_id" => Some(
-                    ApiRequestBuilder::default()
-                        .root("https://aoe2.net/api/")
-                        .endpoint("player/lastmatch")
-                        .query(vec![
-                            ("game".to_string(), "aoe2de".to_string()),
-                            (id_type, id_number),
-                        ])
-                        .build()
-                        .unwrap(),
-                ),
-                _ => None,
-            },
-            None => {
-                todo!()
-            }
-        },
-        None => {
-            todo!()
-        }
-    };
-
-    let api_response;
-
-    if let Some(request) = build_request {
-        api_response = request.execute::<PlayerLastMatch>().await.unwrap();
-        Ok(warp::reply::json(&api_response.response))
-    }
-    else {
-        todo!()
-    }
+    Ok(warp::reply::json(&processed_match_info))
+    // Ok(warp::reply())
 }
