@@ -31,6 +31,7 @@
 - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
 - [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
       __Note:__ already partly done
+    - [ ] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Error Handling
 - [ ] Implement good error handling
