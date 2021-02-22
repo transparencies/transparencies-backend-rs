@@ -13,6 +13,7 @@ pub struct RefDataLists {
 }
 
 impl RefDataLists {
+    #[must_use]
     pub fn new() -> Self {
         RefDataLists::default()
     }
