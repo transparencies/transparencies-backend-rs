@@ -51,7 +51,7 @@ config = "0.10.1"
 # ron = "0.6"
 
 # HTTP
-reqwest = { version = "0.11.0", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.11.1", features = ["json", "rustls-tls"] }
 warp = "0.3.0"
 hyper = "0.14.4"
 
@@ -77,14 +77,14 @@ openapiv3 = "0.3.2"
 # Utility
 derive_builder = "0.9.0"
 itertools = "0.10.0"
-strum = { version = "0.20", features = ["derive"] }
+strum = { version = "0.20.0", features = ["derive"] }
 
 # Validation
 #validators-derive = "0.22.3"
 #validators = "0.22.3"
 
 [dev-dependencies]
-thiserror = "1.0.23"
+thiserror = "1.0.24"
 assert_cmd = "1.0.3"
 predicates = "1.0.7"
 lazy_static = "1.4.0"
