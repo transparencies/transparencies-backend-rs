@@ -1,21 +1,25 @@
-use serde_aux::field_attributes::deserialize_number_from_string;
-use std::convert::{
-    TryFrom,
-    TryInto,
-};
+//! Collects all the configurational settings done with `config` crate
 
+use serde_aux::field_attributes::deserialize_number_from_string;
+use std::convert::{TryFrom, TryInto};
+/// Contains server settings (e.g. port, hostname)
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
+    /// Port the server listens to
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
+    /// IP address the server runs on
     pub host: String,
 }
 
+/// Container for all our settings
 #[derive(serde::Deserialize)]
 pub struct Settings {
+    /// Settings regarding the application logic
     pub application: ApplicationSettings,
 }
 
+/// Parses the settings from our configuration files and returns a `Settings` struct
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let mut settings = config::Config::default();
     let base_path = std::env::current_dir()
@@ -48,7 +52,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     settings.try_into()
 }
 
-/// The possible runtime environment for our application.
+/// The possible runtime environment for our application
 pub enum Environment {
     Local,
     Production,
