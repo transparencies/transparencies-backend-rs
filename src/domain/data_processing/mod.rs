@@ -2,6 +2,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::domain::{
@@ -26,7 +27,10 @@ use crate::domain::{
             teams::TeamsList,
             RefDataLists,
         },
-        api::MatchInfoRequest,
+        api::{
+            MatchInfoRequest,
+            MatchInfoResult,
+        },
     },
 };
 use log::{
@@ -50,25 +54,48 @@ use std::{
 
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MatchInfo {}
-
 #[derive(Debug, Default, Serialize)]
 pub struct MatchDataResponses {
     aoe2net: HashMap<String, serde_json::Value>,
     github: RefDataLists,
 }
 
+impl MatchDataResponses {
+    fn get_leaderboard_id(&self) -> &Value {
+        let (_response_name, values) = self
+            .aoe2net
+            .get_key_value("player_last_match")
+            .expect("PlayerLastMatch information must not be missing.");
+
+        println!("player_last_match: {:?}", values);
+
+        &values["last_match"]["leaderboard_id"]
+    }
+}
+
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
+    // ) -> Result<MatchInfoResult> {
 ) -> Result<MatchDataResponses> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
+    let _result: MatchInfoResult;
+
+    let responses = get_match_data_responses(par, client, ref_data).await;
+
+    Ok(responses)
+}
+
+async fn get_match_data_responses(
+    par: MatchInfoRequest,
+    client: reqwest::Client,
+    ref_data: Arc<Mutex<RefDataLists>>,
+) -> MatchDataResponses {
     let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
     let mut responses = MatchDataResponses::default();
 
@@ -88,13 +115,7 @@ pub async fn process_match_info_request(
         last_match_request.execute().await.unwrap(),
     );
 
-    // Get the `leaderboard_id` from HashMap
-    let (_response_name, values) = responses
-        .aoe2net
-        .get_key_value("player_last_match")
-        .unwrap();
-
-    let leaderboard_id = &values["last_match"]["leaderboard_id"];
+    let leaderboard_id: String = responses.get_leaderboard_id().to_string();
 
     // GET `Leaderboard` data
     api_requests.push((
@@ -133,10 +154,10 @@ pub async fn process_match_info_request(
             .insert(response_name.to_string(), req.execute().await.unwrap());
     }
 
-    // DEBUG: Send Github files to frontend
+    // Include github response
     responses.github = ref_data.lock().await.clone();
 
-    Ok(responses)
+    responses
 }
 
 pub async fn process_aoc_ref_data_request(

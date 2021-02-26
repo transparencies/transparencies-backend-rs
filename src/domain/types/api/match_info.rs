@@ -7,7 +7,7 @@ use serde::{
 };
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchSize {
     G1v1,
     G2v2,
@@ -16,7 +16,7 @@ enum MatchSize {
     Custom,
     NoGame,
 }
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchType {
     RM,
     DM,
@@ -25,7 +25,7 @@ enum MatchType {
 
 type Time = String;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchStatus {
     Running,
     Finished(Time),
@@ -33,13 +33,13 @@ enum MatchStatus {
 
 type ErrorMessage = String;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MatchInfoResult {
     pub match_info: MatchInfo,
     pub error_message: Option<ErrorMessage>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MatchInfo {
     match_type: MatchType,
     match_size: MatchSize,
@@ -48,14 +48,14 @@ pub struct MatchInfo {
     teams: Vec<Teams>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Teams {
     players: Vec<Players>,
     team_number: i64,
     team_name: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,
@@ -66,7 +66,7 @@ pub struct Rating {
     highest_average_mmr: Option<u32>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum Civilisations {
     Aztecs,
     Berbers,
@@ -107,7 +107,7 @@ enum Civilisations {
     Vikings,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Players {
     rating: Rating,
     player_number: u8,

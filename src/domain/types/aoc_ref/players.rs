@@ -7,7 +7,6 @@ use ::serde::{
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
 pub struct PlayersList {
-    #[serde(rename = "Players")]
     pub list: Vec<Players>,
 }
 
