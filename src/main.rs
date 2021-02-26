@@ -32,6 +32,8 @@ use tokio::{
     time::{self, Duration},
 };
 
+use std::{convert::Infallible, net::IpAddr};
+
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
@@ -69,7 +71,7 @@ async fn main() {
     }
 
     // Setting up configuration
-    let _configuration =
+    let configuration =
         get_configuration().expect("Failed to read configuration.");
 
     // Calling the command line parsing logic with the argument values
@@ -118,11 +120,13 @@ async fn main() {
 
     let routes = api.with(warp::log("transparencies"));
 
+    let ip: IpAddr = configuration.application.host.parse().unwrap();
+
     warp::serve(routes)
         // TODO: Activate after certificates have been received from Let's Encrypt
         // .tls()
         // .cert_path("examples/tls/cert.pem")
         // .key_path("examples/tls/key.rsa")
-        .run(([127, 0, 0, 1], 8000))
+        .run((ip, configuration.application.port))
         .await;
 }

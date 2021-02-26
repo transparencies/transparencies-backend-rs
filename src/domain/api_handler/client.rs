@@ -179,7 +179,7 @@ impl ApiRequest {
             .query(&self.query)
             .send()
             .await?
-            .json::<R>()
+            .json()
             .await?)
     }
 }
