@@ -39,7 +39,7 @@ use transparencies_backend_rs::{
         data_processing::process_aoc_ref_data_request,
         types::aoc_ref::RefDataLists,
     },
-    server::{filters, models},
+    server::filters,
     setup::{cli::CommandLineSettings, configuration::get_configuration},
 };
 

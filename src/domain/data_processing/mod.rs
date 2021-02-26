@@ -1,25 +1,23 @@
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::{
-    domain::{
-        api_handler::client::{
-            ApiClient, ApiRequest, ApiRequestBuilder, File, FileFormat,
-            GithubFileRequest, GithubFileRequestBuilder, Response,
-            APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
-        },
-        types::{
-            aoc_ref::{
-                platforms, platforms::PlatformsList, players,
-                players::PlayersList, teams, teams::TeamsList, RefDataLists,
-            },
-            aoe2net::{
-                last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
-                rating_history::RatingHistory,
-            },
-        },
+use crate::domain::{
+    api_handler::client::{
+        ApiClient, ApiRequest, ApiRequestBuilder, File, FileFormat,
+        GithubFileRequest, GithubFileRequestBuilder, Response, APP_USER_AGENT,
+        CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
     },
-    server::models::MatchInfoRequest,
+    types::{
+        aoc_ref::{
+            platforms, platforms::PlatformsList, players, players::PlayersList,
+            teams, teams::TeamsList, RefDataLists,
+        },
+        aoe2net::{
+            last_match::PlayerLastMatch, leaderboard::LeaderboardInfo,
+            rating_history::RatingHistory,
+        },
+        api::MatchInfoRequest,
+    },
 };
 use log::{debug, error, info, trace, warn};
 use stable_eyre::eyre::{eyre, Report, Result, WrapErr};

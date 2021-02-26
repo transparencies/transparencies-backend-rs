@@ -2,14 +2,11 @@
 
 use crate::domain::{
     api_handler::client::{ApiClient, ApiRequest, ApiRequestBuilder},
-    types::{aoc_ref::RefDataLists, aoe2net::last_match::PlayerLastMatch},
-};
-
-use crate::domain::data_processing::process_match_info_request;
-
-use crate::{
-    domain::data_processing::MatchDataResponses,
-    server::models::MatchInfoRequest,
+    data_processing::{process_match_info_request, MatchDataResponses},
+    types::{
+        aoc_ref::RefDataLists, aoe2net::last_match::PlayerLastMatch,
+        api::MatchInfoRequest,
+    },
 };
 
 use log::{debug, error, info, trace, warn};
