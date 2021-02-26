@@ -1,13 +1,35 @@
 //! Core client logic of the application
 
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use reqwest::Request;
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, time::Duration};
+use ::serde::{
+    de::DeserializeOwned,
+    Deserialize,
+    Serialize,
+};
+use std::{
+    collections::HashMap,
+    time::Duration,
+};
 
-use crate::domain::types::aoc_ref::{platforms, players, teams};
+use crate::domain::types::aoc_ref::{
+    platforms,
+    players,
+    teams,
+};
 use std::fmt;
 use typed_builder::TypedBuilder;
 
@@ -167,9 +189,7 @@ impl Default for ApiRequest {
 
 impl ApiRequest {
     pub async fn execute<R>(&self) -> Result<R>
-    where
-        R: for<'de> serde::Deserialize<'de>,
-    {
+    where R: for<'de> serde::Deserialize<'de> {
         Ok(self
             .client
             .get(&format!("{}/{}", &self.root, &self.endpoint))
