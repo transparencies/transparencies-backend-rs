@@ -11,8 +11,8 @@ use crate::domain::types::{
     aoc_ref::{platforms, players, teams},
     aoe2net::last_match::PlayerLastMatch,
 };
-
 use std::fmt;
+use typed_builder::TypedBuilder;
 
 use strum::AsRefStr;
 
@@ -98,14 +98,17 @@ impl Default for ApiClient {
         }
     }
 }
-#[derive(Builder, Debug)]
-#[builder(public, setter(into))]
+#[derive(TypedBuilder, Debug)]
 pub struct GithubFileRequest {
-    // #[builder(setter(skip))]
+    #[builder(setter(into))]
     client: reqwest::Client,
+    #[builder(setter(into))]
     root: String,
+    #[builder(setter(into))]
     user: String,
+    #[builder(setter(into))]
     repo: String,
+    #[builder(setter(into))]
     uri: String,
     file: File,
 }
@@ -143,12 +146,13 @@ impl GithubFileRequest {
     }
 }
 
-#[derive(Builder, Debug)]
-#[builder(public, setter(into))]
+#[derive(TypedBuilder, Debug)]
 pub struct ApiRequest {
-    // #[builder(setter(skip))]
+    #[builder(setter(into))]
     client: reqwest::Client,
+    #[builder(setter(into))]
     root: String,
+    #[builder(setter(into))]
     endpoint: String,
     query: Vec<(String, String)>,
 }

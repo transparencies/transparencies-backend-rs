@@ -3,9 +3,8 @@ use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
-        ApiClient, ApiRequest, ApiRequestBuilder, File, FileFormat,
-        GithubFileRequest, GithubFileRequestBuilder, Response, APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
+        ApiClient, ApiRequest, File, FileFormat, GithubFileRequest, Response,
+        APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
     },
     types::{
         aoc_ref::{
@@ -52,7 +51,7 @@ pub async fn process_match_info_request(
         Some(id_number) => match &par.id_type {
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
-                    ApiRequestBuilder::default()
+                    ApiRequest::builder()
                         .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/lastmatch")
@@ -60,8 +59,7 @@ pub async fn process_match_info_request(
                             ("game".to_string(), "aoe2de".to_string()),
                             (id_type.clone(), id_number.clone()),
                         ])
-                        .build()
-                        .unwrap(),
+                        .build(),
                 ),
                 _ => None,
             },
@@ -79,7 +77,7 @@ pub async fn process_match_info_request(
         Some(id_number) => match &par.id_type {
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
-                    ApiRequestBuilder::default()
+                    ApiRequest::builder()
                         .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("leaderboard")
@@ -95,8 +93,7 @@ pub async fn process_match_info_request(
                                     .to_string(),
                             ),
                         ])
-                        .build()
-                        .unwrap(),
+                        .build(),
                 ),
                 _ => None,
             },
@@ -114,7 +111,7 @@ pub async fn process_match_info_request(
         Some(id_number) => match &par.id_type {
             Some(id_type) => match id_type.as_str() {
                 "steam_id" | "profile_id" => Some(
-                    ApiRequestBuilder::default()
+                    ApiRequest::builder()
                         .client(client.clone())
                         .root("https://aoe2.net/api")
                         .endpoint("player/ratinghistory")
@@ -131,8 +128,7 @@ pub async fn process_match_info_request(
                             ),
                             ("count".to_string(), "1".to_string()),
                         ])
-                        .build()
-                        .unwrap(),
+                        .build(),
                 ),
                 _ => None,
             },
@@ -195,15 +191,14 @@ pub async fn process_aoc_ref_data_request(
 
     for file in files {
         let request: Option<GithubFileRequest> = Some(
-            GithubFileRequestBuilder::default()
+            GithubFileRequest::builder()
                 .client(git_client.clone())
                 .root("https://raw.githubusercontent.com")
                 .user("SiegeEngineers")
                 .repo("aoc-reference-data")
                 .uri("master/data")
                 .file(file.clone())
-                .build()
-                .unwrap(),
+                .build(),
         );
 
         if let Some(request) = request {
