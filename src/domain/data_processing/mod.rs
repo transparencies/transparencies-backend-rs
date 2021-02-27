@@ -1,3 +1,6 @@
+pub mod processor;
+use processor::MatchInfoProcessor;
+
 use serde::{
     Deserialize,
     Serialize,
@@ -28,6 +31,7 @@ use crate::domain::{
             RefDataLists,
         },
         api::{
+            match_info::*,
             MatchInfoRequest,
             MatchInfoResult,
         },
@@ -54,23 +58,10 @@ use std::{
 
 use std::collections::HashMap;
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct MatchDataResponses {
     aoe2net: HashMap<String, serde_json::Value>,
     github: RefDataLists,
-}
-
-impl MatchDataResponses {
-    fn get_leaderboard_id(&self) -> &Value {
-        let (_response_name, values) = self
-            .aoe2net
-            .get_key_value("player_last_match")
-            .expect("PlayerLastMatch information must not be missing.");
-
-        println!("player_last_match: {:?}", values);
-
-        &values["last_match"]["leaderboard_id"]
-    }
 }
 
 pub async fn process_match_info_request(
@@ -78,24 +69,27 @@ pub async fn process_match_info_request(
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
     // ) -> Result<MatchInfoResult> {
-) -> Result<MatchDataResponses> {
+) -> Result<MatchInfoResult> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
-    let _result: MatchInfoResult;
-
     let responses = get_match_data_responses(par, client, ref_data).await;
+    let _processor = MatchInfoProcessor::load_responses(responses);
 
-    // Fill Structs with data
+    // Fill Structs with data by passing in `responses` into the
+    // `MatchDataProcessor` that returns a `MatchInfoResult`
+
     // Read in Teams
     // Read Players into Teams
     // Read Ratings into Players
     // Assemble Information to MatchInfo
     // Wrap MatchInfo with Erros into MatchInfoResult
 
-    Ok(responses)
+    let result: MatchInfoResult = MatchInfoProcessor::create_result();
+
+    Ok(result)
 }
 
 async fn get_match_data_responses(
@@ -122,7 +116,10 @@ async fn get_match_data_responses(
         last_match_request.execute().await.unwrap(),
     );
 
-    let leaderboard_id: String = responses.get_leaderboard_id().to_string();
+    // Get `leaderboard_id` and Drop the Processor again
+    let leaderboard_id =
+        MatchInfoProcessor::get_leaderboard_id_for_request(&responses)
+            .to_string();
 
     // GET `Leaderboard` data
     api_requests.push((
@@ -134,7 +131,7 @@ async fn get_match_data_responses(
             .query(vec![
                 ("game".to_string(), "aoe2de".to_string()),
                 (par.id_type.clone(), par.id_number.clone()),
-                ("leaderboard_id".to_string(), leaderboard_id.to_string()),
+                ("leaderboard_id".to_string(), leaderboard_id.clone()),
             ])
             .build(),
     ));
@@ -149,7 +146,7 @@ async fn get_match_data_responses(
             .query(vec![
                 ("game".to_string(), "aoe2de".to_string()),
                 (par.id_type.clone(), par.id_number.clone()),
-                ("leaderboard_id".to_string(), leaderboard_id.to_string()),
+                ("leaderboard_id".to_string(), leaderboard_id),
                 ("count".to_string(), "1".to_string()),
             ])
             .build(),

@@ -45,11 +45,14 @@ pub struct MatchInfo {
     match_size: MatchSize,
     match_status: MatchStatus,
     map_name: String,
-    teams: Vec<Teams>,
+    teams: Teams,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Players {
+pub struct Players(Vec<PlayersRaw>);
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PlayersRaw {
     rating: Rating,
     player_number: u8,
     name: String,
@@ -58,8 +61,11 @@ pub struct Players {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Teams {
-    players: Vec<Players>,
+pub struct Teams(Vec<TeamsRaw>);
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct TeamsRaw {
+    players: Players,
     team_number: i64,
     team_name: Option<String>,
 }
