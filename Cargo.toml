@@ -75,7 +75,6 @@ openapi_utils = "0.2.0"
 openapiv3 = "0.3.2"
 
 # Utility
-#derive_builder = "0.9.0"
 typed-builder = "0.9.0"
 itertools = "0.10.0"
 strum = { version = "0.20.0", features = ["derive"] }
