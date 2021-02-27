@@ -88,6 +88,13 @@ pub async fn process_match_info_request(
 
     let responses = get_match_data_responses(par, client, ref_data).await;
 
+    // Fill Structs with data
+    // Read in Teams
+    // Read Players into Teams
+    // Read Ratings into Players
+    // Assemble Information to MatchInfo
+    // Wrap MatchInfo with Erros into MatchInfoResult
+
     Ok(responses)
 }
 

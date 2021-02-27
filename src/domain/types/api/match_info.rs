@@ -49,6 +49,15 @@ pub struct MatchInfo {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Players {
+    rating: Rating,
+    player_number: u8,
+    name: String,
+    country: String,
+    civilisation: Civilisations,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Teams {
     players: Vec<Players>,
     team_number: i64,
@@ -62,7 +71,7 @@ pub struct Rating {
     wins: u64,
     losses: u64,
     win_rate: f32,
-    streak: i16,
+    streak: i32,
     highest_average_mmr: Option<u32>,
 }
 
@@ -105,15 +114,6 @@ enum Civilisations {
     Turks,
     Vietnamese,
     Vikings,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Players {
-    rating: Rating,
-    player_number: u8,
-    name: String,
-    country: String,
-    civilisation: Civilisations,
 }
 
 // #[test]
