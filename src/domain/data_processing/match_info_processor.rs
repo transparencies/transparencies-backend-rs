@@ -2,12 +2,29 @@ use serde_json::Value;
 
 use crate::domain::{
     data_processing::MatchDataResponses,
-    types::api::{MatchInfo, MatchInfoResult, Players, Teams},
+    types::api::{
+        MatchInfo,
+        MatchInfoResult,
+        Players,
+        Teams,
+    },
 };
-use ron::ser::{to_writer_pretty, PrettyConfig};
-use std::{fs, io::BufWriter, sync::Arc, time::Duration};
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+use std::{
+    fs,
+    io::BufWriter,
+    sync::Arc,
+    time::Duration,
+};
 
-use stable_eyre::eyre::{Report, Result, WrapErr};
+use stable_eyre::eyre::{
+    Report,
+    Result,
+    WrapErr,
+};
 
 use serde::Serialize;
 

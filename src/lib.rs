@@ -15,9 +15,25 @@ pub mod domain;
 pub mod server;
 pub mod setup;
 
-use futures::{FutureExt, StreamExt};
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Result, WrapErr};
+use futures::{
+    FutureExt,
+    StreamExt,
+};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Result,
+    WrapErr,
+};
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::collections::HashMap;

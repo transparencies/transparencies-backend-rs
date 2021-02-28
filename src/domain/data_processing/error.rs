@@ -10,12 +10,10 @@ pub enum ProcessingError {
 
 #[derive(Error, Debug)]
 pub enum ResponderError {
-    #[error("Request {req:?} with {name:?} is not matching any response name.")]
-    RequestNotMatching {
-        name: String,
-        req: ApiRequest,
-    },
+    #[error(
+        "Request {req:?} with {name:?} is not matching any response name."
+    )]
+    RequestNotMatching { name: String, req: ApiRequest },
     #[error("Data for `{0}` not found.")]
     NotFound(String),
-
 }
