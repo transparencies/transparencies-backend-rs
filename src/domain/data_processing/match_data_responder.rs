@@ -1,5 +1,8 @@
 use crate::domain::types::{
-    aoc_ref::RefDataLists,
+    aoc_ref::{
+        players,
+        RefDataLists,
+    },
     api::{
         match_info_response::*,
         MatchInfoRequest,
@@ -44,13 +47,100 @@ impl MatchDataResponses {
         }
     }
 
-    // pub fn get_players(&self) -> Result<(), ResponderError> {
-    //     let (_response_name, values) = self
-    //         .aoe2net
-    //         .get_key_value("player_last_match")
-    //         .expect("PlayerLastMatch information must not be missing.");
-    //     Ok(())
-    // }
+    pub fn get_all_players(&self) -> Result<serde_json::Value, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["players"].clone())
+        }
+        else {
+            Err(ResponderError::NotFound("players array".to_string()))
+        }
+    }
+
+    pub fn get_number_of_players(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["num_players"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("number of players".to_string()))
+        }
+    }
+
+    pub fn get_finished_time(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["finished"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("finished time".to_string()))
+        }
+    }
+
+    pub fn get_rating_type(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["rating_type"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("rating type".to_string()))
+        }
+    }
+
+    pub fn get_server_location(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["server"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("server location".to_string()))
+        }
+    }
+
+    pub fn get_highest_rating(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.leaderboard {
+            Ok(val["leaderboard"]["highest_rating"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("highest rating".to_string()))
+        }
+    }
+
+    pub fn get_country_from_leaderboard(
+        &self
+    ) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.leaderboard {
+            Ok(val["leaderboard"]["country"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("country".to_string()))
+        }
+    }
+
+    pub fn get_clan_from_leaderboard(&self) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.leaderboard {
+            Ok(val["leaderboard"]["clan"].to_string())
+        }
+        else {
+            Err(ResponderError::NotFound("clan".to_string()))
+        }
+    }
+
+    pub fn get_rating(&self) -> Result<serde_json::Value, ResponderError> {
+        if let Some(val) = &self.aoe2net.rating_history {
+            Ok(val[0].clone())
+        }
+        else {
+            Err(ResponderError::NotFound("rating history".to_string()))
+        }
+    }
+
+    /// Search through alias list for `player_id` and return `players::Player`
+    pub fn get_alias_for_player_id(
+        &self
+    ) -> Result<players::Player, ResponderError> {
+        todo!();
+        // &self.github.players {
+        //     Ok(val[0].clone())
+        // } else {
+        //     Err(ResponderError::NotFound("rating history".to_string()))
+        // }
+    }
 
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)
@@ -96,9 +186,7 @@ impl MatchDataResponses {
             last_match_request.execute().await?;
 
         // Get `leaderboard_id` for future requests
-        let leaderboard_id = responses
-            .get_leaderboard_id_for_request()
-            .expect("Leaderboard ID not found.");
+        let leaderboard_id = responses.get_leaderboard_id_for_request()?;
 
         // GET `Leaderboard` data
         api_requests.push((

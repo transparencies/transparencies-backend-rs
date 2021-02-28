@@ -138,7 +138,7 @@ pub async fn load_aoc_ref_data(
                     if let "players" = file.name().as_str() {
                         let mut locked = reference_db.lock().await;
                         locked.players =
-                            serde_yaml::from_slice::<Vec<players::Players>>(
+                            serde_yaml::from_slice::<Vec<players::Player>>(
                                 &response.bytes().await?,
                             )
                             .unwrap()

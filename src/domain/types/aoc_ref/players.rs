@@ -7,13 +7,13 @@ use ::serde::{
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
 pub struct PlayersList {
-    pub list: Vec<Players>,
+    pub list: Vec<Player>,
 }
 
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
-pub struct Players {
+pub struct Player {
     pub name: String,
     #[serde(default)]
     pub aka: Vec<String>,
@@ -55,9 +55,9 @@ pub struct Platforms {
 
 #[test]
 fn ensure_players_roundtrips() {
-    let t = <Vec<Players>>::default();
+    let t = <Vec<Player>>::default();
     let j = serde_json::to_string(&t).unwrap();
-    let r: Vec<Players> = serde_json::from_str(&j).unwrap();
+    let r: Vec<Player> = serde_json::from_str(&j).unwrap();
     assert_eq!(t, r);
 }
 
@@ -3823,5 +3823,5 @@ fn ensure_players_from_sample() {
 ]
     "#;
 
-    let _: Vec<Players> = serde_json::from_str(&sample).unwrap();
+    let _: Vec<Player> = serde_json::from_str(&sample).unwrap();
 }

@@ -7,7 +7,7 @@ use serde::de::DeserializeOwned;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct RefDataLists {
-    pub players: Vec<players::Players>,
+    pub players: Vec<players::Player>,
     pub teams: Vec<teams::Teams>,
     pub platforms: Vec<platforms::Platforms>,
 }
