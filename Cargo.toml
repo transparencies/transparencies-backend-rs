@@ -37,6 +37,7 @@ edition = "2018"                        # The edition of the target.
 human-panic = "1.0.3"
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
+thiserror = "1.0.24"
 
 # Logging
 log = "0.4.14"
@@ -86,7 +87,6 @@ derive-getters = "0.2.0"
 #validators = "0.22.3"
 
 [dev-dependencies]
-thiserror = "1.0.24"
 assert_cmd = "1.0.3"
 predicates = "1.0.7"
 lazy_static = "1.4.0"

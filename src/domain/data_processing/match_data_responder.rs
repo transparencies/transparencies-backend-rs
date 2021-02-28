@@ -1,44 +1,36 @@
 use crate::domain::types::{
     aoc_ref::RefDataLists,
-    api::{
-        match_info_response::*,
-        MatchInfoRequest,
-        MatchInfoResult,
-    },
+    api::{match_info_response::*, MatchInfoRequest, MatchInfoResult},
     requests::*,
     MatchDataResponses,
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
-use std::{
-    fs,
-    io::BufWriter,
-    sync::Arc,
-    time::Duration,
-};
+use log::{debug, error, info, trace, warn};
+use ron::ser::{to_writer_pretty, PrettyConfig};
+use serde_json::Value;
+use std::{collections::HashMap, fs, io::BufWriter, sync::Arc, time::Duration};
 use tokio::sync::Mutex;
+
+use super::error::ResponderError;
 
 impl MatchDataResponses {
     /// Return serde_json::Value for `leaderboard_id` for future requests
-    pub fn get_leaderboard_id_for_request(&self) -> String {
-        let (_response_name, values) = self
-            .aoe2net
-            .get_key_value("player_last_match")
-            .expect("PlayerLastMatch information must not be missing.");
-
-        println!("player_last_match: {:?}", values);
-
-        values["last_match"]["leaderboard_id"].to_string()
+    pub fn get_leaderboard_id_for_request(
+        &self
+    ) -> Result<String, ResponderError> {
+        if let Some(val) = &self.aoe2net.player_last_match {
+            Ok(val["last_match"]["leaderboard_id"].to_string())
+        } else {
+            Err(ResponderError::NotFound("leaderboard_id".to_string()))
+        }
     }
+
+    // pub fn get_players(&self) -> Result<(), ResponderError> {
+    //     let (_response_name, values) = self
+    //         .aoe2net
+    //         .get_key_value("player_last_match")
+    //         .expect("PlayerLastMatch information must not be missing.");
+    //     Ok(())
+    // }
 
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)
@@ -65,7 +57,7 @@ impl MatchDataResponses {
         par: MatchInfoRequest,
         client: reqwest::Client,
         ref_data: Arc<Mutex<RefDataLists>>,
-    ) -> MatchDataResponses {
+    ) -> Result<MatchDataResponses, ResponderError> {
         let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
         let mut responses = MatchDataResponses::default();
 
@@ -80,14 +72,13 @@ impl MatchDataResponses {
             ])
             .build();
 
-        responses.aoe2net.insert(
-            "player_last_match".to_string(),
-            last_match_request.execute().await.unwrap(),
-        );
+        responses.aoe2net.player_last_match =
+            last_match_request.execute().await.unwrap();
 
         // Get `leaderboard_id` for future requests
-        let leaderboard_id =
-            responses.get_leaderboard_id_for_request().to_string();
+        let leaderboard_id = responses
+            .get_leaderboard_id_for_request()
+            .expect("Leaderboard ID not found.");
 
         // GET `Leaderboard` data
         api_requests.push((
@@ -121,15 +112,27 @@ impl MatchDataResponses {
         ));
 
         for (response_name, req) in &api_requests {
-            responses.aoe2net.insert(
-                response_name.to_string(),
-                req.execute().await.unwrap(),
-            );
+            match response_name.as_str() {
+                "leaderboard" => {
+                    responses.aoe2net.leaderboard =
+                        req.execute().await.unwrap();
+                }
+                "rating_history" => {
+                    responses.aoe2net.rating_history =
+                        req.execute().await.unwrap();
+                }
+                _ => {
+                    return Err(ResponderError::RequestNotMatching {
+                        name: response_name.to_string(),
+                        req: req.clone(),
+                    })
+                }
+            }
         }
 
         // Include github response
         responses.github = ref_data.lock().await.clone();
 
-        responses
+        Ok(responses)
     }
 }

@@ -1,85 +1,53 @@
+pub mod error;
 mod match_data_responder;
 pub mod match_info_processor;
-
 use match_info_processor::MatchInfoProcessor;
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
-        APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT,
-        CLIENT_REQUEST_TIMEOUT,
+        APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
     },
     types::{
         aoc_ref::{
-            platforms,
-            platforms::PlatformsList,
-            players,
-            players::PlayersList,
-            teams,
-            teams::TeamsList,
-            RefDataLists,
+            platforms, platforms::PlatformsList, players, players::PlayersList,
+            teams, teams::TeamsList, RefDataLists,
         },
-        api::{
-            match_info_response::*,
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
-        requests::{
-            ApiRequest,
-            File,
-            FileFormat,
-            GithubFileRequest,
-        },
+        api::{match_info_response::*, MatchInfoRequest, MatchInfoResult},
+        requests::{ApiRequest, File, FileFormat, GithubFileRequest},
         MatchDataResponses,
     },
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{Report, Result, WrapErr};
 
-use std::{
-    sync::Arc,
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 
+use crate::domain::data_processing::error::ProcessingError;
 use std::collections::HashMap;
 
-///
+/// Entry point for processing part of `matchinfo` endpoint
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
-) -> Result<MatchInfoResult> {
+) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
     let responses =
-        MatchDataResponses::new_with_match_data(par, client, ref_data).await;
+        MatchDataResponses::new_with_match_data(par, client, ref_data).await?;
 
     responses.export_data_to_file();
 
-    let result = MatchInfoProcessor::new_with_response(responses)
-        .process()
-        .assemble();
+    let result = MatchInfoProcessor::new_with_response(responses)?
+        .process()?
+        .assemble()?;
 
     Ok(result)
 }
@@ -146,8 +114,7 @@ pub async fn load_aoc_ref_data(
                 }
                 _ => {}
             }
-        }
-        else {
+        } else {
             todo!()
         }
     }

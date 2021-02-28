@@ -1,11 +1,5 @@
-use derive_getters::{
-    Dissolve,
-    Getters,
-};
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use derive_getters::{Dissolve, Getters};
+use serde::{Deserialize, Serialize};
 use strum::AsRefStr;
 use typed_builder::TypedBuilder;
 
@@ -36,7 +30,7 @@ pub enum FileFormat {
 pub struct Response<T> {
     pub response: T,
 }
-#[derive(Getters, TypedBuilder, Debug)]
+#[derive(Getters, TypedBuilder, Debug, Clone)]
 #[builder(field_defaults(setter(into)))]
 pub struct ApiRequest {
     client: reqwest::Client,
@@ -45,7 +39,7 @@ pub struct ApiRequest {
     query: Vec<(String, String)>,
 }
 
-#[derive(Getters, TypedBuilder, Debug)]
+#[derive(Getters, TypedBuilder, Debug, Clone)]
 #[builder(field_defaults(setter(into)))]
 pub struct GithubFileRequest {
     client: reqwest::Client,
