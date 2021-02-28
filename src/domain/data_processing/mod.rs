@@ -116,7 +116,7 @@ async fn get_match_data_responses(
         last_match_request.execute().await.unwrap(),
     );
 
-    // Get `leaderboard_id` and Drop the Processor again
+    // Get `leaderboard_id` for future requests
     let leaderboard_id =
         MatchInfoProcessor::get_leaderboard_id_for_request(&responses)
             .to_string();
