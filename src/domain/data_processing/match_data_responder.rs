@@ -1,13 +1,32 @@
 use crate::domain::types::{
     aoc_ref::RefDataLists,
-    api::{match_info_response::*, MatchInfoRequest, MatchInfoResult},
+    api::{
+        match_info_response::*,
+        MatchInfoRequest,
+        MatchInfoResult,
+    },
     requests::*,
     MatchDataResponses,
 };
-use log::{debug, error, info, trace, warn};
-use ron::ser::{to_writer_pretty, PrettyConfig};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
 use serde_json::Value;
-use std::{collections::HashMap, fs, io::BufWriter, sync::Arc, time::Duration};
+use std::{
+    collections::HashMap,
+    fs,
+    io::BufWriter,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::Mutex;
 
 use super::error::ResponderError;
@@ -19,7 +38,8 @@ impl MatchDataResponses {
     ) -> Result<String, ResponderError> {
         if let Some(val) = &self.aoe2net.player_last_match {
             Ok(val["last_match"]["leaderboard_id"].to_string())
-        } else {
+        }
+        else {
             Err(ResponderError::NotFound("leaderboard_id".to_string()))
         }
     }
