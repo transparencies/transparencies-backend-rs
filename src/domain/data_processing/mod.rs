@@ -1,4 +1,6 @@
+mod match_data_responder;
 pub mod match_info_processor;
+
 use match_info_processor::MatchInfoProcessor;
 
 use serde::{
@@ -59,104 +61,27 @@ use std::{
 
 use std::collections::HashMap;
 
+///
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
-    // ) -> Result<MatchInfoResult> {
 ) -> Result<MatchInfoResult> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
-    let responses = get_match_data_responses(par, client, ref_data).await;
-    let _processor = MatchInfoProcessor::load_responses(responses);
+    let responses =
+        MatchDataResponses::new_with_match_data(par, client, ref_data).await;
 
-    // Fill Structs with data by passing in `responses` into the
-    // `MatchDataProcessor` that returns a `MatchInfoResult`
+    responses.export_data_to_file();
 
-    // Read in Teams
-    // Read Players into Teams
-    // Read Ratings into Players
-    // Assemble Information to MatchInfo
-    // Wrap MatchInfo with Erros into MatchInfoResult
-
-    let result: MatchInfoResult = MatchInfoProcessor::create_result();
+    let result = MatchInfoProcessor::new_with_response(responses)
+        .process()
+        .assemble();
 
     Ok(result)
-}
-
-async fn get_match_data_responses(
-    par: MatchInfoRequest,
-    client: reqwest::Client,
-    ref_data: Arc<Mutex<RefDataLists>>,
-) -> MatchDataResponses {
-    let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
-    let mut responses = MatchDataResponses::default();
-
-    // GET `PlayerLastMatch` data
-    let last_match_request = ApiRequest::builder()
-        .client(client.clone())
-        .root("https://aoe2.net/api")
-        .endpoint("player/lastmatch")
-        .query(vec![
-            ("game".to_string(), "aoe2de".to_string()),
-            (par.id_type.clone(), par.id_number.clone()),
-        ])
-        .build();
-
-    responses.aoe2net.insert(
-        "player_last_match".to_string(),
-        last_match_request.execute().await.unwrap(),
-    );
-
-    // Get `leaderboard_id` for future requests
-    let leaderboard_id =
-        MatchInfoProcessor::get_leaderboard_id_for_request(&responses)
-            .to_string();
-
-    // GET `Leaderboard` data
-    api_requests.push((
-        "leaderboard".to_string(),
-        ApiRequest::builder()
-            .client(client.clone())
-            .root("https://aoe2.net/api")
-            .endpoint("leaderboard")
-            .query(vec![
-                ("game".to_string(), "aoe2de".to_string()),
-                (par.id_type.clone(), par.id_number.clone()),
-                ("leaderboard_id".to_string(), leaderboard_id.clone()),
-            ])
-            .build(),
-    ));
-
-    // GET `RatingHistory` data
-    api_requests.push((
-        "rating_history".to_string(),
-        ApiRequest::builder()
-            .client(client.clone())
-            .root("https://aoe2.net/api")
-            .endpoint("player/ratinghistory")
-            .query(vec![
-                ("game".to_string(), "aoe2de".to_string()),
-                (par.id_type.clone(), par.id_number.clone()),
-                ("leaderboard_id".to_string(), leaderboard_id),
-                ("count".to_string(), "1".to_string()),
-            ])
-            .build(),
-    ));
-
-    for (response_name, req) in &api_requests {
-        responses
-            .aoe2net
-            .insert(response_name.to_string(), req.execute().await.unwrap());
-    }
-
-    // Include github response
-    responses.github = ref_data.lock().await.clone();
-
-    responses
 }
 
 pub async fn load_aoc_ref_data(

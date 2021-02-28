@@ -48,7 +48,7 @@ structopt = "0.3.21"
 # Configuration
 config = "0.10.1"
 # config_struct = "0.5"
-# ron = "0.6"
+ron = "0.6.4"
 
 # HTTP
 reqwest = { version = "0.11.1", features = ["json", "rustls-tls"] }
