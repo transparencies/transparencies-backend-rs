@@ -1,6 +1,7 @@
 pub mod client;
-pub mod openapi;
-pub mod utils;
+// TODO: For later implementation of OpenAPI parsing
+// pub mod openapi;
+// pub mod utils;
 
 // TODO:
 // API_HANDLER

@@ -71,8 +71,8 @@ bytes = "1.0.1"
 # askama = "0.10"
 
 # OpenAPI
-openapi_utils = "0.2.0"
-openapiv3 = "0.3.2"
+#openapi_utils = "0.2.0"
+#openapiv3 = "0.3.2"
 
 # Utility
 typed-builder = "0.9.0"
