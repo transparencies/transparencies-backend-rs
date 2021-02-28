@@ -1,36 +1,14 @@
 //! Core client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::{debug, error, info, trace, warn};
 use reqwest::Request;
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use ::serde::{
-    de::DeserializeOwned,
-    Deserialize,
-    Serialize,
-};
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
+use ::serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{collections::HashMap, time::Duration};
 
 use crate::domain::types::{
-    aoc_ref::{
-        platforms,
-        players,
-        teams,
-    },
+    aoc_ref::{platforms, players, teams},
     requests::*,
 };
 use std::fmt;
@@ -116,7 +94,7 @@ impl Default for GithubFileRequest {
 }
 
 impl GithubFileRequest {
-    pub async fn execute(&self) -> Result<reqwest::Response> {
+    pub async fn execute(&self) -> Result<reqwest::Response, reqwest::Error> {
         Ok(self
             .client()
             .get(&format!(
@@ -144,8 +122,10 @@ impl Default for ApiRequest {
 }
 
 impl ApiRequest {
-    pub async fn execute<R>(&self) -> Result<R>
-    where R: for<'de> serde::Deserialize<'de> {
+    pub async fn execute<R>(&self) -> Result<R, reqwest::Error>
+    where
+        R: for<'de> serde::Deserialize<'de>,
+    {
         Ok(self
             .client()
             .get(&format!("{}/{}", &self.root(), &self.endpoint()))
