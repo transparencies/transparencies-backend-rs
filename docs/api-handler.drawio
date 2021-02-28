@@ -1,37 +1,37 @@
-<mxfile host="65bd71144e" modified="2020-12-29T01:05:45.646Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) VSCodium/1.52.1 Chrome/83.0.4103.122 Electron/9.3.5 Safari/537.36" version="13.10.0" etag="7go0C7ScDelazLnmHxOH" type="embed">
+<mxfile host="65bd71144e" modified="2021-02-28T15:30:55.210Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) VSCodium/1.53.2 Chrome/87.0.4280.141 Electron/11.2.1 Safari/537.36" etag="gXR7TqUUM6ue5nu_F4fs" version="13.10.0" type="embed">
     <diagram id="mPAEUieG-RvX0odZLUrN" name="Page-1">
-        <mxGraphModel dx="1118" dy="790" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="1118" dy="490" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="14" value="" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;dashed=1;gradientColor=none;" vertex="1" parent="1">
+                <mxCell id="14" value="" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;dashed=1;gradientColor=none;" parent="1" vertex="1">
                     <mxGeometry x="99" y="80" width="621" height="300" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" vertex="1" parent="1">
+                <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="219" y="120" width="400" height="240" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="API-Handler" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                <mxCell id="3" value="API-Handler" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="219" y="90" width="80" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="Consume Struct from&lt;br&gt;Data processing" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" vertex="1" parent="1">
+                <mxCell id="4" value="Consume Struct from&lt;br&gt;Data processing" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="129" y="150" width="170" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" value="Execute Request" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;shadow=0;rounded=0;dashed=1;" vertex="1" parent="1">
+                <mxCell id="5" value="Execute Request" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;shadow=0;rounded=0;dashed=1;" parent="1" vertex="1">
                     <mxGeometry x="549" y="150" width="150" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="Response from&lt;br&gt;APIs" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;rounded=0;dashed=1;" vertex="1" parent="1">
+                <mxCell id="6" value="Response from&lt;br&gt;APIs" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;rounded=0;dashed=1;" parent="1" vertex="1">
                     <mxGeometry x="549" y="250" width="150" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="Configure Client&lt;br&gt;for API request" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+                <mxCell id="7" value="Configure Client&lt;br&gt;for API request" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
                     <mxGeometry x="289" y="150" width="140" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" value="Build Request&lt;br&gt;for Client" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+                <mxCell id="8" value="Build Request&lt;br&gt;for Client" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="1" vertex="1">
                     <mxGeometry x="419" y="150" width="140" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="Return&amp;nbsp;&lt;br&gt;&lt;span style=&quot;color: rgb(240 , 240 , 240)&quot;&gt;Struct&amp;lt;DeserializeDataType&amp;gt;&lt;br&gt;&lt;/span&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" vertex="1" parent="1">
+                <mxCell id="9" value="Return&amp;nbsp;&lt;br&gt;&lt;span style=&quot;color: rgb(240 , 240 , 240)&quot;&gt;Struct&amp;lt;DataResponses&amp;gt;&lt;br&gt;&lt;/span&gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;fillColor=#647687;strokeColor=#314354;fontColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="129" y="250" width="231" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="11" value="Deserialize into &lt;br&gt;Struct&amp;lt;DeserializeDataType&amp;gt;" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;" vertex="1" parent="1">
+                <mxCell id="11" value="Deserialize into &lt;br&gt;`serde_json::Value`" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;direction=west;" parent="1" vertex="1">
                     <mxGeometry x="350" y="250" width="209" height="80" as="geometry"/>
                 </mxCell>
             </root>
