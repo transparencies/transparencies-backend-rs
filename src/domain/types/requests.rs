@@ -1,5 +1,11 @@
-use derive_getters::{Dissolve, Getters};
-use serde::{Deserialize, Serialize};
+use derive_getters::{
+    Dissolve,
+    Getters,
+};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use strum::AsRefStr;
 use typed_builder::TypedBuilder;
 

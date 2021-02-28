@@ -1,28 +1,61 @@
 pub mod match_info_processor;
 use match_info_processor::MatchInfoProcessor;
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
-        APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
+        APP_USER_AGENT,
+        CLIENT_CONNECTION_TIMEOUT,
+        CLIENT_REQUEST_TIMEOUT,
     },
     types::{
         aoc_ref::{
-            platforms, platforms::PlatformsList, players, players::PlayersList,
-            teams, teams::TeamsList, RefDataLists,
+            platforms,
+            platforms::PlatformsList,
+            players,
+            players::PlayersList,
+            teams,
+            teams::TeamsList,
+            RefDataLists,
         },
-        api::{match_info_response::*, MatchInfoRequest, MatchInfoResult},
-        requests::{ApiRequest, File, FileFormat, GithubFileRequest},
+        api::{
+            match_info_response::*,
+            MatchInfoRequest,
+            MatchInfoResult,
+        },
+        requests::{
+            ApiRequest,
+            File,
+            FileFormat,
+            GithubFileRequest,
+        },
         MatchDataResponses,
     },
 };
-use log::{debug, error, info, trace, warn};
-use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
+use stable_eyre::eyre::{
+    eyre,
+    Report,
+    Result,
+    WrapErr,
+};
 
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::Arc,
+    time::Duration,
+};
 
 use std::collections::HashMap;
 
@@ -188,7 +221,8 @@ pub async fn load_aoc_ref_data(
                 }
                 _ => {}
             }
-        } else {
+        }
+        else {
             todo!()
         }
     }

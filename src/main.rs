@@ -15,10 +15,22 @@ extern crate log;
 
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{debug, error, info, trace, warn};
+use log::{
+    debug,
+    error,
+    info,
+    trace,
+    warn,
+};
 use simple_log::LogConfigBuilder;
-use std::{env, process};
-use warp::{http::StatusCode, Filter};
+use std::{
+    env,
+    process,
+};
+use warp::{
+    http::StatusCode,
+    Filter,
+};
 
 // CLI
 use structopt::StructOpt;
@@ -29,10 +41,16 @@ use std::sync::Arc;
 use tokio::{
     io::AsyncReadExt,
     sync::Mutex,
-    time::{self, Duration},
+    time::{
+        self,
+        Duration,
+    },
 };
 
-use std::{convert::Infallible, net::IpAddr};
+use std::{
+    convert::Infallible,
+    net::IpAddr,
+};
 
 // Internal Configuration
 use transparencies_backend_rs::{
@@ -40,11 +58,17 @@ use transparencies_backend_rs::{
         data_processing::load_aoc_ref_data,
         types::{
             aoc_ref::RefDataLists,
-            requests::{ApiClient, ApiRequest},
+            requests::{
+                ApiClient,
+                ApiRequest,
+            },
         },
     },
     server::filters,
-    setup::{cli::CommandLineSettings, configuration::get_configuration},
+    setup::{
+        cli::CommandLineSettings,
+        configuration::get_configuration,
+    },
 };
 
 #[tokio::main]
