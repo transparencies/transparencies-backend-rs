@@ -3,16 +3,11 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::{
-        api_handler::client::ApiClient,
-        types::{
-            aoc_ref::RefDataLists,
-            api::MatchInfoRequest,
-        },
+    domain::types::{
+        aoc_ref::RefDataLists, api::MatchInfoRequest, requests::ApiClient,
     },
     server::handlers::{
-        return_health_check_to_client,
-        return_matchinfo_to_client,
+        return_health_check_to_client, return_matchinfo_to_client,
     },
 };
 

@@ -1,6 +1,5 @@
-pub mod match_info;
-
-pub use match_info::*;
+pub mod match_info_response;
+pub use match_info_response::*;
 
 use serde::{
     Deserialize,

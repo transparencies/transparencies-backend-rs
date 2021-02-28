@@ -1,68 +1,30 @@
-pub mod processor;
-use processor::MatchInfoProcessor;
+pub mod match_info_processor;
+use match_info_processor::MatchInfoProcessor;
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
-        ApiClient,
-        ApiRequest,
-        File,
-        FileFormat,
-        GithubFileRequest,
-        Response,
-        APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT,
-        CLIENT_REQUEST_TIMEOUT,
+        APP_USER_AGENT, CLIENT_CONNECTION_TIMEOUT, CLIENT_REQUEST_TIMEOUT,
     },
     types::{
         aoc_ref::{
-            platforms,
-            platforms::PlatformsList,
-            players,
-            players::PlayersList,
-            teams,
-            teams::TeamsList,
-            RefDataLists,
+            platforms, platforms::PlatformsList, players, players::PlayersList,
+            teams, teams::TeamsList, RefDataLists,
         },
-        api::{
-            match_info::*,
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
+        api::{match_info_response::*, MatchInfoRequest, MatchInfoResult},
+        requests::{ApiRequest, File, FileFormat, GithubFileRequest},
+        MatchDataResponses,
     },
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use log::{debug, error, info, trace, warn};
+use stable_eyre::eyre::{eyre, Report, Result, WrapErr};
 
-use std::{
-    sync::Arc,
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 
 use std::collections::HashMap;
-
-#[derive(Debug, Clone, Default, Serialize)]
-pub struct MatchDataResponses {
-    aoe2net: HashMap<String, serde_json::Value>,
-    github: RefDataLists,
-}
 
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
@@ -164,24 +126,26 @@ async fn get_match_data_responses(
     responses
 }
 
-pub async fn process_aoc_ref_data_request(
+pub async fn load_aoc_ref_data(
     git_client: reqwest::Client,
     reference_db: Arc<Mutex<RefDataLists>>,
 ) -> Result<()> {
-    let files: Vec<File> = vec![
-        File {
-            name: "players".to_string(),
-            ext: FileFormat::Yaml,
-        },
-        File {
-            name: "platforms".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "teams".to_string(),
-            ext: FileFormat::Json,
-        },
-    ];
+    let mut files: Vec<File> = Vec::with_capacity(3);
+    files.push(
+        File::builder()
+            .name("players")
+            .ext(FileFormat::Yaml)
+            .build(),
+    );
+
+    files.push(
+        File::builder()
+            .name("platforms")
+            .ext(FileFormat::Json)
+            .build(),
+    );
+
+    files.push(File::builder().name("teams").ext(FileFormat::Json).build());
 
     for file in files {
         let request: Option<GithubFileRequest> = Some(
@@ -198,8 +162,8 @@ pub async fn process_aoc_ref_data_request(
         if let Some(request) = request {
             let response = request.execute().await?;
 
-            match file.ext {
-                FileFormat::Json => match file.name.as_str() {
+            match file.ext() {
+                FileFormat::Json => match file.name().as_str() {
                     "platforms" => {
                         let mut locked = reference_db.lock().await;
                         locked.platforms =
@@ -213,7 +177,7 @@ pub async fn process_aoc_ref_data_request(
                     _ => {}
                 },
                 FileFormat::Yaml => {
-                    if let "players" = file.name.as_str() {
+                    if let "players" = file.name().as_str() {
                         let mut locked = reference_db.lock().await;
                         locked.players =
                             serde_yaml::from_slice::<Vec<players::Players>>(
@@ -224,8 +188,7 @@ pub async fn process_aoc_ref_data_request(
                 }
                 _ => {}
             }
-        }
-        else {
+        } else {
             todo!()
         }
     }
