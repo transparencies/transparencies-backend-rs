@@ -8,7 +8,7 @@ use crate::domain::types::{
         MatchInfoRequest,
         MatchInfoResult,
     },
-    requests::*,
+    requests::ApiRequest,
     MatchDataResponses,
 };
 use log::{
@@ -35,16 +35,14 @@ use tokio::sync::Mutex;
 use super::error::ResponderError;
 
 impl MatchDataResponses {
-    /// Return serde_json::Value for `leaderboard_id` for future requests
+    /// Return `serde_json::Value` for `leaderboard_id` for future requests
     pub fn get_leaderboard_id_for_request(
         &self
     ) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["leaderboard_id"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("leaderboard_id".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("leaderboard_id".to_string())),
+            |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
+        )
     }
 
     pub fn get_all_players(&self) -> Result<serde_json::Value, ResponderError> {

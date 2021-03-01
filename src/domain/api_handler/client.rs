@@ -31,7 +31,13 @@ use crate::domain::types::{
         players,
         teams,
     },
-    requests::*,
+    requests::{
+        ApiClient,
+        ApiRequest,
+        File,
+        FileFormat,
+        GithubFileRequest,
+    },
 };
 use std::fmt;
 
