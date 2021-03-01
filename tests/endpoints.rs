@@ -1,7 +1,4 @@
-use pretty_assertions::{
-    assert_eq,
-    assert_ne,
-};
+use pretty_assertions::assert_eq;
 use transparencies_backend_rs::server::filters;
 use warp::{
     http::StatusCode,

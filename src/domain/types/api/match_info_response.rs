@@ -7,7 +7,7 @@ use serde::{
 };
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchSize {
     G1v1,
     G2v2,
@@ -16,7 +16,7 @@ enum MatchSize {
     Custom,
     NoGame,
 }
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchType {
     RM,
     DM,
@@ -25,7 +25,7 @@ enum MatchType {
 
 type Time = String;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchStatus {
     Running,
     Finished(Time),
@@ -33,40 +33,55 @@ enum MatchStatus {
 
 type ErrorMessage = String;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MatchInfoResult {
     pub match_info: MatchInfo,
     pub error_message: Option<ErrorMessage>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MatchInfo {
     match_type: MatchType,
     match_size: MatchSize,
     match_status: MatchStatus,
     map_name: String,
-    teams: Vec<Teams>,
+    teams: Teams,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Teams {
-    players: Vec<Players>,
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Players(Vec<PlayersRaw>);
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct PlayersRaw {
+    rating: Rating,
+    player_number: u8,
+    name: String,
+    country: String,
+    civilisation: Civilisations,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Teams(Vec<TeamsRaw>);
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct TeamsRaw {
+    players: Players,
     team_number: i64,
     team_name: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,
     wins: u64,
     losses: u64,
     win_rate: f32,
-    streak: i16,
+    streak: i32,
     highest_average_mmr: Option<u32>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum Civilisations {
     Aztecs,
     Berbers,
@@ -105,15 +120,6 @@ enum Civilisations {
     Turks,
     Vietnamese,
     Vikings,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Players {
-    rating: Rating,
-    player_number: u8,
-    name: String,
-    country: String,
-    civilisation: Civilisations,
 }
 
 // #[test]
