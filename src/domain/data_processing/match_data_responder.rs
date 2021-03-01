@@ -137,7 +137,7 @@ impl MatchDataResponses {
         todo!();
 
         // What could we need for showing on the overlay/twitch extension?
-        // Name, 
+        // Name,
         // aka,
         // discord,
         // esportsearnings,
@@ -154,7 +154,6 @@ impl MatchDataResponses {
         // - Let a thread (or directly after downloading in the same thread)
         //   index all the `player_ids` of the platforms
         // - create a HashMap from it with the ID as a key
-
     }
 
     pub fn print_debug_information(&self) {
