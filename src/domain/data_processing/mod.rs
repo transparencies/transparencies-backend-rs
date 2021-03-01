@@ -66,7 +66,8 @@ pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
-) -> Result<MatchInfoResult, ProcessingError> {
+// ) -> Result<MatchInfoResult, ProcessingError> {
+) -> Result<(), ProcessingError> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
@@ -77,11 +78,12 @@ pub async fn process_match_info_request(
 
     responses.export_data_to_file();
 
-    let result = MatchInfoProcessor::new_with_response(responses)?
-        .process()?
-        .assemble()?;
+    // let result = MatchInfoProcessor::new_with_response(responses)?
+    //     .process()?
+    //     .assemble()?;
 
-    Ok(result)
+    // Ok(result)
+    Ok(())
 }
 
 pub async fn load_aoc_ref_data(
