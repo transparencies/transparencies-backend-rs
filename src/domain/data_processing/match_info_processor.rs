@@ -56,7 +56,8 @@ impl MatchInfoProcessor {
         })
     }
 
-    pub fn process(&self) -> Result<Self, ProcessingError> {
+    pub fn process(// &self
+    ) -> Result<Self, ProcessingError> {
         todo!();
 
         // Read in Teams
@@ -82,7 +83,8 @@ impl MatchInfoProcessor {
             .expect("Unable to write data");
     }
 
-    pub fn assemble(&self) -> Result<MatchInfoResult, ProcessingError> {
+    pub fn assemble(// &self
+    ) -> Result<MatchInfoResult, ProcessingError> {
         todo!();
     }
 

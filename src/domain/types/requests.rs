@@ -1,3 +1,5 @@
+#[allow(clippy::used_underscore_binding)]
+#[allow(clippy::empty_enum)]
 use derive_getters::{
     Dissolve,
     Getters,
