@@ -46,86 +46,68 @@ impl MatchDataResponses {
     }
 
     pub fn get_all_players(&self) -> Result<serde_json::Value, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["players"].clone())
-        }
-        else {
-            Err(ResponderError::NotFound("players array".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("players array".to_string())),
+            |val| Ok(val["last_match"]["players"].clone()),
+        )
     }
 
     pub fn get_number_of_players(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["num_players"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("number of players".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("number of players".to_string())),
+            |val| Ok(val["last_match"]["num_players"].to_string()),
+        )
     }
 
     pub fn get_finished_time(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["finished"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("finished time".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("finished time".to_string())),
+            |val| Ok(val["last_match"]["finished"].to_string()),
+        )
     }
 
     pub fn get_rating_type(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["rating_type"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("rating type".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("rating type".to_string())),
+            |val| Ok(val["last_match"]["rating_type"].to_string()),
+        )
     }
 
     pub fn get_server_location(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.player_last_match {
-            Ok(val["last_match"]["server"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("server location".to_string()))
-        }
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("server location".to_string())),
+            |val| Ok(val["last_match"]["server"].to_string()),
+        )
     }
 
     pub fn get_highest_rating(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.leaderboard {
-            Ok(val["leaderboard"]["highest_rating"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("highest rating".to_string()))
-        }
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("highest rating".to_string())),
+            |val| Ok(val["leaderboard"]["highest_rating"].to_string()),
+        )
     }
 
     pub fn get_country_from_leaderboard(
         &self
     ) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.leaderboard {
-            Ok(val["leaderboard"]["country"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("country".to_string()))
-        }
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("country".to_string())),
+            |val| Ok(val["leaderboard"]["country"].to_string()),
+        )
     }
 
     pub fn get_clan_from_leaderboard(&self) -> Result<String, ResponderError> {
-        if let Some(val) = &self.aoe2net.leaderboard {
-            Ok(val["leaderboard"]["clan"].to_string())
-        }
-        else {
-            Err(ResponderError::NotFound("clan".to_string()))
-        }
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("clan".to_string())),
+            |val| Ok(val["leaderboard"]["clan"].to_string()),
+        )
     }
 
     pub fn get_rating(&self) -> Result<serde_json::Value, ResponderError> {
-        if let Some(val) = &self.aoe2net.rating_history {
-            Ok(val[0].clone())
-        }
-        else {
-            Err(ResponderError::NotFound("rating history".to_string()))
-        }
+        self.aoe2net.rating_history.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("rating history".to_string())),
+            |val| Ok(val[0].clone()),
+        )
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
