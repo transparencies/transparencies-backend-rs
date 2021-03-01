@@ -15,9 +15,6 @@ pub mod domain;
 pub mod server;
 pub mod setup;
 
-#[macro_use]
-extern crate derive_builder;
-
 use futures::{
     FutureExt,
     StreamExt,

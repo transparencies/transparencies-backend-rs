@@ -25,15 +25,20 @@ use std::{
     time::Duration,
 };
 
-use crate::domain::api_handler::response::{
+use crate::domain::types::{
     aoc_ref::{
         platforms,
         players,
         teams,
     },
-    aoe2net::last_match::PlayerLastMatch,
+    requests::{
+        ApiClient,
+        ApiRequest,
+        File,
+        FileFormat,
+        GithubFileRequest,
+    },
 };
-
 use std::fmt;
 
 use strum::AsRefStr;
@@ -47,39 +52,18 @@ pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 /// Timeout for http-connections
 pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
 
-#[derive(Debug, Clone, AsRefStr)]
-pub enum FileFormat {
-    Toml,
-    Json,
-    Yaml,
-    Ron,
-    Xml,
-    Url,
-    Uninitialized,
-}
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct Response<T> {
-    pub response: T,
-}
-
 impl Default for FileFormat {
     fn default() -> Self {
         Self::Uninitialized
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct File {
-    pub name: String,
-    pub ext: FileFormat,
-}
-
 impl Default for File {
     fn default() -> Self {
-        Self {
-            name: String::new(),
-            ext: FileFormat::default(),
-        }
+        File::builder()
+            .name(String::new())
+            .ext(FileFormat::default())
+            .build()
     }
 }
 
@@ -88,14 +72,8 @@ impl std::fmt::Display for File {
         &self,
         f: &mut std::fmt::Formatter<'_>,
     ) -> std::fmt::Result {
-        write!(f, "{}.{}", self.name, self.ext.as_ref().to_lowercase())
+        write!(f, "{}.{}", self.name(), self.ext().as_ref().to_lowercase())
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct ApiClient {
-    pub aoe2net: reqwest::Client,
-    pub github: reqwest::Client,
 }
 
 impl Default for ApiClient {
@@ -120,82 +98,67 @@ impl Default for ApiClient {
         }
     }
 }
-#[derive(Builder, Debug)]
-#[builder(public, setter(into))]
-pub struct GithubFileRequest {
-    // #[builder(setter(skip))]
-    client: reqwest::Client,
-    root: String,
-    user: String,
-    repo: String,
-    uri: String,
-    file: File,
-}
 
 impl Default for GithubFileRequest {
     fn default() -> Self {
-        Self {
-            client: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(CLIENT_REQUEST_TIMEOUT)
-                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
-                .use_rustls_tls()
-                .https_only(true)
-                .build()
-                .unwrap(),
-            root: String::new(),
-            user: String::new(),
-            repo: String::new(),
-            uri: String::new(),
-            file: File::default(),
-        }
+        GithubFileRequest::builder()
+            .client(
+                reqwest::Client::builder()
+                    .user_agent(APP_USER_AGENT)
+                    .timeout(CLIENT_REQUEST_TIMEOUT)
+                    .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
+                    .use_rustls_tls()
+                    .https_only(true)
+                    .build()
+                    .unwrap(),
+            )
+            .root(String::new())
+            .user(String::new())
+            .repo(String::new())
+            .uri(String::new())
+            .file(File::default())
+            .build()
     }
 }
 
 impl GithubFileRequest {
-    pub async fn execute(&self) -> Result<reqwest::Response> {
+    pub async fn execute(&self) -> Result<reqwest::Response, reqwest::Error> {
         Ok(self
-            .client
+            .client()
             .get(&format!(
                 "{}/{}/{}/{}/{}",
-                &self.root, &self.user, &self.repo, &self.uri, &self.file
+                &self.root(),
+                &self.user(),
+                &self.repo(),
+                &self.uri(),
+                &self.file()
             ))
             .send()
             .await?)
     }
 }
 
-#[derive(Builder, Debug)]
-#[builder(public, setter(into))]
-pub struct ApiRequest {
-    // #[builder(setter(skip))]
-    client: reqwest::Client,
-    root: String,
-    endpoint: String,
-    query: Vec<(String, String)>,
-}
-
 impl Default for ApiRequest {
     fn default() -> Self {
-        Self {
-            client: reqwest::Client::default(),
-            root: String::new(),
-            endpoint: String::new(),
-            query: Vec::new(),
-        }
+        ApiRequest::builder()
+            .client(reqwest::Client::default())
+            .root(String::new())
+            .endpoint(String::new())
+            .query(Vec::new())
+            .build()
     }
 }
 
 impl ApiRequest {
-    pub async fn execute<R>(&self) -> Result<R>
+    pub async fn execute<R>(&self) -> Result<R, reqwest::Error>
     where R: for<'de> serde::Deserialize<'de> {
         Ok(self
-            .client
-            .get(&format!("{}/{}", &self.root, &self.endpoint))
-            .query(&self.query)
+            .client()
+            .get(&format!("{}/{}", &self.root(), &self.endpoint()))
+            .query(&self.query())
             .send()
             .await?
-            .json::<R>()
+            .json()
             .await?)
     }
 }

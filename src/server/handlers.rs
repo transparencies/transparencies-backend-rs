@@ -1,22 +1,16 @@
 //! API handlers, the ends of each filter chain
 
-use crate::domain::api_handler::{
-    client::{
-        ApiClient,
-        ApiRequest,
-        ApiRequestBuilder,
-    },
-    response::{
+use crate::domain::{
+    data_processing::process_match_info_request,
+    types::{
         aoc_ref::RefDataLists,
-        aoe2net::last_match::PlayerLastMatch,
+        api::MatchInfoRequest,
+        requests::{
+            ApiClient,
+            ApiRequest,
+        },
+        MatchDataResponses,
     },
-};
-
-use crate::domain::data_processing::process_match_info_request;
-
-use crate::{
-    domain::data_processing::MatchDataResponses,
-    server::models::MatchInfoRequest,
 };
 
 use log::{
@@ -31,7 +25,13 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::Mutex;
-use warp::http::StatusCode;
+use warp::{
+    http::StatusCode,
+    reject::Reject,
+    Filter,
+    Rejection,
+    Reply,
+};
 
 /// Small `health_check` function to return 200 on `health_check` endpoint
 pub async fn return_health_check_to_client(
@@ -50,6 +50,7 @@ pub async fn return_health_check_to_client(
 /// - `aoe_net_client`: Our reusable aoe.net Client
 /// - `ref_data`: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
 ///   in-memory DB for the files from Github
+#[allow(clippy::let_unit_value)]
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
     aoe_net_client: reqwest::Client,
