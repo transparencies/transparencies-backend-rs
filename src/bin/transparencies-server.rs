@@ -13,6 +13,8 @@
 #[macro_use]
 extern crate log;
 
+extern crate transparencies_backend_rs;
+
 use eyre::Error;
 use human_panic::setup_panic;
 use log::{
