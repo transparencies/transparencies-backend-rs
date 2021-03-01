@@ -66,7 +66,7 @@ pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
-// ) -> Result<MatchInfoResult, ProcessingError> {
+    // ) -> Result<MatchInfoResult, ProcessingError> {
 ) -> Result<(), ProcessingError> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
