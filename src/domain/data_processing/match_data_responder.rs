@@ -135,11 +135,26 @@ impl MatchDataResponses {
         &self
     ) -> Result<players::Player, ResponderError> {
         todo!();
-        // &self.github.players {
-        //     Ok(val[0].clone())
-        // } else {
-        //     Err(ResponderError::NotFound("rating history".to_string()))
-        // }
+
+        // What could we need for showing on the overlay/twitch extension?
+        // Name, 
+        // aka,
+        // discord,
+        // esportsearnings,
+        // liquipedia,
+        // platforms[de] (maybe in the future platforms[voobly] as well)
+        // twitch
+        // youtube
+
+        // What do we need to search for?
+        // platforms[de]
+        // platforms[voobly]
+
+        // TODO
+        // - Let a thread (or directly after downloading in the same thread)
+        //   index all the `player_ids` of the platforms
+        // - create a HashMap from it with the ID as a key
+
     }
 
     pub fn print_debug_information(&self) {
