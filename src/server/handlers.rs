@@ -50,6 +50,7 @@ pub async fn return_health_check_to_client(
 /// - `aoe_net_client`: Our reusable aoe.net Client
 /// - `ref_data`: We take an `Arc<Mutex<T>>` as parameter which is mimicking our
 ///   in-memory DB for the files from Github
+#[allow(clippy::let_unit_value)]
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
     aoe_net_client: reqwest::Client,
