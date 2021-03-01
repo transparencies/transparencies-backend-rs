@@ -20,6 +20,25 @@ impl RefDataLists {
 
     pub fn get_alias_from_profile_id() -> Option<String> {
         todo!();
+
+        // What could we need for showing on the overlay/twitch extension?
+        // Name,
+        // aka,
+        // discord,
+        // esportsearnings,
+        // liquipedia,
+        // platforms[de] (maybe in the future platforms[voobly] as well)
+        // twitch
+        // youtube
+
+        // What do we need to search for?
+        // platforms[de]
+        // platforms[voobly]
+
+        // TODO
+        // - Let a thread (or directly after downloading in the same thread)
+        //   index all the `player_ids` of the platforms
+        // - create a HashMap from it with the ID as a key
     }
 }
 
