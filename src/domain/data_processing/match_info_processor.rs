@@ -13,7 +13,13 @@ use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
 };
-use std::{fs, io::BufWriter, result, sync::Arc, time::Duration};
+use std::{
+    fs,
+    io::BufWriter,
+    result,
+    sync::Arc,
+    time::Duration,
+};
 
 use stable_eyre::eyre::{
     Report,
@@ -39,9 +45,7 @@ pub struct MatchInfoProcessor {
 }
 
 impl MatchInfoProcessor {
-    pub fn new_with_response(
-        responses: MatchDataResponses
-    ) -> Result<Self> {
+    pub fn new_with_response(responses: MatchDataResponses) -> Result<Self> {
         Ok(Self {
             responses,
             match_info: None,

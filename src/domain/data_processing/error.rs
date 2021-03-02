@@ -1,6 +1,9 @@
 use thiserror::Error;
 
-use crate::domain::types::ApiRequest;
+use crate::domain::types::{
+    ApiRequest,
+    GithubFileRequest,
+};
 
 #[derive(Error, Debug)]
 pub enum ProcessingError {
@@ -16,6 +19,19 @@ pub enum ResponderError {
     RequestNotMatching { name: String, req: ApiRequest },
     #[error("Data for `{0}` not found.")]
     NotFound(String),
+    #[error("HTTP-Client experienced an error.")]
+    HttpClientError(#[from] reqwest::Error),
+}
+
+#[derive(Error, Debug)]
+pub enum FileRequestError {
+    #[error(
+        "Request {req:?} with {name:?} is not matching any response name."
+    )]
+    RequestNotMatching {
+        name: String,
+        req: GithubFileRequest,
+    },
     #[error("HTTP-Client experienced an error.")]
     HttpClientError(#[from] reqwest::Error),
 }

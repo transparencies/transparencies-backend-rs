@@ -23,7 +23,14 @@ use ron::ser::{
     PrettyConfig,
 };
 use serde_json::Value;
-use std::{collections::HashMap, fs, io::BufWriter, result, sync::Arc, time::Duration};
+use std::{
+    collections::HashMap,
+    fs,
+    io::BufWriter,
+    result,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::Mutex;
 
 use super::error::ResponderError;
@@ -32,9 +39,7 @@ type Result<T> = result::Result<T, ResponderError>;
 
 impl MatchDataResponses {
     /// Return `serde_json::Value` for `leaderboard_id` for future requests
-    pub fn get_leaderboard_id_for_request(
-        &self
-    ) -> Result<String> {
+    pub fn get_leaderboard_id_for_request(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("leaderboard_id".to_string())),
             |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
@@ -83,9 +88,7 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_country_from_leaderboard(
-        &self
-    ) -> Result<String> {
+    pub fn get_country_from_leaderboard(&self) -> Result<String> {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("country".to_string())),
             |val| Ok(val["leaderboard"]["country"].to_string()),
