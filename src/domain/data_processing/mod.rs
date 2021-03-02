@@ -104,6 +104,7 @@ pub async fn process_match_info_request(
     let responses =
         MatchDataResponses::new_with_match_data(par, client, ref_data).await?;
 
+    // Debugging
     responses.export_data_to_file();
 
     // let result = MatchInfoProcessor::new_with_response(responses)?

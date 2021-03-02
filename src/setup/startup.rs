@@ -10,7 +10,7 @@ use simple_log::LogConfigBuilder;
 use super::cli::CommandLineSettings;
 
 /// Set up the logging infrastructure
-pub fn set_up_logging(cli_args: CommandLineSettings) {
+pub fn set_up_logging(cli_args: &CommandLineSettings) {
     // Setting up logfile
     let log_setup = LogConfigBuilder::builder()
         .path(&cli_args.log_file_path)

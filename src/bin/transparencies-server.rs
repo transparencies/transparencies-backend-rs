@@ -111,7 +111,7 @@ async fn main() {
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
-        set_up_logging(cli_args);
+        set_up_logging(&cli_args);
     }
 
     let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));

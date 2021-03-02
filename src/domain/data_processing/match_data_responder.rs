@@ -143,10 +143,12 @@ impl MatchDataResponses {
         ref_data: Arc<Mutex<RefDataLists>>,
     ) -> Result<MatchDataResponses> {
         let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
-        let mut responses = MatchDataResponses::default();
 
         // Include github response
-        responses.github = ref_data.lock().await.clone();
+        let mut responses = MatchDataResponses {
+            github: ref_data.lock().await.clone(),
+            ..Default::default()
+        };
 
         // GET `PlayerLastMatch` data
         let last_match_request = ApiRequest::builder()
