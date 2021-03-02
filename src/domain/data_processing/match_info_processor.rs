@@ -13,16 +13,10 @@ use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
 };
-use std::{
-    fs,
-    io::BufWriter,
-    sync::Arc,
-    time::Duration,
-};
+use std::{fs, io::BufWriter, result, sync::Arc, time::Duration};
 
 use stable_eyre::eyre::{
     Report,
-    Result,
     WrapErr,
 };
 
@@ -31,6 +25,8 @@ use serde::Serialize;
 // Error handling
 type ProcessingErrorStrings = Vec<String>;
 use super::error::ProcessingError;
+
+type Result<T> = result::Result<T, ProcessingError>;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct MatchInfoProcessor {
@@ -45,7 +41,7 @@ pub struct MatchInfoProcessor {
 impl MatchInfoProcessor {
     pub fn new_with_response(
         responses: MatchDataResponses
-    ) -> Result<Self, ProcessingError> {
+    ) -> Result<Self> {
         Ok(Self {
             responses,
             match_info: None,
@@ -57,7 +53,7 @@ impl MatchInfoProcessor {
     }
 
     pub fn process(// &self
-    ) -> Result<Self, ProcessingError> {
+    ) -> Result<Self> {
         todo!();
 
         // Read in Teams
@@ -84,7 +80,7 @@ impl MatchInfoProcessor {
     }
 
     pub fn assemble(// &self
-    ) -> Result<MatchInfoResult, ProcessingError> {
+    ) -> Result<MatchInfoResult> {
         todo!();
     }
 
