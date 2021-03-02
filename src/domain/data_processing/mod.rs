@@ -8,7 +8,6 @@ use serde::{
     Serialize,
 };
 use serde_json::Value;
-use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
@@ -53,13 +52,38 @@ use stable_eyre::eyre::{
     WrapErr,
 };
 
+use crate::domain::data_processing::error::ProcessingError;
 use std::{
+    collections::HashMap,
     sync::Arc,
-    time::Duration,
+};
+use tokio::{
+    io::AsyncReadExt,
+    sync::Mutex,
+    time::{
+        self,
+        Duration,
+    },
 };
 
-use crate::domain::data_processing::error::ProcessingError;
-use std::collections::HashMap;
+/// Download static files continously every 10 minutes inside a thread
+pub fn get_static_files_inside_thread(
+    git_client_clone: reqwest::Client,
+    aoc_reference_data_clone: Arc<Mutex<RefDataLists>>,
+) {
+    tokio::spawn(async move {
+        loop {
+            load_aoc_ref_data(
+                git_client_clone.clone(),
+                aoc_reference_data_clone.clone(),
+            )
+            .await
+            .unwrap();
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+}
 
 /// Entry point for processing part of `matchinfo` endpoint
 pub async fn process_match_info_request(
