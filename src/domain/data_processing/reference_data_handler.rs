@@ -7,7 +7,6 @@ use log::{
 };
 use stable_eyre::eyre::{
     Report,
-    Result,
     WrapErr,
 };
 

@@ -21,11 +21,6 @@ use std::{
     time::Duration,
 };
 
-use stable_eyre::eyre::{
-    Report,
-    WrapErr,
-};
-
 use serde::Serialize;
 
 // Error handling

@@ -44,11 +44,6 @@ use log::{
     trace,
     warn,
 };
-use stable_eyre::eyre::{
-    Report,
-    Result,
-    WrapErr,
-};
 
 use std::{
     collections::HashMap,
