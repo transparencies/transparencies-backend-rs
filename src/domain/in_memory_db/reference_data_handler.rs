@@ -29,6 +29,10 @@ use crate::domain::{
         CLIENT_CONNECTION_TIMEOUT,
         CLIENT_REQUEST_TIMEOUT,
     },
+    data_processing::error::{
+        FileRequestError,
+        ProcessingError,
+    },
     types::{
         aoc_ref::{
             AoePlatforms,
@@ -47,28 +51,37 @@ use crate::domain::{
             FileFormat,
             GithubFileRequest,
         },
+        InMemoryDb,
         MatchDataResponses,
     },
-};
-
-use crate::domain::data_processing::error::{
-    FileRequestError,
-    ProcessingError,
 };
 
 /// Download data from `aoc-reference-data` Github repository
 pub async fn load_aoc_ref_data(
     git_client: reqwest::Client,
-    reference_db: Arc<Mutex<RefDataLists>>,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), FileRequestError> {
     let files = create_file_list();
+    let par: [&str; 4] = [
+        "https://raw.githubusercontent.com",
+        "SiegeEngineers",
+        "aoc-reference-data",
+        "master/data",
+    ];
 
     for file in files {
-        let req = assemble_github_request(git_client.clone(), &file);
+        let req = assemble_github_request(
+            git_client.clone(),
+            par[0],
+            par[1],
+            par[2],
+            par[3],
+            &file,
+        );
 
         let response = req.execute().await?;
 
-        update_data_in_db(file, reference_db.clone(), response, req).await?;
+        update_data_in_db(file, in_memory_db.clone(), response, req).await?;
     }
 
     Ok(())
@@ -78,19 +91,21 @@ pub async fn load_aoc_ref_data(
 /// into the in-memory database
 async fn update_data_in_db(
     file: File,
-    reference_db: Arc<Mutex<RefDataLists>>,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
     response: reqwest::Response,
     req: GithubFileRequest,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                let mut guard = reference_db.lock().await;
-                guard.platforms = response.json::<AoePlatforms>().await?
+                let mut guard = in_memory_db.lock().await;
+                guard.github_file_content.platforms =
+                    response.json::<AoePlatforms>().await?
             }
             "teams" => {
-                let mut guard = reference_db.lock().await;
-                guard.teams = response.json::<AoeTeams>().await?
+                let mut guard = in_memory_db.lock().await;
+                guard.github_file_content.teams =
+                    response.json::<AoeTeams>().await?
             }
             _ => {
                 return Err(FileRequestError::RequestNotMatching {
@@ -101,11 +116,12 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
-                let mut guard = reference_db.lock().await;
-                guard.players = serde_yaml::from_slice::<AoePlayers>(
-                    &response.bytes().await?,
-                )
-                .unwrap()
+                let mut guard = in_memory_db.lock().await;
+                guard.github_file_content.players =
+                    serde_yaml::from_slice::<AoePlayers>(
+                        &response.bytes().await?,
+                    )
+                    .unwrap()
             }
             else {
                 return Err(FileRequestError::RequestNotMatching {
@@ -128,15 +144,36 @@ async fn update_data_in_db(
 /// Assembles a request for the `aoc-reference-data` Github repository
 fn assemble_github_request(
     git_client: reqwest::Client,
+    root: &str,
+    user: &str,
+    repo: &str,
+    uri: &str,
     file: &File,
 ) -> GithubFileRequest {
     let req = GithubFileRequest::builder()
         .client(git_client.clone())
-        .root("https://raw.githubusercontent.com")
-        .user("SiegeEngineers")
-        .repo("aoc-reference-data")
-        .uri("master/data")
+        .root(root)
+        .user(user)
+        .repo(repo)
+        .uri(uri)
         .file(file.clone())
+        .build();
+
+    req
+}
+
+/// Assembles a get request for an API
+fn assemble_api_request(
+    api_client: reqwest::Client,
+    root: &str,
+    endpoint: &str,
+    query: Vec<(String, String)>,
+) -> ApiRequest {
+    let req = ApiRequest::builder()
+        .client(api_client.clone())
+        .root(root)
+        .endpoint(endpoint)
+        .query(query)
         .build();
 
     req

@@ -59,11 +59,11 @@ use transparencies_backend_rs::{
     domain::{
         data_processing::get_static_data_inside_thread,
         types::{
-            aoc_ref::RefDataLists,
             requests::{
                 ApiClient,
                 ApiRequest,
             },
+            InMemoryDb,
         },
     },
     server::filters,
@@ -112,18 +112,22 @@ async fn main() {
     }
 
     // TODO Replace in-memory DB here with a struct holding different fields
-    let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
-    let aoc_reference_data_clone = aoc_reference_data.clone();
+    let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
+    let in_memory_db_clone = in_memory_db.clone();
 
     let api_clients = ApiClient::default();
     let git_client_clone = api_clients.github.clone();
     let aoe2net_client_clone = api_clients.aoe2net.clone();
 
-    get_static_data_inside_thread(git_client_clone, aoe2net_client_clone, aoc_reference_data_clone);
+    get_static_data_inside_thread(
+        git_client_clone,
+        aoe2net_client_clone,
+        in_memory_db_clone,
+    );
 
     let api = filters::transparencies(
         api_clients.aoe2net.clone(),
-        aoc_reference_data.clone(),
+        in_memory_db.clone(),
     );
 
     let routes = api.with(warp::log("transparencies"));

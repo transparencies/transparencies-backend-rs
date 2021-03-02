@@ -9,6 +9,7 @@ use crate::domain::types::{
         MatchInfoResult,
     },
     requests::ApiRequest,
+    InMemoryDb,
     MatchDataResponses,
 };
 use log::{
@@ -150,13 +151,13 @@ impl MatchDataResponses {
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
-        ref_data: Arc<Mutex<RefDataLists>>,
+        in_memory_db: Arc<Mutex<InMemoryDb>>,
     ) -> Result<MatchDataResponses> {
         let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
 
         // Include github response
         let mut responses = MatchDataResponses {
-            github: ref_data.lock().await.clone(),
+            db: in_memory_db.lock().await.clone(),
             ..Default::default()
         };
 
