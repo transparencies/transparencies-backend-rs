@@ -8,7 +8,6 @@ use serde::{
     Serialize,
 };
 use serde_json::Value;
-use tokio::sync::Mutex;
 
 use crate::domain::{
     api_handler::client::{
@@ -18,12 +17,9 @@ use crate::domain::{
     },
     types::{
         aoc_ref::{
-            platforms,
-            platforms::PlatformsList,
-            players,
-            players::PlayersList,
-            teams,
-            teams::TeamsList,
+            AoePlatforms,
+            AoePlayers,
+            AoeTeams,
             RefDataLists,
         },
         api::{
@@ -47,112 +43,72 @@ use log::{
     trace,
     warn,
 };
-use stable_eyre::eyre::{
-    Report,
-    Result,
-    WrapErr,
-};
 
 use std::{
+    collections::HashMap,
     sync::Arc,
-    time::Duration,
+};
+use tokio::{
+    io::AsyncReadExt,
+    sync::Mutex,
+    time::{
+        self,
+        Duration,
+    },
 };
 
-use crate::domain::data_processing::error::ProcessingError;
-use std::collections::HashMap;
+use crate::domain::{
+    data_processing::error::{
+        FileRequestError,
+        ProcessingError,
+    },
+    in_memory_db::data_preloading::preload_data,
+    types::InMemoryDb,
+};
+
+/// Download static files continously every 10 minutes inside a thread
+pub fn get_static_data_inside_thread(
+    git_client_clone: reqwest::Client,
+    api_client_clone: reqwest::Client,
+    in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
+) {
+    tokio::spawn(async move {
+        loop {
+            preload_data(
+                api_client_clone.clone(),
+                git_client_clone.clone(),
+                in_memory_db_clone.clone(),
+            )
+            .await
+            .expect("Unable to preload data.");
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+}
 
 /// Entry point for processing part of `matchinfo` endpoint
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
-    ref_data: Arc<Mutex<RefDataLists>>,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
     // ) -> Result<MatchInfoResult, ProcessingError> {
-) -> Result<(), ProcessingError> {
+) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
     );
 
     let responses =
-        MatchDataResponses::new_with_match_data(par, client, ref_data).await?;
+        MatchDataResponses::new_with_match_data(par, client, in_memory_db)
+            .await?;
 
+    // Debugging
     responses.export_data_to_file();
 
-    // let result = MatchInfoProcessor::new_with_response(responses)?
-    //     .process()?
-    //     .assemble()?;
+    let result = MatchInfoProcessor::new_with_response(responses)
+        .process()
+        .assemble()?;
 
-    // Ok(result)
-    Ok(())
-}
-
-pub async fn load_aoc_ref_data(
-    git_client: reqwest::Client,
-    reference_db: Arc<Mutex<RefDataLists>>,
-) -> Result<()> {
-    let mut files: Vec<File> = Vec::with_capacity(3);
-    files.push(
-        File::builder()
-            .name("players")
-            .ext(FileFormat::Yaml)
-            .build(),
-    );
-
-    files.push(
-        File::builder()
-            .name("platforms")
-            .ext(FileFormat::Json)
-            .build(),
-    );
-
-    files.push(File::builder().name("teams").ext(FileFormat::Json).build());
-
-    for file in files {
-        let request: Option<GithubFileRequest> = Some(
-            GithubFileRequest::builder()
-                .client(git_client.clone())
-                .root("https://raw.githubusercontent.com")
-                .user("SiegeEngineers")
-                .repo("aoc-reference-data")
-                .uri("master/data")
-                .file(file.clone())
-                .build(),
-        );
-
-        if let Some(request) = request {
-            let response = request.execute().await?;
-
-            match file.ext() {
-                FileFormat::Json => match file.name().as_str() {
-                    "platforms" => {
-                        let mut locked = reference_db.lock().await;
-                        locked.platforms =
-                            response.json::<Vec<platforms::Platforms>>().await?
-                    }
-                    "teams" => {
-                        let mut locked = reference_db.lock().await;
-                        locked.teams =
-                            response.json::<Vec<teams::Teams>>().await?
-                    }
-                    _ => {}
-                },
-                FileFormat::Yaml => {
-                    if let "players" = file.name().as_str() {
-                        let mut locked = reference_db.lock().await;
-                        locked.players =
-                            serde_yaml::from_slice::<Vec<players::Player>>(
-                                &response.bytes().await?,
-                            )
-                            .unwrap()
-                    }
-                }
-                _ => {}
-            }
-        }
-        else {
-            todo!()
-        }
-    }
-
-    Ok(())
+    Ok(result)
 }

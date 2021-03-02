@@ -7,6 +7,7 @@ use crate::{
         aoc_ref::RefDataLists,
         api::MatchInfoRequest,
         requests::ApiClient,
+        InMemoryDb,
     },
     server::handlers::{
         return_health_check_to_client,
@@ -21,9 +22,9 @@ use warp::Filter;
 #[must_use]
 pub fn transparencies(
     aoe_net_client: reqwest::Client,
-    ref_data: Arc<Mutex<RefDataLists>>,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    health_check().or(matchinfo(aoe_net_client, ref_data))
+    health_check().or(matchinfo(aoe_net_client, in_memory_db))
 }
 
 /// GET `/health_check`
@@ -39,7 +40,7 @@ pub fn health_check(
 /// Our matchinfo endpoint
 pub fn matchinfo(
     aoe_net_client: reqwest::Client,
-    ref_data: Arc<Mutex<RefDataLists>>,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     // Basically a filter that listens on all endpoints which just wraps and
     // forwards our aoe_net_client to make it reusable between requests to
@@ -49,7 +50,7 @@ pub fn matchinfo(
 
     // A filter that wraps the `in-memory DB` of aoc_reference_data so we can
     // have it as a context in data processing
-    let ref_data_filter = warp::any().map(move || ref_data.clone());
+    let ref_data_filter = warp::any().map(move || in_memory_db.clone());
 
     warp::path!("matchinfo")
         .and(warp::get())

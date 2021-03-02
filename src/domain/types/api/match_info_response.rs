@@ -1,3 +1,5 @@
+#![allow(clippy::used_underscore_binding)]
+#![allow(clippy::empty_enum)]
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
@@ -6,6 +8,7 @@ use serde::{
     Serialize,
 };
 use std::collections::HashMap;
+use typed_builder::TypedBuilder;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 enum MatchSize {
@@ -49,15 +52,15 @@ pub struct MatchInfo {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Players(Vec<PlayersRaw>);
+pub struct Players(pub Vec<PlayersRaw>);
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, TypedBuilder, Debug, PartialEq, Serialize)]
 pub struct PlayersRaw {
     rating: Rating,
-    player_number: u8,
+    player_number: i64,
     name: String,
     country: String,
-    civilisation: Civilisations,
+    civilisation: Civilisation,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -82,8 +85,8 @@ pub struct Rating {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum Civilisations {
-    Aztecs,
+pub enum Civilisation {
+    Aztecs = 0,
     Berbers,
     Britons,
     Bulgarians,

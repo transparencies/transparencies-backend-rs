@@ -13,6 +13,8 @@
 #[macro_use]
 extern crate log;
 
+extern crate transparencies_backend_rs;
+
 use eyre::Error;
 use human_panic::setup_panic;
 use log::{
@@ -55,19 +57,20 @@ use std::{
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
-        data_processing::load_aoc_ref_data,
+        data_processing::get_static_data_inside_thread,
         types::{
-            aoc_ref::RefDataLists,
             requests::{
                 ApiClient,
                 ApiRequest,
             },
+            InMemoryDb,
         },
     },
     server::filters,
     setup::{
         cli::CommandLineSettings,
         configuration::get_configuration,
+        startup::set_up_logging,
     },
 };
 
@@ -105,43 +108,26 @@ async fn main() {
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
-        // Setting up logfile
-        let log_setup = LogConfigBuilder::builder()
-            .path(&cli_args.log_file_path)
-            .size(100)
-            .roll_count(10)
-            .level(&cli_args.log_level)
-            .output_file()
-            .output_console()
-            .build();
-
-        simple_log::new(log_setup.clone()).expect("Log setup failed!");
-        debug!("Log config: {:?}", &log_setup);
-        trace!("Logs were set up.");
+        set_up_logging(&cli_args);
     }
 
-    let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
-    let aoc_reference_data_clone = aoc_reference_data.clone();
+    // TODO Replace in-memory DB here with a struct holding different fields
+    let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
+    let in_memory_db_clone = in_memory_db.clone();
 
     let api_clients = ApiClient::default();
     let git_client_clone = api_clients.github.clone();
+    let aoe2net_client_clone = api_clients.aoe2net.clone();
 
-    tokio::spawn(async move {
-        loop {
-            load_aoc_ref_data(
-                git_client_clone.clone(),
-                aoc_reference_data_clone.clone(),
-            )
-            .await
-            .unwrap();
-
-            time::sleep(Duration::from_secs(600)).await;
-        }
-    });
+    get_static_data_inside_thread(
+        git_client_clone,
+        aoe2net_client_clone,
+        in_memory_db_clone,
+    );
 
     let api = filters::transparencies(
         api_clients.aoe2net.clone(),
-        aoc_reference_data.clone(),
+        in_memory_db.clone(),
     );
 
     let routes = api.with(warp::log("transparencies"));

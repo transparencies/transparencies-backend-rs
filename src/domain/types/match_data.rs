@@ -3,10 +3,12 @@ use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
 
+use super::InMemoryDb;
+
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct MatchDataResponses {
     pub aoe2net: Aoe2NetResponses,
-    pub github: RefDataLists,
+    pub db: InMemoryDb,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
