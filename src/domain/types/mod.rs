@@ -22,3 +22,26 @@ pub struct InMemoryDb {
     pub aoe2net_languages: HashMap<&'static str, serde_json::Value>,
     pub github_file_content: RefDataLists,
 }
+
+impl InMemoryDb {
+    // Return the `InMemoryDb` only with the language needed
+    pub fn with_language(
+        &mut self,
+        language: &str,
+    ) -> Self {
+        let mut used_language = self.aoe2net_languages.clone();
+
+        if used_language.contains_key(language) {
+            used_language.retain(|&lang, _| lang == language);
+        }
+        else {
+            // Set standard language value to `English`
+            used_language.retain(|&lang, _| lang == "en");
+        }
+
+        Self {
+            aoe2net_languages: used_language,
+            github_file_content: self.github_file_content.clone(),
+        }
+    }
+}

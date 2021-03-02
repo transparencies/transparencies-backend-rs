@@ -1,3 +1,4 @@
+use log::debug;
 use serde_json::Value;
 
 use crate::domain::{
@@ -65,6 +66,20 @@ impl MatchInfoProcessor {
             .unwrap();
 
         let mut player_raw = Vec::with_capacity(players_array.len() as usize);
+
+        let mut translation: Option<serde_json::Value> = None;
+
+        if self.responses.db.aoe2net_languages.len() == 1 {
+            for (language, translation_value) in
+                self.responses.db.aoe2net_languages.drain().take(1)
+            {
+                debug!("Translation that was used: {:?}", language);
+                translation = Some(translation_value);
+            }
+        }
+        else {
+                translation = None;
+        };
 
         for (_player_number, req_player) in players_array.iter().enumerate() {
             let lookuped_player = self

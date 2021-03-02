@@ -147,7 +147,7 @@ impl MatchDataResponses {
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: in_memory_db.lock().await.clone(),
+            db: in_memory_db.lock().await.with_language(&par.language),
             ..Default::default()
         };
 
