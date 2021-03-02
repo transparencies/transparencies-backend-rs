@@ -7,6 +7,8 @@ use crate::domain::types::{
 
 #[derive(Error, Debug)]
 pub enum ProcessingError {
+    #[error("Assembly of Matchinfo result failed. Result is empty.")]
+    AssemblyError,
     #[error("Responder experienced an error.")]
     ResponderMalfunction(#[from] ResponderError),
 }

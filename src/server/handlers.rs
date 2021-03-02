@@ -62,7 +62,7 @@ pub async fn return_matchinfo_to_client(
         ref_data.clone(),
     )
     .await
-    .unwrap();
+    .expect("Matchinfo processing failed.");
 
     Ok(warp::reply::json(&processed_match_info))
 }

@@ -91,6 +91,7 @@ assert_cmd = "1.0.3"
 predicates = "1.0.7"
 lazy_static = "1.4.0"
 pretty_assertions = "0.6.1"
+claim = "0.5.0"
 
 [profile.dev]
 opt-level=0

@@ -46,10 +46,17 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_all_players(&self) -> Result<serde_json::Value> {
+    pub fn parse_all_players<T>(&self) -> Result<T>
+    where T: for<'de> serde::Deserialize<'de> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("players array".to_string())),
-            |val| Ok(val["last_match"]["players"].clone()),
+            |val| {
+                Ok(serde_json::from_str::<T>(
+                    &serde_json::to_string(&val["last_match"]["players"])
+                        .expect("Conversion of players to string failed."),
+                )
+                .expect("Parsing of player struct failed."))
+            },
         )
     }
 
@@ -110,11 +117,14 @@ impl MatchDataResponses {
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
-    //   pub fn get_alias_for_player_id(
-    //     &self,
-    // ) -> Result<players::Player, ResponderError> {
-    //     todo!();
-    // }
+    pub fn lookup_player_alias_for_profile_id(
+        &self,
+        _profile_id: &i64,
+    ) -> Option<players::Player> {
+        todo!();
+        // profile_id into string for aoc ref data
+        // self.responses.github.and so on
+    }
 
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)

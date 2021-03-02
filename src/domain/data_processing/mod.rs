@@ -68,6 +68,7 @@ use self::reference_data_handler::load_aoc_ref_data;
 /// Download static files continously every 10 minutes inside a thread
 pub fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
+    aoe2net_client_clone: reqwest::Client,
     aoc_reference_data_clone: Arc<Mutex<RefDataLists>>,
 ) {
     tokio::spawn(async move {
@@ -90,7 +91,7 @@ pub async fn process_match_info_request(
     client: reqwest::Client,
     ref_data: Arc<Mutex<RefDataLists>>,
     // ) -> Result<MatchInfoResult, ProcessingError> {
-) -> Result<(), ProcessingError> {
+) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest: {:?} with {:?}",
         par.id_type, par.id_number
@@ -102,10 +103,9 @@ pub async fn process_match_info_request(
     // Debugging
     responses.export_data_to_file();
 
-    // let result = MatchInfoProcessor::new_with_response(responses)?
-    //     .process()?
-    //     .assemble()?;
+    let result = MatchInfoProcessor::new_with_response(responses)
+        .process()
+        .assemble()?;
 
-    // Ok(result)
-    Ok(())
+    Ok(result)
 }

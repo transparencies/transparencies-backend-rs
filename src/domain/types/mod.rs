@@ -1,4 +1,5 @@
 pub mod aoc_ref;
+pub mod aoe2net;
 pub mod api;
 pub mod match_data;
 pub mod requests;

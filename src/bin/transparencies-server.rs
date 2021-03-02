@@ -111,13 +111,15 @@ async fn main() {
         set_up_logging(&cli_args);
     }
 
+    // TODO Replace in-memory DB here with a struct holding different fields
     let aoc_reference_data = Arc::new(Mutex::new(RefDataLists::new()));
     let aoc_reference_data_clone = aoc_reference_data.clone();
 
     let api_clients = ApiClient::default();
     let git_client_clone = api_clients.github.clone();
+    let aoe2net_client_clone = api_clients.aoe2net.clone();
 
-    get_static_data_inside_thread(git_client_clone, aoc_reference_data_clone);
+    get_static_data_inside_thread(git_client_clone, aoe2net_client_clone, aoc_reference_data_clone);
 
     let api = filters::transparencies(
         api_clients.aoe2net.clone(),

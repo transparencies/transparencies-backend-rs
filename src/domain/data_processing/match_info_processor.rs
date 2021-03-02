@@ -2,11 +2,15 @@ use serde_json::Value;
 
 use crate::domain::{
     data_processing::MatchDataResponses,
-    types::api::{
-        MatchInfo,
-        MatchInfoResult,
-        Players,
-        Teams,
+    types::{
+        aoe2net,
+        api::{
+            MatchInfo,
+            MatchInfoResult,
+            Players,
+            PlayersRaw,
+            Teams,
+        },
     },
 };
 use ron::ser::{
@@ -40,26 +44,86 @@ pub struct MatchInfoProcessor {
 }
 
 impl MatchInfoProcessor {
-    pub fn new_with_response(responses: MatchDataResponses) -> Result<Self> {
-        Ok(Self {
+    pub fn new_with_response(responses: MatchDataResponses) -> Self {
+        Self {
             responses,
             match_info: None,
             players: None,
             teams: None,
             result: None,
             errors: None,
-        })
+        }
     }
 
-    pub fn process(// &self
-    ) -> Result<Self> {
-        todo!();
+    pub fn process(&mut self) -> Self {
+        // TODO Error handling instead of unwrap
+        // Collect errors in &self.errors or alike
+        let players_array = self
+            .responses
+            .parse_all_players::<Vec<aoe2net::Players>>()
+            .unwrap();
+
+        let player_raw = Vec::with_capacity(players_array.len() as usize);
+
+        for (_player_number, _player) in players_array.iter().enumerate() {
+            // TODO Implement lookup
+            // lookup_player_alias_for_profile_id(&player.profile_id)
+
+            let _lookup_player = self
+                .responses
+                .lookup_player_alias_for_profile_id(&_player.profile_id);
+
+            // player_raw.push(
+            // PlayersRaw::builder()
+            //     // TODO Rating struct
+            //     //.rating(player.rating)
+            //     .player_number(player.slot)
+            //     .name(if let Some(lookup_player) = lookup_player {
+            //         lookup_player.name
+            //     } else {
+            //         player.name
+            //     } )
+            //     .country(if let Some(lookup_player) = lookup_player {
+            //         lookup_player.country
+            //     } else {
+            //         player.country.to_string()
+            //     } )
+            //     .civilisation(civilisation)
+            //     .build()
+            // )
+        }
+
+        let _player_result = Players(player_raw);
+
+        println!(
+            "Players array (Length: {:?}): {:#?}",
+            players_array.len(),
+            players_array
+        );
 
         // Read in Teams
         // Read Players into Teams
         // Read Ratings into Players
         // Assemble Information to MatchInfo
         // Wrap MatchInfo with Erros into MatchInfoResult
+
+        Self {
+            responses: self.responses.clone(),
+            match_info: None,
+            players: None,
+            teams: None,
+            result: None,
+            errors: None,
+        }
+    }
+
+    pub fn assemble(&self) -> Result<MatchInfoResult> {
+        if let Some(result) = &self.result {
+            Ok(result.clone())
+        }
+        else {
+            return Err(ProcessingError::AssemblyError);
+        }
     }
 
     pub fn export_data_to_file(&self) {
@@ -77,12 +141,4 @@ impl MatchInfoProcessor {
         to_writer_pretty(writer, &self.result, ron_config)
             .expect("Unable to write data");
     }
-
-    pub fn assemble(// &self
-    ) -> Result<MatchInfoResult> {
-        todo!();
-    }
-
-    // Return Teams array
-    // Return Ratings for `profile_id`
 }
