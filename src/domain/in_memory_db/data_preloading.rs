@@ -30,6 +30,7 @@ use crate::domain::{
         CLIENT_REQUEST_TIMEOUT,
     },
     data_processing::error::{
+        ApiRequestError,
         FileRequestError,
         ProcessingError,
     },
@@ -56,8 +57,71 @@ use crate::domain::{
     },
 };
 
-/// Download data from `aoc-reference-data` Github repository
-pub async fn load_aoc_ref_data(
+pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
+        "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms",
+        "nl", "pt", "ru", "tr", "vi", "zh", "zh-TW",
+    ];
+
+pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
+
+/// Preload data from `aoe2net`
+pub async fn preload_data(
+    api_client: reqwest::Client,
+    git_client: reqwest::Client,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
+) -> Result<(), ApiRequestError> {
+    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone())
+        .await
+        .expect("Unable to preload files from Github");
+
+    preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
+        .await
+        .expect("Unable to preload data from AoE2.net");
+
+    Ok(())
+}
+
+/// Preload data from `aoe2net`
+pub async fn preload_aoe2_net_data(
+    api_client: reqwest::Client,
+    in_memory_db: Arc<Mutex<InMemoryDb>>,
+) -> Result<(), ApiRequestError> {
+
+    let mut language_requests: Vec<ApiRequest> =
+        Vec::with_capacity(LANGUAGE_STRINGS.len());
+
+
+    
+    // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
+    for game in GAME_STRINGS.iter() {
+        for (_language_number, language) in LANGUAGE_STRINGS.iter().enumerate() {
+            language_requests.push(
+                ApiRequest::builder()
+                    .client(api_client.clone())
+                    .root("https://aoe2.net/api")
+                    .endpoint("strings")
+                    .query(vec![
+                        ("game".to_string(), game.to_string()),
+                        ("language".to_string(), language.to_string()),
+                    ])
+                    .build(),
+            )
+        }
+    }
+
+    for (req_number, req) in language_requests.iter().enumerate() {
+
+    }
+
+    // let response = req.execute().await?;
+
+    // update_data_in_db(file, in_memory_db.clone(), response, req).await?;
+
+    Ok(())
+}
+
+/// Preload data from `aoc-reference-data` Github repository
+pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), FileRequestError> {

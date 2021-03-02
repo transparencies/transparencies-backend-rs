@@ -62,29 +62,26 @@ use crate::domain::{
         FileRequestError,
         ProcessingError,
     },
-    in_memory_db::reference_data_handler::load_aoc_ref_data,
+    in_memory_db::data_preloading::preload_data,
     types::InMemoryDb,
 };
 
 /// Download static files continously every 10 minutes inside a thread
 pub fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
-    _aoe2net_client_clone: reqwest::Client,
+    api_client_clone: reqwest::Client,
     in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
 ) {
     tokio::spawn(async move {
         loop {
-            load_aoc_ref_data(
+            preload_data(
+                api_client_clone.clone(),
                 git_client_clone.clone(),
                 in_memory_db_clone.clone(),
             )
             .await
-            .expect("Unable to load files from Github");
+            .expect("Unable to preload data.");
 
-            // TODO
-            // Call another function here that pulls in data from various
-            // standard languages or fire directly all possible
-            // requests, because it's just once every 10 minutes
             // TODO
             // Create enum for all possible languages for later usage or also
             // for requests https://aoe2.net/api/strings?game=aoe2de&language=en

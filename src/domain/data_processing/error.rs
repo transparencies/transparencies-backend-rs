@@ -37,3 +37,13 @@ pub enum FileRequestError {
     #[error("HTTP-Client experienced an error.")]
     HttpClientError(#[from] reqwest::Error),
 }
+
+#[derive(Error, Debug)]
+pub enum ApiRequestError {
+    #[error(
+        "Request {req:?} with {name:?} is not matching any response name."
+    )]
+    RequestNotMatching { name: String, req: ApiRequest },
+    #[error("HTTP-Client experienced an error.")]
+    HttpClientError(#[from] reqwest::Error),
+}
