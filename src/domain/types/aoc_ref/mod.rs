@@ -59,11 +59,12 @@ impl RefDataLists {
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
+    #[must_use]
     pub fn lookup_player_alias_for_profile_id(
         &self,
-        profile_id: String,
+        profile_id: &str,
     ) -> Option<players::Player> {
-        match self.players_index_aoe2de.get(&profile_id) {
+        match self.players_index_aoe2de.get(profile_id) {
             Some(alias_position) => Some(self.players[*alias_position].clone()),
             None => None,
         }

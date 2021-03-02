@@ -231,19 +231,13 @@ impl MatchDataResponses {
         let mut game: String = STANDARD_GAME.to_string();
 
         // Set `language` to Query value if specified
-        match par.language {
-            Some(lang) => {
-                language = lang;
-            }
-            None => {}
+        if let Some(lang) = par.language {
+            language = lang;
         }
 
         // Set `game` to Query value if specified
-        match par.game {
-            Some(val) => {
-                game = val;
-            }
-            None => {}
+        if let Some(val) = par.game {
+            game = val;
         }
 
         // Include github response

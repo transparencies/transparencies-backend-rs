@@ -85,7 +85,7 @@ impl MatchInfoProcessor {
                 .db
                 .github_file_content
                 .lookup_player_alias_for_profile_id(
-                    req_player.profile_id.to_string(),
+                    &(req_player.profile_id.to_string())
                 );
 
             // TODO: calculate win rate
@@ -110,22 +110,14 @@ impl MatchInfoProcessor {
                 PlayersRaw::builder()
                     .rating(player_rating)
                     .player_number(req_player.slot)
-                    .name(
-                        if let Some(lookup_player) = &lookuped_player {
-                            lookup_player.name.clone()
-                        }
-                        else {
-                            req_player.name.clone()
-                        },
-                    )
-                    .country(
-                        if let Some(lookup_player) = &lookuped_player {
-                            lookup_player.country.clone()
-                        }
-                        else {
-                            req_player.country.to_string()
-                        },
-                    )
+                    .name(lookuped_player.as_ref().map_or_else(
+                        || req_player.name.clone(),
+                        |lookup_player| lookup_player.name.clone(),
+                    ))
+                    .country(lookuped_player.as_ref().map_or_else(
+                        || req_player.country.to_string(),
+                        |lookup_player| lookup_player.country.clone(),
+                    ))
                     .civilisation(
                         if let Some(translation) = &translation {
                             translation["civ"][req_player.civ.to_string()]
