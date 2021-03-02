@@ -15,6 +15,7 @@ use std::{
 use tokio::sync::Mutex;
 
 use self::aoc_ref::RefDataLists;
+use crate::STANDARD_LANGUAGE;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -36,7 +37,9 @@ impl InMemoryDb {
         }
         else {
             // Set standard language value to `English`
-            used_language.retain(|&lang, _| lang == "en");
+            // if wrong language is set in `Query`
+            let language = STANDARD_LANGUAGE;
+            used_language.retain(|&lang, _| lang == language);
         }
 
         Self {

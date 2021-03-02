@@ -36,6 +36,11 @@ use tokio::sync::Mutex;
 
 use super::error::ResponderError;
 
+use crate::{
+    STANDARD_GAME,
+    STANDARD_LANGUAGE,
+};
+
 type Result<T> = result::Result<T, ResponderError>;
 
 impl MatchDataResponses {
@@ -145,9 +150,28 @@ impl MatchDataResponses {
     ) -> Result<MatchDataResponses> {
         let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
 
+        let mut language: String = STANDARD_LANGUAGE.to_string();
+        let mut game: String = STANDARD_GAME.to_string();
+
+        // Set `language` to Query value if specified
+        match par.language {
+            Some(lang) => {
+                language = lang;
+            }
+            None => {}
+        }
+
+        // Set `game` to Query value if specified
+        match par.game {
+            Some(val) => {
+                game = val;
+            }
+            None => {}
+        }
+
         // Include github response
         let mut responses = MatchDataResponses {
-            db: in_memory_db.lock().await.with_language(&par.language),
+            db: in_memory_db.lock().await.with_language(&language),
             ..Default::default()
         };
 
@@ -157,7 +181,7 @@ impl MatchDataResponses {
             .root("https://aoe2.net/api")
             .endpoint("player/lastmatch")
             .query(vec![
-                ("game".to_string(), par.game.clone()),
+                ("game".to_string(), game.clone()),
                 (par.id_type.clone(), par.id_number.clone()),
             ])
             .build();
@@ -176,7 +200,7 @@ impl MatchDataResponses {
                 .root("https://aoe2.net/api")
                 .endpoint("leaderboard")
                 .query(vec![
-                    ("game".to_string(), par.game.clone()),
+                    ("game".to_string(), game.clone()),
                     (par.id_type.clone(), par.id_number.clone()),
                     ("leaderboard_id".to_string(), leaderboard_id.clone()),
                 ])
@@ -191,7 +215,7 @@ impl MatchDataResponses {
                 .root("https://aoe2.net/api")
                 .endpoint("player/ratinghistory")
                 .query(vec![
-                    ("game".to_string(), par.game.clone()),
+                    ("game".to_string(), game.clone()),
                     (par.id_type.clone(), par.id_number.clone()),
                     ("leaderboard_id".to_string(), leaderboard_id),
                     ("count".to_string(), "1".to_string()),

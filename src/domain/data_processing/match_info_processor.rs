@@ -78,7 +78,7 @@ impl MatchInfoProcessor {
             }
         }
         else {
-                translation = None;
+            translation = None;
         };
 
         for (_player_number, req_player) in players_array.iter().enumerate() {
