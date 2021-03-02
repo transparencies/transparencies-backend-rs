@@ -64,37 +64,38 @@ impl MatchInfoProcessor {
             .parse_all_players::<Vec<aoe2net::Players>>()
             .unwrap();
 
-        let player_raw = Vec::with_capacity(players_array.len() as usize);
+        let mut player_raw = Vec::with_capacity(players_array.len() as usize);
 
-        for (_player_number, _player) in players_array.iter().enumerate() {
-            // TODO Implement lookup
-            // lookup_player_alias_for_profile_id(&player.profile_id)
+        for (_player_number, req_player) in players_array.iter().enumerate() {
+            let lookuped_player = self
+                .responses
+                .db
+                .github_file_content
+                .lookup_player_alias_for_profile_id(
+                    req_player.profile_id.to_string(),
+                );
 
-            // let _lookup_player = self
-            //     .responses
-            //     .lookup_player_alias_for_profile_id(&_player.profile_id);
-
-            // player_raw.push(
-            // PlayersRaw::builder()
-            //     // TODO Rating struct
-            //     //.rating(player.rating)
-            //     .player_number(player.slot)
-            //     .name(if let Some(lookup_player) = lookup_player {
-            //         lookup_player.name
-            //     } else {
-            //         player.name
-            //     } )
-            //     .country(if let Some(lookup_player) = lookup_player {
-            //         lookup_player.country
-            //     } else {
-            //         player.country.to_string()
-            //     } )
-            //     .civilisation(civilisation)
-            //     .build()
-            // )
+            player_raw.push(
+                PlayersRaw::builder()
+                // TODO Rating struct
+                //.rating(player.rating)
+                .player_number(req_player.slot)
+                .name(if let Some(lookup_player) = &lookuped_player {
+                    lookup_player.name.clone()
+                } else {
+                    req_player.name.clone()
+                } )
+                .country(if let Some(lookup_player) = &lookuped_player {
+                    lookup_player.country.clone()
+                } else {
+                    req_player.country.to_string()
+                } ), /* TODO Language lookup
+                      * .civilisation(civilisation)
+                      * .build() */
+            )
         }
 
-        let _player_result = Players(player_raw);
+        // let _player_result = Players(player_raw);
 
         println!(
             "Players array (Length: {:?}): {:#?}",

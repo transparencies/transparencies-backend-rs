@@ -10,6 +10,8 @@ use serde::{
 pub struct MatchInfoRequest {
     pub id_type: String,
     pub id_number: String,
+    pub language: String,
+    pub game: String,
 }
 
 // pub enum Language {

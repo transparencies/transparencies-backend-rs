@@ -95,8 +95,8 @@ pub async fn process_match_info_request(
     // ) -> Result<MatchInfoResult, ProcessingError> {
 ) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
-        "MatchInfoRequest: {:?} with {:?}",
-        par.id_type, par.id_number
+        "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",
+        par.game, par.id_type, par.id_number, par.language
     );
 
     let responses =

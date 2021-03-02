@@ -117,16 +117,6 @@ impl MatchDataResponses {
         )
     }
 
-    /// Search through alias list for `player_id` and return `players::Player`
-    // pub fn lookup_player_alias_for_profile_id(
-    //     &self,
-    //     _profile_id: &i64,
-    // ) -> Option<players::Player> {
-    //     todo!();
-    //     // profile_id into string for aoc ref data
-    //     // self.responses.github.and so on
-    // }
-
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)
     }
@@ -167,7 +157,7 @@ impl MatchDataResponses {
             .root("https://aoe2.net/api")
             .endpoint("player/lastmatch")
             .query(vec![
-                ("game".to_string(), "aoe2de".to_string()),
+                ("game".to_string(), par.game.clone()),
                 (par.id_type.clone(), par.id_number.clone()),
             ])
             .build();
@@ -186,7 +176,7 @@ impl MatchDataResponses {
                 .root("https://aoe2.net/api")
                 .endpoint("leaderboard")
                 .query(vec![
-                    ("game".to_string(), "aoe2de".to_string()),
+                    ("game".to_string(), par.game.clone()),
                     (par.id_type.clone(), par.id_number.clone()),
                     ("leaderboard_id".to_string(), leaderboard_id.clone()),
                 ])
@@ -201,7 +191,7 @@ impl MatchDataResponses {
                 .root("https://aoe2.net/api")
                 .endpoint("player/ratinghistory")
                 .query(vec![
-                    ("game".to_string(), "aoe2de".to_string()),
+                    ("game".to_string(), par.game.clone()),
                     (par.id_type.clone(), par.id_number.clone()),
                     ("leaderboard_id".to_string(), leaderboard_id),
                     ("count".to_string(), "1".to_string()),
