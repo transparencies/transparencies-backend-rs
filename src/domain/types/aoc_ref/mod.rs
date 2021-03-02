@@ -7,19 +7,19 @@ use ::serde::{
     Serialize,
 };
 use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AoePlayers(Vec<players::Player>);
+use crate::domain::data_processing::error::IndexingError;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AoeTeams(Vec<teams::Teams>);
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AoePlatforms(Vec<platforms::Platforms>);
+pub type AoePlayers = Vec<players::Player>;
+pub type AoeTeams = Vec<teams::Teams>;
+pub type AoePlatforms = Vec<platforms::Platforms>;
+pub type PositionInAoePlayers = usize;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct RefDataLists {
     pub players: AoePlayers,
+    pub players_index_aoe2de: HashMap<String, PositionInAoePlayers>,
     pub teams: AoeTeams,
     pub platforms: AoePlatforms,
 }
@@ -28,6 +28,34 @@ impl RefDataLists {
     #[must_use]
     pub fn new() -> Self {
         RefDataLists::default()
+    }
+
+    /// Index `players` into `players_index` HashMap
+    pub fn index(&mut self) -> std::result::Result<(), IndexingError> {
+        let mut index: HashMap<String, PositionInAoePlayers> = HashMap::new();
+
+        for (player_number, player) in self.players.iter().enumerate() {
+            if !&player.platforms.de.is_empty() {
+                for profile_id in &player.platforms.de {
+                    let old_value =
+                        index.insert(profile_id.to_string(), player_number - 1);
+
+                    if let Some(x) = old_value {
+                        return Err(IndexingError::PlayerAlreadyExisting {
+                            name: player.name.clone(),
+                            profile_id: profile_id.to_string(),
+                            pos: player_number - 1,
+                            doublette: x,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Fill index field in struct
+        self.players_index_aoe2de = index;
+
+        Ok(())
     }
 
     // pub fn get_alias_from_profile_id() -> Option<String> {

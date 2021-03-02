@@ -47,3 +47,16 @@ pub enum ApiRequestError {
     #[error("HTTP-Client experienced an error.")]
     HttpClientError(#[from] reqwest::Error),
 }
+
+#[derive(Error, Debug)]
+pub enum IndexingError {
+    #[error(
+        "Player {name:?} with Profile ID {profile_id:?} does already exist in the index at position {pos:?}, doublette is {doublette:?}."
+    )]
+    PlayerAlreadyExisting {
+        name: String,
+        profile_id: String,
+        pos: usize,
+        doublette: usize,
+    },
+}

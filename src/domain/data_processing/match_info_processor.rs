@@ -122,7 +122,7 @@ impl MatchInfoProcessor {
             Ok(result.clone())
         }
         else {
-            return Err(ProcessingError::AssemblyError);
+            Err(ProcessingError::AssemblyError)
         }
     }
 

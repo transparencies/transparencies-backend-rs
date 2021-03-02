@@ -32,6 +32,7 @@ use crate::domain::{
     data_processing::error::{
         ApiRequestError,
         FileRequestError,
+        IndexingError,
         ProcessingError,
     },
     types::{
@@ -74,9 +75,24 @@ pub async fn preload_data(
         .await
         .expect("Unable to preload files from Github");
 
+    index_aoc_ref_data(in_memory_db.clone())
+        .await
+        .expect("Indexing of players failed.");
+
     preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
         .await
         .expect("Unable to preload data from AoE2.net");
+
+    Ok(())
+}
+
+async fn index_aoc_ref_data(
+    in_memory_db: Arc<Mutex<InMemoryDb>>
+) -> Result<(), IndexingError> {
+    {
+        let mut guard = in_memory_db.lock().await;
+        guard.github_file_content.index()?;
+    }
 
     Ok(())
 }
