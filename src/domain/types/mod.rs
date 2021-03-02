@@ -19,6 +19,6 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
-    pub aoe2net_languages: HashMap<String, serde_json::Value>,
+    pub aoe2net_languages: HashMap<&'static str, serde_json::Value>,
     pub github_file_content: RefDataLists,
 }

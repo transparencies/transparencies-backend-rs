@@ -58,9 +58,9 @@ use crate::domain::{
 };
 
 pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
-        "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms",
-        "nl", "pt", "ru", "tr", "vi", "zh", "zh-TW",
-    ];
+    "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms", "nl",
+    "pt", "ru", "tr", "vi", "zh", "zh-TW",
+];
 
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
@@ -86,16 +86,44 @@ pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), ApiRequestError> {
+    let language_requests = assemble_language_requests(api_client);
 
-    let mut language_requests: Vec<ApiRequest> =
+    let responses =
+        load_language_responses_into_hashmap(language_requests).await?;
+
+    {
+        let mut guard = in_memory_db.lock().await;
+        guard.aoe2net_languages = responses;
+    }
+
+    Ok(())
+}
+
+async fn load_language_responses_into_hashmap(
+    language_requests: Vec<(&str, ApiRequest)>
+) -> Result<HashMap<&str, serde_json::Value>, ApiRequestError> {
+    let mut responses: HashMap<&str, serde_json::Value> =
+        HashMap::with_capacity(LANGUAGE_STRINGS.len());
+
+    for (_req_number, (req_name, req)) in language_requests.iter().enumerate() {
+        responses.insert(req_name, req.execute().await?);
+    }
+
+    Ok(responses)
+}
+
+/// Assembles all requests for the `LANGUAGE_STRINGS`
+fn assemble_language_requests(
+    api_client: reqwest::Client
+) -> Vec<(&'static str, ApiRequest)> {
+    let mut language_requests: Vec<(&str, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
 
-
-    
     // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
     for game in GAME_STRINGS.iter() {
-        for (_language_number, language) in LANGUAGE_STRINGS.iter().enumerate() {
-            language_requests.push(
+        for language in LANGUAGE_STRINGS.iter() {
+            language_requests.push((
+                language,
                 ApiRequest::builder()
                     .client(api_client.clone())
                     .root("https://aoe2.net/api")
@@ -105,19 +133,11 @@ pub async fn preload_aoe2_net_data(
                         ("language".to_string(), language.to_string()),
                     ])
                     .build(),
-            )
+            ))
         }
     }
 
-    for (req_number, req) in language_requests.iter().enumerate() {
-
-    }
-
-    // let response = req.execute().await?;
-
-    // update_data_in_db(file, in_memory_db.clone(), response, req).await?;
-
-    Ok(())
+    language_requests
 }
 
 /// Preload data from `aoc-reference-data` Github repository
