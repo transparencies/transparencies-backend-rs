@@ -85,7 +85,7 @@ impl MatchInfoProcessor {
                 .db
                 .github_file_content
                 .lookup_player_alias_for_profile_id(
-                    &(req_player.profile_id.to_string())
+                    &(req_player.profile_id.to_string()),
                 );
 
             // TODO: calculate win rate
