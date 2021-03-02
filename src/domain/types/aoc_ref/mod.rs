@@ -38,13 +38,13 @@ impl RefDataLists {
             if !&player.platforms.de.is_empty() {
                 for profile_id in &player.platforms.de {
                     let old_value =
-                        index.insert(profile_id.to_string(), player_number - 1);
+                        index.insert(profile_id.to_string(), player_number);
 
                     if let Some(x) = old_value {
                         return Err(IndexingError::PlayerAlreadyExisting {
                             name: player.name.clone(),
                             profile_id: profile_id.to_string(),
-                            pos: player_number - 1,
+                            pos: player_number,
                             doublette: x,
                         });
                     }
