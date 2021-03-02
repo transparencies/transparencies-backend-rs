@@ -20,15 +20,15 @@
     - [x] periodically:
         - [x] at the start of the server
         - [x] once every 10 minutes
-- [ ] Merge various data sources into a `MatchInfo` datastructure for giving back to client
-    - [ ] await json from polska for new matchinfo DS for merging/exposing to our frontend
-    - [ ] Q: What's the best way in Rust to automatically map Datastructures
+- [ ] **WIP** Merge various data sources into a `MatchInfo` datastructure for giving back to client
+    - [x] await json from polska for new matchinfo DS for merging/exposing to our frontend
+    - [x] Q: What's the best way in Rust to automatically map Datastructures
 
 ### Error Handling
-- [ ] Implement good error handling
-    - [ ] use crates error types for better `Error handling` e.g. `reqwest::Error`
+- [ ] **WIP** Implement good error handling
+    - [ ] **WIP** use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [ ] use `claim` for better error reports
-    - [ ] use `thiserror` in library part
+    - [ ] **WIP** use `thiserror` in library part
     - [ ] use `eyre` consistently for results with reports in binary part (?)
     - [ ] use `.map_err` and return HTTP status codes
 - [ ] implement `todo!()`s
@@ -60,7 +60,7 @@
     - [ ] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Documentation
-- [ ] create good documentation (!!!)
+- [ ] **WIP** create good documentation (!!!)
 
 ### Benchmarking
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?

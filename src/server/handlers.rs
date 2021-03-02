@@ -9,6 +9,7 @@ use crate::domain::{
             ApiClient,
             ApiRequest,
         },
+        InMemoryDb,
         MatchDataResponses,
     },
 };
@@ -54,7 +55,7 @@ pub async fn return_health_check_to_client(
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
     aoe_net_client: reqwest::Client,
-    ref_data: Arc<Mutex<RefDataLists>>,
+    ref_data: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
     let processed_match_info = process_match_info_request(
         opts,
@@ -62,7 +63,7 @@ pub async fn return_matchinfo_to_client(
         ref_data.clone(),
     )
     .await
-    .unwrap();
+    .expect("Matchinfo processing failed.");
 
     Ok(warp::reply::json(&processed_match_info))
 }

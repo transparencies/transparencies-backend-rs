@@ -9,6 +9,7 @@ use crate::domain::types::{
         MatchInfoResult,
     },
     requests::ApiRequest,
+    InMemoryDb,
     MatchDataResponses,
 };
 use log::{
@@ -27,6 +28,7 @@ use std::{
     collections::HashMap,
     fs,
     io::BufWriter,
+    result,
     sync::Arc,
     time::Duration,
 };
@@ -34,76 +36,81 @@ use tokio::sync::Mutex;
 
 use super::error::ResponderError;
 
+type Result<T> = result::Result<T, ResponderError>;
+
 impl MatchDataResponses {
     /// Return `serde_json::Value` for `leaderboard_id` for future requests
-    pub fn get_leaderboard_id_for_request(
-        &self
-    ) -> Result<String, ResponderError> {
+    pub fn get_leaderboard_id_for_request(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("leaderboard_id".to_string())),
             |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
         )
     }
 
-    pub fn get_all_players(&self) -> Result<serde_json::Value, ResponderError> {
+    pub fn parse_all_players<T>(&self) -> Result<T>
+    where T: for<'de> serde::Deserialize<'de> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("players array".to_string())),
-            |val| Ok(val["last_match"]["players"].clone()),
+            |val| {
+                Ok(serde_json::from_str::<T>(
+                    &serde_json::to_string(&val["last_match"]["players"])
+                        .expect("Conversion of players to string failed."),
+                )
+                .expect("Parsing of player struct failed."))
+            },
         )
     }
 
-    pub fn get_number_of_players(&self) -> Result<String, ResponderError> {
+    pub fn get_number_of_players(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("number of players".to_string())),
             |val| Ok(val["last_match"]["num_players"].to_string()),
         )
     }
 
-    pub fn get_finished_time(&self) -> Result<String, ResponderError> {
+    pub fn get_finished_time(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("finished time".to_string())),
             |val| Ok(val["last_match"]["finished"].to_string()),
         )
     }
 
-    pub fn get_rating_type(&self) -> Result<String, ResponderError> {
+    pub fn get_rating_type(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating type".to_string())),
             |val| Ok(val["last_match"]["rating_type"].to_string()),
         )
     }
 
-    pub fn get_server_location(&self) -> Result<String, ResponderError> {
+    pub fn get_server_location(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("server location".to_string())),
             |val| Ok(val["last_match"]["server"].to_string()),
         )
     }
 
-    pub fn get_highest_rating(&self) -> Result<String, ResponderError> {
+    pub fn get_highest_rating(&self) -> Result<String> {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("highest rating".to_string())),
             |val| Ok(val["leaderboard"]["highest_rating"].to_string()),
         )
     }
 
-    pub fn get_country_from_leaderboard(
-        &self
-    ) -> Result<String, ResponderError> {
+    pub fn get_country_from_leaderboard(&self) -> Result<String> {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("country".to_string())),
             |val| Ok(val["leaderboard"]["country"].to_string()),
         )
     }
 
-    pub fn get_clan_from_leaderboard(&self) -> Result<String, ResponderError> {
+    pub fn get_clan_from_leaderboard(&self) -> Result<String> {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("clan".to_string())),
             |val| Ok(val["leaderboard"]["clan"].to_string()),
         )
     }
 
-    pub fn get_rating(&self) -> Result<serde_json::Value, ResponderError> {
+    pub fn get_rating(&self) -> Result<serde_json::Value> {
         self.aoe2net.rating_history.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating history".to_string())),
             |val| Ok(val[0].clone()),
@@ -111,10 +118,13 @@ impl MatchDataResponses {
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
-    //   pub fn get_alias_for_player_id(
+    // pub fn lookup_player_alias_for_profile_id(
     //     &self,
-    // ) -> Result<players::Player, ResponderError> {
+    //     _profile_id: &i64,
+    // ) -> Option<players::Player> {
     //     todo!();
+    //     // profile_id into string for aoc ref data
+    //     // self.responses.github.and so on
     // }
 
     pub fn print_debug_information(&self) {
@@ -141,10 +151,15 @@ impl MatchDataResponses {
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
-        ref_data: Arc<Mutex<RefDataLists>>,
-    ) -> Result<MatchDataResponses, ResponderError> {
+        in_memory_db: Arc<Mutex<InMemoryDb>>,
+    ) -> Result<MatchDataResponses> {
         let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
-        let mut responses = MatchDataResponses::default();
+
+        // Include github response
+        let mut responses = MatchDataResponses {
+            db: in_memory_db.lock().await.clone(),
+            ..Default::default()
+        };
 
         // GET `PlayerLastMatch` data
         let last_match_request = ApiRequest::builder()
@@ -210,9 +225,6 @@ impl MatchDataResponses {
                 }
             }
         }
-
-        // Include github response
-        responses.github = ref_data.lock().await.clone();
 
         Ok(responses)
     }
