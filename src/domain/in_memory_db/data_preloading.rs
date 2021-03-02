@@ -136,8 +136,8 @@ fn assemble_language_requests(
         Vec::with_capacity(LANGUAGE_STRINGS.len());
 
     // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
-    for game in GAME_STRINGS.iter() {
-        for language in LANGUAGE_STRINGS.iter() {
+    for game in &GAME_STRINGS {
+        for language in &LANGUAGE_STRINGS {
             language_requests.push((
                 language,
                 ApiRequest::builder()
@@ -145,8 +145,8 @@ fn assemble_language_requests(
                     .root("https://aoe2.net/api")
                     .endpoint("strings")
                     .query(vec![
-                        ("game".to_string(), game.to_string()),
-                        ("language".to_string(), language.to_string()),
+                        ("game".to_string(), (*game).to_string()),
+                        ("language".to_string(), (*language).to_string()),
                     ])
                     .build(),
             ))
@@ -250,16 +250,14 @@ fn assemble_github_request(
     uri: &str,
     file: &File,
 ) -> GithubFileRequest {
-    let req = GithubFileRequest::builder()
-        .client(git_client.clone())
+    GithubFileRequest::builder()
+        .client(git_client)
         .root(root)
         .user(user)
         .repo(repo)
         .uri(uri)
         .file(file.clone())
-        .build();
-
-    req
+        .build()
 }
 
 /// Assembles a get request for an API
@@ -269,14 +267,12 @@ fn assemble_api_request(
     endpoint: &str,
     query: Vec<(String, String)>,
 ) -> ApiRequest {
-    let req = ApiRequest::builder()
-        .client(api_client.clone())
+    ApiRequest::builder()
+        .client(api_client)
         .root(root)
         .endpoint(endpoint)
         .query(query)
-        .build();
-
-    req
+        .build()
 }
 
 /// Create a list of files that need to be downloaded from github repository

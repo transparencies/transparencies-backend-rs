@@ -1,3 +1,4 @@
+#![allow(clippy::empty_enum)]
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 

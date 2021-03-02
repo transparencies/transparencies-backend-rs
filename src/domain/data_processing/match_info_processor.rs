@@ -44,6 +44,7 @@ pub struct MatchInfoProcessor {
 }
 
 impl MatchInfoProcessor {
+    #[must_use]
     pub fn new_with_response(responses: MatchDataResponses) -> Self {
         Self {
             responses,
@@ -69,9 +70,9 @@ impl MatchInfoProcessor {
             // TODO Implement lookup
             // lookup_player_alias_for_profile_id(&player.profile_id)
 
-            let _lookup_player = self
-                .responses
-                .lookup_player_alias_for_profile_id(&_player.profile_id);
+            // let _lookup_player = self
+            //     .responses
+            //     .lookup_player_alias_for_profile_id(&_player.profile_id);
 
             // player_raw.push(
             // PlayersRaw::builder()
@@ -118,12 +119,11 @@ impl MatchInfoProcessor {
     }
 
     pub fn assemble(&self) -> Result<MatchInfoResult> {
-        if let Some(result) = &self.result {
-            Ok(result.clone())
-        }
-        else {
-            Err(ProcessingError::AssemblyError)
-        }
+        self.result
+            .as_ref()
+            .map_or(Err(ProcessingError::AssemblyError), |result| {
+                Ok(result.clone())
+            })
     }
 
     pub fn export_data_to_file(&self) {

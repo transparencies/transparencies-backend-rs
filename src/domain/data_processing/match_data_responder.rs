@@ -118,14 +118,14 @@ impl MatchDataResponses {
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
-    pub fn lookup_player_alias_for_profile_id(
-        &self,
-        _profile_id: &i64,
-    ) -> Option<players::Player> {
-        todo!();
-        // profile_id into string for aoc ref data
-        // self.responses.github.and so on
-    }
+    // pub fn lookup_player_alias_for_profile_id(
+    //     &self,
+    //     _profile_id: &i64,
+    // ) -> Option<players::Player> {
+    //     todo!();
+    //     // profile_id into string for aoc ref data
+    //     // self.responses.github.and so on
+    // }
 
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)

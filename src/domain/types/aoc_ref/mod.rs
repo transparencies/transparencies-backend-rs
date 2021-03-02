@@ -30,7 +30,7 @@ impl RefDataLists {
         RefDataLists::default()
     }
 
-    /// Index `players` into `players_index` HashMap
+    /// Index `players` into `players_index` `HashMap`
     pub fn index(&mut self) -> std::result::Result<(), IndexingError> {
         let mut index: HashMap<String, PositionInAoePlayers> = HashMap::new();
 
