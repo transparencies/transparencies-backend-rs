@@ -17,12 +17,9 @@ use crate::domain::{
     },
     types::{
         aoc_ref::{
-            platforms,
-            platforms::PlatformsList,
-            players,
-            players::PlayersList,
-            teams,
-            teams::TeamsList,
+            AoePlatforms,
+            AoePlayers,
+            AoeTeams,
             RefDataLists,
         },
         api::{
@@ -152,12 +149,11 @@ pub async fn load_aoc_ref_data(
             FileFormat::Json => match file.name().as_str() {
                 "platforms" => {
                     let mut locked = reference_db.lock().await;
-                    locked.platforms =
-                        response.json::<Vec<platforms::Platforms>>().await?
+                    locked.platforms = response.json::<AoePlatforms>().await?
                 }
                 "teams" => {
                     let mut locked = reference_db.lock().await;
-                    locked.teams = response.json::<Vec<teams::Teams>>().await?
+                    locked.teams = response.json::<AoeTeams>().await?
                 }
                 _ => {
                     return Err(FileRequestError::RequestNotMatching {
@@ -169,11 +165,10 @@ pub async fn load_aoc_ref_data(
             FileFormat::Yaml => {
                 if let "players" = file.name().as_str() {
                     let mut locked = reference_db.lock().await;
-                    locked.players =
-                        serde_yaml::from_slice::<Vec<players::Player>>(
-                            &response.bytes().await?,
-                        )
-                        .unwrap()
+                    locked.players = serde_yaml::from_slice::<AoePlayers>(
+                        &response.bytes().await?,
+                    )
+                    .unwrap()
                 }
                 else {
                     return Err(FileRequestError::RequestNotMatching {

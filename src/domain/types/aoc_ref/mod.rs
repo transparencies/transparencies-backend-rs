@@ -2,14 +2,26 @@ pub mod platforms;
 pub mod players;
 pub mod teams;
 
-use ::serde::Serialize;
+use ::serde::{
+    Deserialize,
+    Serialize,
+};
 use serde::de::DeserializeOwned;
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AoePlayers(Vec<players::Player>);
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AoeTeams(Vec<teams::Teams>);
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AoePlatforms(Vec<platforms::Platforms>);
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct RefDataLists {
-    pub players: Vec<players::Player>,
-    pub teams: Vec<teams::Teams>,
-    pub platforms: Vec<platforms::Platforms>,
+    pub players: AoePlayers,
+    pub teams: AoeTeams,
+    pub platforms: AoePlatforms,
 }
 
 impl RefDataLists {
