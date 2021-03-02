@@ -38,8 +38,8 @@ impl InMemoryDb {
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
-            let language = STANDARD_LANGUAGE;
-            used_language.retain(|&lang, _| lang == language);
+            let std_language = STANDARD_LANGUAGE;
+            used_language.retain(|&lang, _| lang == std_language);
         }
 
         Self {
