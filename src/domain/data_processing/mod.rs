@@ -2,6 +2,7 @@ pub mod error;
 mod match_data_responder;
 pub mod match_info_processor;
 use match_info_processor::MatchInfoProcessor;
+pub mod reference_data_handler;
 
 use serde::{
     Deserialize,
@@ -67,8 +68,10 @@ use crate::domain::data_processing::error::{
     ProcessingError,
 };
 
+use self::reference_data_handler::load_aoc_ref_data;
+
 /// Download static files continously every 10 minutes inside a thread
-pub fn get_static_files_inside_thread(
+pub fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
     aoc_reference_data_clone: Arc<Mutex<RefDataLists>>,
 ) {
@@ -79,7 +82,7 @@ pub fn get_static_files_inside_thread(
                 aoc_reference_data_clone.clone(),
             )
             .await
-            .expect("Unable to load Files from Github");
+            .expect("Unable to load files from Github");
 
             time::sleep(Duration::from_secs(600)).await;
         }
@@ -109,82 +112,5 @@ pub async fn process_match_info_request(
     //     .assemble()?;
 
     // Ok(result)
-    Ok(())
-}
-
-pub async fn load_aoc_ref_data(
-    git_client: reqwest::Client,
-    reference_db: Arc<Mutex<RefDataLists>>,
-) -> Result<(), FileRequestError> {
-    let mut files: Vec<File> = Vec::with_capacity(3);
-    files.push(
-        File::builder()
-            .name("players")
-            .ext(FileFormat::Yaml)
-            .build(),
-    );
-
-    files.push(
-        File::builder()
-            .name("platforms")
-            .ext(FileFormat::Json)
-            .build(),
-    );
-
-    files.push(File::builder().name("teams").ext(FileFormat::Json).build());
-
-    for file in files {
-        let req = GithubFileRequest::builder()
-            .client(git_client.clone())
-            .root("https://raw.githubusercontent.com")
-            .user("SiegeEngineers")
-            .repo("aoc-reference-data")
-            .uri("master/data")
-            .file(file.clone())
-            .build();
-
-        let response = req.execute().await?;
-
-        match file.ext() {
-            FileFormat::Json => match file.name().as_str() {
-                "platforms" => {
-                    let mut locked = reference_db.lock().await;
-                    locked.platforms = response.json::<AoePlatforms>().await?
-                }
-                "teams" => {
-                    let mut locked = reference_db.lock().await;
-                    locked.teams = response.json::<AoeTeams>().await?
-                }
-                _ => {
-                    return Err(FileRequestError::RequestNotMatching {
-                        name: file.name().to_string(),
-                        req: req.clone(),
-                    })
-                }
-            },
-            FileFormat::Yaml => {
-                if let "players" = file.name().as_str() {
-                    let mut locked = reference_db.lock().await;
-                    locked.players = serde_yaml::from_slice::<AoePlayers>(
-                        &response.bytes().await?,
-                    )
-                    .unwrap()
-                }
-                else {
-                    return Err(FileRequestError::RequestNotMatching {
-                        name: file.name().to_string(),
-                        req: req.clone(),
-                    });
-                }
-            }
-            _ => {
-                return Err(FileRequestError::RequestNotMatching {
-                    name: file.name().to_string(),
-                    req: req.clone(),
-                })
-            }
-        }
-    }
-
     Ok(())
 }

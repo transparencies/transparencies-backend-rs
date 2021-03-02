@@ -57,10 +57,7 @@ use std::{
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
-        data_processing::{
-            get_static_files_inside_thread,
-            load_aoc_ref_data,
-        },
+        data_processing::get_static_data_inside_thread,
         types::{
             aoc_ref::RefDataLists,
             requests::{
@@ -120,7 +117,7 @@ async fn main() {
     let api_clients = ApiClient::default();
     let git_client_clone = api_clients.github.clone();
 
-    get_static_files_inside_thread(git_client_clone, aoc_reference_data_clone);
+    get_static_data_inside_thread(git_client_clone, aoc_reference_data_clone);
 
     let api = filters::transparencies(
         api_clients.aoe2net.clone(),
