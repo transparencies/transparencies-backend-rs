@@ -102,7 +102,7 @@ pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = assemble_language_requests(api_client);
+    let language_requests = assemble_language_requests(&api_client);
 
     let responses =
         load_language_responses_into_hashmap(language_requests).await?;
@@ -130,7 +130,7 @@ async fn load_language_responses_into_hashmap(
 
 /// Assembles all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
-    api_client: reqwest::Client
+    api_client: &reqwest::Client
 ) -> Vec<(&'static str, ApiRequest)> {
     let mut language_requests: Vec<(&str, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
