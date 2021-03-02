@@ -29,6 +29,7 @@ use std::{
     fs,
     io::BufWriter,
     result,
+    str::FromStr,
     sync::Arc,
     time::Duration,
 };
@@ -94,10 +95,75 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_highest_rating(&self) -> Result<String> {
+    pub fn get_current_rating(&self) -> Result<u32> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || {
+                Err(ResponderError::NotFound(
+                    "rating in rating history".to_string(),
+                ))
+            },
+            |val| {
+                Ok(val["rating_history"]["rating"]
+                    .to_string()
+                    .parse::<u32>()?)
+            },
+        )
+    }
+
+    pub fn get_highest_rating(&self) -> Result<u32> {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("highest rating".to_string())),
-            |val| Ok(val["leaderboard"]["highest_rating"].to_string()),
+            |val| {
+                Ok(val["leaderboard"]["highest_rating"]
+                    .to_string()
+                    .parse::<u32>()?)
+            },
+        )
+    }
+
+    // TODO Generic function stuff
+    // pub fn get_match_data<T>(&self, obj: &str, field: &str) -> Result<T>
+    // where
+    // T: FromStr,
+    //  {
+    // TODO: Leaderboard
+    //     self.aoe2net.leaderboard.as_ref().map_or_else(
+    //         || Err(ResponderError::NotFound(concat!(obj, '-', field))),
+    //         |val| Ok(val[obj][field].to_string().parse::<T>()?),
+    //     )
+    // }
+
+    pub fn get_rank(&self) -> Result<u64> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("rank".to_string())),
+            |val| Ok(val["leaderboard"]["rank"].to_string().parse::<u64>()?),
+        )
+    }
+
+    pub fn get_wins(&self) -> Result<u64> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("wins".to_string())),
+            |val| Ok(val["leaderboard"]["wins"].to_string().parse::<u64>()?),
+        )
+    }
+
+    pub fn get_losses(&self) -> Result<u64> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("losses".to_string())),
+            |val| {
+                Ok(val["leaderboard"]["losses"].to_string().parse::<u64>()?)
+            },
+        )
+    }
+
+    pub fn get_streak(&self) -> Result<i32> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("streak".to_string())),
+            |val| {
+                Ok(val["rating_history"]["streak"]
+                    .to_string()
+                    .parse::<i32>()?)
+            },
         )
     }
 
@@ -105,6 +171,17 @@ impl MatchDataResponses {
         self.aoe2net.leaderboard.as_ref().map_or_else(
             || Err(ResponderError::NotFound("country".to_string())),
             |val| Ok(val["leaderboard"]["country"].to_string()),
+        )
+    }
+
+    pub fn get_last_match_profile_id(&self) -> Result<String> {
+        self.aoe2net.leaderboard.as_ref().map_or_else(
+            || {
+                Err(ResponderError::NotFound(
+                    "Last match profile id".to_string(),
+                ))
+            },
+            |val| Ok(val["last_match"]["profile_id"].to_string()),
         )
     }
 

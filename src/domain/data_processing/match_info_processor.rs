@@ -10,6 +10,7 @@ use crate::domain::{
             MatchInfoResult,
             Players,
             PlayersRaw,
+            Rating,
             Teams,
         },
     },
@@ -57,7 +58,7 @@ impl MatchInfoProcessor {
         }
     }
 
-    pub fn process(&mut self) -> Self {
+    pub fn process(&mut self) -> Result<Self> {
         // TODO Error handling instead of unwrap
         // Collect errors in &self.errors or alike
         let players_array = self
@@ -77,9 +78,6 @@ impl MatchInfoProcessor {
                 translation = Some(translation_value);
             }
         }
-        else {
-            translation = None;
-        };
 
         for (_player_number, req_player) in players_array.iter().enumerate() {
             let lookuped_player = self
@@ -90,33 +88,64 @@ impl MatchInfoProcessor {
                     req_player.profile_id.to_string(),
                 );
 
+            // TODO: calculate win rate
+
+            let player_rating = if req_player.profile_id.to_string()
+                == self.responses.get_last_match_profile_id()?
+            {
+                Rating::builder()
+                    .mmr(self.responses.get_current_rating()?)
+                    .rank(self.responses.get_rank()?)
+                    .wins(self.responses.get_wins()?)
+                    .losses(self.responses.get_losses()?)
+                    .streak(self.responses.get_streak()?)
+                    .highest_mmr(self.responses.get_highest_rating()?)
+                    .build()
+            }
+            else {
+                todo!();
+            };
+
             player_raw.push(
                 PlayersRaw::builder()
-                // TODO Rating struct
-                //.rating(player.rating)
-                .player_number(req_player.slot)
-                .name(if let Some(lookup_player) = &lookuped_player {
-                    lookup_player.name.clone()
-                } else {
-                    req_player.name.clone()
-                } )
-                .country(if let Some(lookup_player) = &lookuped_player {
-                    lookup_player.country.clone()
-                } else {
-                    req_player.country.to_string()
-                } ), /* TODO Language lookup
-                      * .civilisation(civilisation)
-                      * .build() */
+                    .rating(player_rating)
+                    .player_number(req_player.slot)
+                    .name(
+                        if let Some(lookup_player) = &lookuped_player {
+                            lookup_player.name.clone()
+                        }
+                        else {
+                            req_player.name.clone()
+                        },
+                    )
+                    .country(
+                        if let Some(lookup_player) = &lookuped_player {
+                            lookup_player.country.clone()
+                        }
+                        else {
+                            req_player.country.to_string()
+                        },
+                    )
+                    .civilisation(
+                        if let Some(translation) = &translation {
+                            translation["civ"][req_player.civ.to_string()]
+                                .to_string()
+                        }
+                        else {
+                            return Err(ProcessingError::CivilisationError);
+                        },
+                    )
+                    .build(),
             )
         }
 
         // let _player_result = Players(player_raw);
 
-        println!(
-            "Players array (Length: {:?}): {:#?}",
-            players_array.len(),
-            players_array
-        );
+        // println!(
+        //     "Players array (Length: {:?}): {:#?}",
+        //     players_array.len(),
+        //     players_array
+        // );
 
         // Read in Teams
         // Read Players into Teams
@@ -124,14 +153,14 @@ impl MatchInfoProcessor {
         // Assemble Information to MatchInfo
         // Wrap MatchInfo with Erros into MatchInfoResult
 
-        Self {
+        Ok(Self {
             responses: self.responses.clone(),
             match_info: None,
             players: None,
             teams: None,
             result: None,
             errors: None,
-        }
+        })
     }
 
     pub fn assemble(&self) -> Result<MatchInfoResult> {

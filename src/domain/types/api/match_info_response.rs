@@ -60,28 +60,31 @@ pub struct PlayersRaw {
     player_number: i64,
     name: String,
     country: String,
-    civilisation: Civilisation,
+    civilisation: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Teams(Vec<TeamsRaw>);
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct TeamsRaw {
     players: Players,
     team_number: i64,
+    #[builder(setter(strip_option))]
     team_name: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,
     wins: u64,
     losses: u64,
-    win_rate: f32,
     streak: i32,
-    highest_average_mmr: Option<u32>,
+    #[builder(default=Some(0.0), setter(strip_option))]
+    win_rate: Option<f32>,
+    #[builder(setter(strip_option))]
+    highest_mmr: Option<u32>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

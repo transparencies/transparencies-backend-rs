@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use thiserror::Error;
 
 use crate::domain::types::{
@@ -7,6 +9,8 @@ use crate::domain::types::{
 
 #[derive(Error, Debug)]
 pub enum ProcessingError {
+    #[error("No candidate for civilisation found.")]
+    CivilisationError,
     #[error("Assembly of Matchinfo result failed. Result is empty.")]
     AssemblyError,
     #[error("Responder experienced an error.")]
@@ -23,6 +27,8 @@ pub enum ResponderError {
     NotFound(String),
     #[error("HTTP-Client experienced an error.")]
     HttpClientError(#[from] reqwest::Error),
+    #[error("Parsing of Integer data failed")]
+    IntParsingError(#[from] ParseIntError),
 }
 
 #[derive(Error, Debug)]

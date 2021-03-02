@@ -107,7 +107,7 @@ pub async fn process_match_info_request(
     responses.export_data_to_file();
 
     let result = MatchInfoProcessor::new_with_response(responses)
-        .process()
+        .process()?
         .assemble()?;
 
     Ok(result)
