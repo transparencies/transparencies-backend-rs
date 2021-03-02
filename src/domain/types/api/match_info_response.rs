@@ -1,3 +1,5 @@
+#![allow(clippy::used_underscore_binding)]
+#![allow(clippy::empty_enum)]
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
@@ -52,7 +54,6 @@ pub struct MatchInfo {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Players(pub Vec<PlayersRaw>);
 
-#[allow(clippy::empty_enum)]
 #[derive(Clone, TypedBuilder, Debug, PartialEq, Serialize)]
 pub struct PlayersRaw {
     rating: Rating,
