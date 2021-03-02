@@ -87,6 +87,11 @@ pub fn get_static_data_inside_thread(
             // Create enum for all possible languages for later usage or also for requests
             // https://aoe2.net/api/strings?game=aoe2de&language=en
 
+            // Enum content
+            // Language (en, de, el, es, es-MX, fr, hi, it, ja, ko, ms, nl, pt, ru, tr, vi, zh, zh-TW)
+            // + Game (Age of Empires 2:HD=aoe2hd, Age of Empires 2:Definitive Edition=aoe2de) later for aoe3, aoe4
+            
+
             time::sleep(Duration::from_secs(600)).await;
         }
     });
