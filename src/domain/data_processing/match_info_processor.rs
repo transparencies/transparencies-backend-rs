@@ -37,13 +37,14 @@ use super::error::ProcessingError;
 type Result<T> = result::Result<T, ProcessingError>;
 
 impl Rating {
+    #[allow(clippy::cast_precision_loss)]
     pub fn calculate_win_rate(&mut self) {
         if self.wins == 0 {
             self.win_rate = None;
         }
         else {
             self.win_rate =
-                Some((self.losses as f64 / self.wins as f64) * 100_f64);
+                Some((self.losses as f32 / self.wins as f32) * 100_f32);
         }
     }
 }

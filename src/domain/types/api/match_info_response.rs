@@ -82,7 +82,7 @@ pub struct Rating {
     pub losses: u64,
     streak: i32,
     #[builder(default=Some(0.0), setter(strip_option))]
-    pub win_rate: Option<f64>,
+    pub win_rate: Option<f32>,
     #[builder(setter(strip_option))]
     highest_mmr: Option<u32>,
 }
