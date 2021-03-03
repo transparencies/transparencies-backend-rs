@@ -37,3 +37,6 @@ use serde::{
     Serialize,
 };
 use std::collections::HashMap;
+
+pub(crate) static STANDARD_LANGUAGE: &str = "en";
+pub(crate) static STANDARD_GAME: &str = "aoe2de";

@@ -3,6 +3,7 @@ use crate::domain::types::{
         players,
         RefDataLists,
     },
+    aoe2net,
     api::{
         match_info_response::*,
         MatchInfoRequest,
@@ -29,12 +30,18 @@ use std::{
     fs,
     io::BufWriter,
     result,
+    str::FromStr,
     sync::Arc,
     time::Duration,
 };
 use tokio::sync::Mutex;
 
 use super::error::ResponderError;
+
+use crate::{
+    STANDARD_GAME,
+    STANDARD_LANGUAGE,
+};
 
 type Result<T> = result::Result<T, ResponderError>;
 
@@ -89,43 +96,43 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_highest_rating(&self) -> Result<String> {
-        self.aoe2net.leaderboard.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("highest rating".to_string())),
-            |val| Ok(val["leaderboard"]["highest_rating"].to_string()),
-        )
-    }
-
-    pub fn get_country_from_leaderboard(&self) -> Result<String> {
-        self.aoe2net.leaderboard.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("country".to_string())),
-            |val| Ok(val["leaderboard"]["country"].to_string()),
-        )
-    }
-
-    pub fn get_clan_from_leaderboard(&self) -> Result<String> {
-        self.aoe2net.leaderboard.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("clan".to_string())),
-            |val| Ok(val["leaderboard"]["clan"].to_string()),
-        )
-    }
-
-    pub fn get_rating(&self) -> Result<serde_json::Value> {
-        self.aoe2net.rating_history.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("rating history".to_string())),
-            |val| Ok(val[0].clone()),
-        )
-    }
-
-    /// Search through alias list for `player_id` and return `players::Player`
-    // pub fn lookup_player_alias_for_profile_id(
-    //     &self,
-    //     _profile_id: &i64,
-    // ) -> Option<players::Player> {
-    //     todo!();
-    //     // profile_id into string for aoc ref data
-    //     // self.responses.github.and so on
+    // TODO Generic function stuff
+    // pub fn get_match_data<T>(&self, obj: &str, field: &str) -> Result<T>
+    // where
+    // T: FromStr,
+    //  {
+    // TODO: Leaderboard
+    //     self.aoe2net.leaderboard.as_ref().map_or_else(
+    //         || Err(ResponderError::NotFound(concat!(obj, '-', field))),
+    //         |val| Ok(val[obj][field].to_string().parse::<T>()?),
+    //     )
     // }
+
+    /// Lookup player rating list for `player_id` and return
+    /// `serde_json::Value`
+    #[must_use]
+    pub fn lookup_player_rating_for_profile_id(
+        &self,
+        profile_id: &str,
+    ) -> Option<serde_json::Value> {
+        match self.aoe2net.rating_history.get(profile_id) {
+            Some(rating_history) => Some(rating_history.clone()),
+            None => None,
+        }
+    }
+
+    /// Lookup leaderboard entry for `player_id` and return
+    /// `serde_json::Value`
+    #[must_use]
+    pub fn lookup_leaderboard_for_profile_id(
+        &self,
+        profile_id: &str,
+    ) -> Option<serde_json::Value> {
+        match self.aoe2net.leaderboard.get(profile_id) {
+            Some(leaderboard) => Some(leaderboard.clone()),
+            None => None,
+        }
+    }
 
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)
@@ -153,11 +160,22 @@ impl MatchDataResponses {
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
     ) -> Result<MatchDataResponses> {
-        let mut api_requests: Vec<(String, ApiRequest)> = Vec::with_capacity(5);
+        let mut language: String = STANDARD_LANGUAGE.to_string();
+        let mut game: String = STANDARD_GAME.to_string();
+
+        // Set `language` to Query value if specified
+        if let Some(lang) = par.language {
+            language = lang;
+        }
+
+        // Set `game` to Query value if specified
+        if let Some(val) = par.game {
+            game = val;
+        }
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: in_memory_db.lock().await.clone(),
+            db: in_memory_db.lock().await.with_language(&language),
             ..Default::default()
         };
 
@@ -167,7 +185,7 @@ impl MatchDataResponses {
             .root("https://aoe2.net/api")
             .endpoint("player/lastmatch")
             .query(vec![
-                ("game".to_string(), "aoe2de".to_string()),
+                ("game".to_string(), game.clone()),
                 (par.id_type.clone(), par.id_number.clone()),
             ])
             .build();
@@ -178,52 +196,45 @@ impl MatchDataResponses {
         // Get `leaderboard_id` for future requests
         let leaderboard_id = responses.get_leaderboard_id_for_request()?;
 
-        // GET `Leaderboard` data
-        api_requests.push((
-            "leaderboard".to_string(),
-            ApiRequest::builder()
-                .client(client.clone())
-                .root("https://aoe2.net/api")
-                .endpoint("leaderboard")
-                .query(vec![
-                    ("game".to_string(), "aoe2de".to_string()),
-                    (par.id_type.clone(), par.id_number.clone()),
-                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
-                ])
-                .build(),
-        ));
+        // Get all players from `LastMatch` response
+        responses.aoe2net.players_temp =
+            responses.parse_all_players::<Vec<aoe2net::Player>>()?;
 
-        // GET `RatingHistory` data
-        api_requests.push((
-            "rating_history".to_string(),
-            ApiRequest::builder()
+        for player in &responses.aoe2net.players_temp {
+            // Get Rating `HistoryData` for each player
+            let req_rating = ApiRequest::builder()
                 .client(client.clone())
                 .root("https://aoe2.net/api")
                 .endpoint("player/ratinghistory")
                 .query(vec![
-                    ("game".to_string(), "aoe2de".to_string()),
-                    (par.id_type.clone(), par.id_number.clone()),
-                    ("leaderboard_id".to_string(), leaderboard_id),
+                    ("game".to_string(), game.clone()),
+                    ("profile_id".to_string(), player.profile_id.to_string()),
+                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
                     ("count".to_string(), "1".to_string()),
                 ])
-                .build(),
-        ));
+                .build();
 
-        for (response_name, req) in &api_requests {
-            match response_name.as_str() {
-                "leaderboard" => {
-                    responses.aoe2net.leaderboard = req.execute().await?;
-                }
-                "rating_history" => {
-                    responses.aoe2net.rating_history = req.execute().await?;
-                }
-                _ => {
-                    return Err(ResponderError::RequestNotMatching {
-                        name: response_name.to_string(),
-                        req: req.clone(),
-                    })
-                }
-            }
+            // GET `Leaderboard` data
+            let req_lead = ApiRequest::builder()
+                .client(client.clone())
+                .root("https://aoe2.net/api")
+                .endpoint("leaderboard")
+                .query(vec![
+                    ("game".to_string(), game.clone()),
+                    ("profile_id".to_string(), player.profile_id.to_string()),
+                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
+                ])
+                .build();
+
+            responses.aoe2net.rating_history.insert(
+                player.profile_id.to_string(),
+                req_rating.execute().await?,
+            );
+
+            responses.aoe2net.leaderboard.insert(
+                player.profile_id.to_string(),
+                req_lead.execute().await?,
+            );
         }
 
         Ok(responses)

@@ -58,31 +58,20 @@ impl RefDataLists {
         Ok(())
     }
 
-    // pub fn get_alias_from_profile_id() -> Option<String> {
-    //     todo!();
-
-    // What could we need for showing on the overlay/twitch extension?
-    // Name,
-    // aka,
-    // discord,
-    // esportsearnings,
-    // liquipedia,
-    // platforms[de] (maybe in the future platforms[voobly] as well)
-    // twitch
-    // youtube
-
-    // What do we need to search for?
-    // platforms[de]
-    // platforms[voobly]
-
-    // TODO
-    // - Let a thread (or directly after downloading in the same thread) index
-    //   all the `player_ids` of the platforms
-    // - create a HashMap from it with the ID as a key
-    // }
+    /// Search through alias list for `player_id` and return `players::Player`
+    #[must_use]
+    pub fn lookup_player_alias_for_profile_id(
+        &self,
+        profile_id: &str,
+    ) -> Option<players::Player> {
+        match self.players_index_aoe2de.get(profile_id) {
+            Some(alias_position) => Some(self.players[*alias_position].clone()),
+            None => None,
+        }
+    }
 }
 
-// impl Iterator for Foreigns {
+// impl Iterator for X {
 //     type Item = Package;
 
 //     fn next(&mut self) -> Option<Self::Item> {
