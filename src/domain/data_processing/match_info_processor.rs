@@ -178,19 +178,9 @@ impl MatchInfoProcessor {
             }
         }
 
-        // let _player_result = Players(player_raw);
-
-        // println!(
-        //     "Players array (Length: {:?}): {:#?}",
-        //     players_array.len(),
-        //     players_array
-        // );
-
         // Read in Teams
-        // Read Players into Teams
-        // Read Ratings into Players
         // Assemble Information to MatchInfo
-        // Wrap MatchInfo with Erros into MatchInfoResult
+        // Wrap MatchInfo with converted Errors into MatchInfoResult
 
         Ok(Self {
             responses: self.responses.clone(),
