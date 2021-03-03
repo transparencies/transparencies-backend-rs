@@ -43,7 +43,7 @@ impl Rating {
         }
         else {
             self.win_rate =
-                Some((self.losses as f32 / self.wins as f32) * 100 as f32);
+                Some((self.losses as f64 / self.wins as f64) * 100_f64);
         }
     }
 }
