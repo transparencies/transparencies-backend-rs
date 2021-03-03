@@ -194,7 +194,7 @@ impl MatchInfoProcessor {
         Ok(Self {
             responses: self.responses.clone(),
             match_info: None,
-            players: None,
+            players: Some(Players(players_raw)),
             teams: None,
             result: None,
             errors: None,
