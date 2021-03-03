@@ -16,7 +16,7 @@ pub struct RatingHistory {
 }
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Players {
+pub struct Player {
     pub civ: i64,
     #[serde(skip)]
     pub clan: ::serde_json::Value,

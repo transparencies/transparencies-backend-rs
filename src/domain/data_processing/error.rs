@@ -15,6 +15,10 @@ pub enum ProcessingError {
     AssemblyError,
     #[error("Responder experienced an error.")]
     ResponderMalfunction(#[from] ResponderError),
+    #[error("Parsing of Integer data failed")]
+    IntParsingError(#[from] ParseIntError),
+    #[error("Dividing by Zero is not allowed.")]
+    DividingByZeroError,
 }
 
 #[derive(Error, Debug)]

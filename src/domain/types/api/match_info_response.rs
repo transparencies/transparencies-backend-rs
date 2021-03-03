@@ -78,11 +78,11 @@ pub struct TeamsRaw {
 pub struct Rating {
     mmr: u32,
     rank: u64,
-    wins: u64,
-    losses: u64,
+    pub wins: u64,
+    pub losses: u64,
     streak: i32,
     #[builder(default=Some(0.0), setter(strip_option))]
-    win_rate: Option<f32>,
+    pub win_rate: Option<f32>,
     #[builder(setter(strip_option))]
     highest_mmr: Option<u32>,
 }

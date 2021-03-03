@@ -12,6 +12,7 @@ use crate::domain::{
             PlayersRaw,
             Rating,
             Teams,
+            TeamsRaw,
         },
     },
 };
@@ -35,6 +36,17 @@ use super::error::ProcessingError;
 
 type Result<T> = result::Result<T, ProcessingError>;
 
+impl Rating {
+    pub fn calculate_win_rate(&mut self) {
+        if self.wins != 0 {
+            self.win_rate =
+                Some((self.losses as f32 / self.wins as f32) * 100 as f32);
+        }
+        else {
+            self.win_rate = None;
+        }
+    }
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct MatchInfoProcessor {
     responses: MatchDataResponses,
@@ -61,12 +73,11 @@ impl MatchInfoProcessor {
     pub fn process(&mut self) -> Result<Self> {
         // TODO Error handling instead of unwrap
         // Collect errors in &self.errors or alike
-        let players_array = self
-            .responses
-            .parse_all_players::<Vec<aoe2net::Players>>()
-            .unwrap();
 
-        let mut player_raw = Vec::with_capacity(players_array.len() as usize);
+        let players_vec = &self.responses.aoe2net.players_temp;
+
+        let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
+        let mut _teams_raw: Vec<TeamsRaw> = Vec::new();
 
         let mut translation: Option<serde_json::Value> = None;
 
@@ -79,8 +90,9 @@ impl MatchInfoProcessor {
             }
         }
 
-        for (_player_number, req_player) in players_array.iter().enumerate() {
-            let lookuped_player = self
+        for (_player_number, req_player) in players_vec.iter().enumerate() {
+            // Lookup profile id in alias list
+            let looked_up_alias = self
                 .responses
                 .db
                 .github_file_content
@@ -88,47 +100,81 @@ impl MatchInfoProcessor {
                     &(req_player.profile_id.to_string()),
                 );
 
-            // TODO: calculate win rate
-
-            let player_rating = if req_player.profile_id.to_string()
-                == self.responses.get_last_match_profile_id()?
+            if let Some(looked_up_rating) =
+                self.responses.lookup_player_rating_for_profile_id(
+                    &(req_player.profile_id.to_string()),
+                )
             {
-                Rating::builder()
-                    .mmr(self.responses.get_current_rating()?)
-                    .rank(self.responses.get_rank()?)
-                    .wins(self.responses.get_wins()?)
-                    .losses(self.responses.get_losses()?)
-                    .streak(self.responses.get_streak()?)
-                    .highest_mmr(self.responses.get_highest_rating()?)
-                    .build()
-            }
-            else {
-                todo!();
-            };
-
-            player_raw.push(
-                PlayersRaw::builder()
-                    .rating(player_rating)
-                    .player_number(req_player.slot)
-                    .name(lookuped_player.as_ref().map_or_else(
-                        || req_player.name.clone(),
-                        |lookup_player| lookup_player.name.clone(),
-                    ))
-                    .country(lookuped_player.as_ref().map_or_else(
-                        || req_player.country.to_string(),
-                        |lookup_player| lookup_player.country.clone(),
-                    ))
-                    .civilisation(
-                        if let Some(translation) = &translation {
-                            translation["civ"][req_player.civ.to_string()]
-                                .to_string()
-                        }
-                        else {
-                            return Err(ProcessingError::CivilisationError);
-                        },
+                if let Some(looked_up_leaderboard) =
+                    self.responses.lookup_leaderboard_for_profile_id(
+                        &(req_player.profile_id.to_string()),
                     )
-                    .build(),
-            )
+                {
+                    let mut player_rating = Rating::builder()
+                        .mmr(
+                            looked_up_rating["rating"]
+                                .to_string()
+                                .parse::<u32>()?,
+                        )
+                        .rank(
+                            looked_up_leaderboard["leaderboard"]["rank"]
+                                .to_string()
+                                .parse::<u64>()?,
+                        )
+                        .wins(
+                            looked_up_rating["num_wins"]
+                                .to_string()
+                                .parse::<u64>()?,
+                        )
+                        .losses(
+                            looked_up_rating["num_losses"]
+                                .to_string()
+                                .parse::<u64>()?,
+                        )
+                        .streak(
+                            looked_up_rating["streak"]
+                                .to_string()
+                                .parse::<i32>()?,
+                        )
+                        .highest_mmr(
+                            looked_up_leaderboard["leaderboard"]
+                                ["highest_rating"]
+                                .to_string()
+                                .parse::<u32>()?,
+                        )
+                        .build();
+
+                    // TODO: check if winrate calculation is right
+                    player_rating.calculate_win_rate();
+
+                    players_raw.push(
+                        PlayersRaw::builder()
+                            .rating(player_rating)
+                            .player_number(req_player.color)
+                            .name(looked_up_alias.as_ref().map_or_else(
+                                || req_player.name.clone(),
+                                |lookup_player| lookup_player.name.clone(),
+                            ))
+                            .country(looked_up_alias.as_ref().map_or_else(
+                                || req_player.country.to_string(),
+                                |lookup_player| lookup_player.country.clone(),
+                            ))
+                            .civilisation(
+                                if let Some(translation) = &translation {
+                                    translation["civ"]
+                                        [req_player.civ.to_string()]
+                                    .to_string()
+                                }
+                                else {
+                                    return Err(
+                                        ProcessingError::CivilisationError,
+                                    );
+                                },
+                            )
+                            .build(),
+                    )
+                }
+            }
         }
 
         // let _player_result = Players(player_raw);
