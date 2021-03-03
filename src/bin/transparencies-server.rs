@@ -1,4 +1,4 @@
-//! Executable for managing aoe-reference-data files.
+//! Backend for dynamic stream overlays
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
