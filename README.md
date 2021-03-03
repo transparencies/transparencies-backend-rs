@@ -1,4 +1,4 @@
-# transparencies-backend-rs [![AGPLv3+](https://www.gnu.org/graphics/agplv3-or-later.svg)](https://www.gnu.org/licenses/agpl-3.0.txt)
+# transparencies-backend-rs [![AGPLv3+](https://www.gnu.org/graphics/agplv3-88x31.png)](https://www.gnu.org/licenses/agpl.txt)
 
 ## A backend for dynamic stream overlays written in Rust
 
