@@ -4,10 +4,10 @@
 
 ### Additions
 - [X] Call from `handler` into `data_processing` with `MatchInfoRequest` data
-- [ ] GET API data from aoe2net
-    - [ ] make all requests that are needed for getting all valuable information for matchinfo
-    - [ ] Add a language parameter to call from the frontend to use translations
-- [ ] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and 
+- [X] GET API data from aoe2net
+    - [X] make all requests that are needed for getting all valuable information for matchinfo
+    - [X] Add a language parameter to call from the frontend to use translations
+- [X] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations (ENG, ESP, GER, ITA, FRA, POR) at system startup and 
       let them be updated every now and then
       - spawn another thread for this task and don't use the github one (client encapsulation, easier debugging)
       - don't use static types for this, to be less error prone if AoE2net updates something at these endpoints, we don't want to have
@@ -35,9 +35,11 @@
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have at least one working version
 - [ ] Send `log entry` to Client for better error handling on client-side
 - [ ] Special cases done right?
-    - [ ] Data structure does not match with data from aoe2net
-        - [ ] Q: take a look for a `serde` attribute to mark fields in structs that are not as important for our processing,
+    - [X] Data structure does not match with data from aoe2net
+        - [X] Q: take a look for a `serde` attribute to mark fields in structs that are not as important for our processing,
               so we don't throw a parsing error if non-essential fields don't match/exist
+        - **A:** We only parse `Players` of `last_match` into some losely-typed datastructure for easier handling, the rest is `serde_json::Value`
+          and parsing on the run
     - [ ] New players without ranking
     - [ ] Deranked players
     - [ ] Coop games
