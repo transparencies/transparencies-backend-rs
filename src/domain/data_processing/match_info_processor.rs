@@ -38,12 +38,12 @@ type Result<T> = result::Result<T, ProcessingError>;
 
 impl Rating {
     pub fn calculate_win_rate(&mut self) {
-        if self.wins != 0 {
-            self.win_rate =
-                Some((self.losses as f32 / self.wins as f32) * 100 as f32);
+        if self.wins == 0 {
+            self.win_rate = None;
         }
         else {
-            self.win_rate = None;
+            self.win_rate =
+                Some((self.losses as f32 / self.wins as f32) * 100 as f32);
         }
     }
 }
