@@ -62,6 +62,7 @@ pub struct PlayersRaw {
     name: String,
     country: String,
     civilisation: String,
+    requested: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]

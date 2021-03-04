@@ -83,27 +83,24 @@ impl MatchInfoProcessor {
 
         let translation = &self.get_translation();
 
+        let mut diff_team = Vec::with_capacity(8);
+
         for (_player_number, req_player) in players_vec.iter().enumerate() {
-            // Lookups
-            let looked_up_alias = self.lookup_alias(req_player);
-            let looked_up_rating = self.lookup_rating(req_player)?;
-            let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
-
-            let mut player_rating =
-                get_rating(looked_up_rating, looked_up_leaderboard)?;
-
-            // TODO: check if winrate calculation is right
-            player_rating.calculate_win_rate();
-
-            let player_raw = build_player(
-                player_rating,
+            self.assemble_player_to_vec(
                 req_player,
-                looked_up_alias,
                 translation,
+                &mut players_raw,
             )?;
-
-            players_raw.push(player_raw)
+            if !diff_team.contains(&req_player.team) {
+                diff_team.push(req_player.team)
+            }
         }
+
+        diff_team.sort();
+
+        let _team_count = diff_team.len();
+
+        for player in players_raw.iter() {}
 
         // Read in Teams
         // Assemble Information to MatchInfo
@@ -117,6 +114,54 @@ impl MatchInfoProcessor {
             result: None,
             errors: None,
         })
+    }
+
+    fn assemble_player_to_vec(
+        &mut self,
+        req_player: &aoe2net::Player,
+        translation: &Option<Value>,
+        players_raw: &mut Vec<PlayersRaw>,
+    ) -> Result<()> {
+        // Lookups
+        let looked_up_alias = self.lookup_alias(req_player);
+        let looked_up_rating = self.lookup_rating(req_player)?;
+        let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
+        let requested_player = self.get_requested_player(req_player);
+
+        let mut player_rating =
+            get_rating(looked_up_rating, looked_up_leaderboard)?;
+
+        // TODO: check if winrate calculation is right
+        player_rating.calculate_win_rate();
+
+        let player_raw = build_player(
+            player_rating,
+            req_player,
+            looked_up_alias,
+            translation,
+            requested_player,
+        )?;
+
+        players_raw.push(player_raw);
+
+        Ok(())
+    }
+
+    fn get_requested_player(
+        &self,
+        req_player: &aoe2net::Player,
+    ) -> bool {
+        let requested_player = if let Some(player_last_match) =
+            &self.responses.aoe2net.player_last_match
+        {
+            player_last_match["last_match"]["profile_id"]
+                == req_player.profile_id
+        }
+        else {
+            false
+        };
+
+        requested_player
     }
 
     fn lookup_leaderboard(
@@ -218,6 +263,7 @@ fn build_player(
     req_player: &aoe2net::Player,
     looked_up_alias: Option<crate::domain::types::aoc_ref::players::Player>,
     translation: &Option<Value>,
+    requested: bool,
 ) -> Result<PlayersRaw> {
     let player_raw = PlayersRaw::builder()
         .rating(player_rating)
@@ -238,6 +284,7 @@ fn build_player(
                 return Err(ProcessingError::CivilisationError);
             },
         )
+        .requested(requested)
         .build();
 
     Ok(player_raw)
@@ -247,7 +294,7 @@ fn get_rating(
     looked_up_rating: Value,
     looked_up_leaderboard: Value,
 ) -> Result<Rating> {
-    let mut player_rating = Rating::builder()
+    let player_rating = Rating::builder()
         .mmr(looked_up_rating["rating"].to_string().parse::<u32>()?)
         .rank(
             looked_up_leaderboard["leaderboard"]["rank"]
