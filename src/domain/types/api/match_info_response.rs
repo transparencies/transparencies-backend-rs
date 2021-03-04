@@ -66,13 +66,13 @@ pub struct PlayersRaw {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Teams(Vec<TeamsRaw>);
+pub struct Teams(pub Vec<TeamRaw>);
 
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
-pub struct TeamsRaw {
+pub struct TeamRaw {
     players: Players,
     team_number: i64,
-    #[builder(setter(strip_option))]
+    #[builder(default, setter(strip_option))]
     team_name: Option<String>,
 }
 

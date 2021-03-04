@@ -11,8 +11,8 @@ use crate::domain::{
             Players,
             PlayersRaw,
             Rating,
+            TeamRaw,
             Teams,
-            TeamsRaw,
         },
     },
 };
@@ -79,7 +79,7 @@ impl MatchInfoProcessor {
         let players_vec = &self.responses.aoe2net.players_temp.clone();
 
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
-        let mut _teams_raw: Vec<TeamsRaw> = Vec::new();
+        let mut teams_raw: Vec<TeamRaw> = Vec::new();
 
         let translation = &self.get_translation();
 
@@ -98,9 +98,27 @@ impl MatchInfoProcessor {
 
         diff_team.sort();
 
-        let _team_count = diff_team.len();
+        // let team_count = diff_team.len();
 
-        for player in players_raw.iter() {}
+        let mut player_vec_helper: Vec<PlayersRaw> =
+            Vec::with_capacity(diff_team.len());
+
+        // Iterate through different teams
+        while let Some(team) = diff_team.pop() {
+            // Empty vec, as we start a new team
+            player_vec_helper.clear();
+            // Iterate through players
+            while let Some(player) = players_raw.clone().pop() {
+                player_vec_helper.push(player)
+            }
+
+            let team = TeamRaw::builder()
+                .team_number(team)
+                .players(Players(player_vec_helper.clone()))
+                .build();
+
+            teams_raw.push(team);
+        }
 
         // Read in Teams
         // Assemble Information to MatchInfo
@@ -110,7 +128,7 @@ impl MatchInfoProcessor {
             responses: self.responses.clone(),
             match_info: None,
             players: Some(Players(players_raw)),
-            teams: None,
+            teams: Some(Teams(teams_raw)),
             result: None,
             errors: None,
         })
