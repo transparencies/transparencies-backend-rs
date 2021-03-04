@@ -27,6 +27,7 @@ use ron::ser::{
     PrettyConfig,
 };
 use std::{
+    convert::TryInto,
     fs,
     io::BufWriter,
     result,
@@ -88,7 +89,8 @@ impl MatchInfoProcessor {
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
         let mut teams_raw: Vec<TeamRaw> = Vec::new();
 
-        let language = &self.responses.get_translation_for_language();
+        let language =
+            &self.responses.clone().get_translation_for_language()?;
 
         let mut diff_team = Vec::with_capacity(8);
 
@@ -140,13 +142,13 @@ impl MatchInfoProcessor {
             )?;
         trace!("Successfully translated map type.");
 
-        trace!("Translate match type ...");
+        trace!("Translate into game type from match type...");
         let translated_last_match_match_type =
             &self.responses.get_translated_string_from_id(
-                "match_type",
-                self.responses.get_match_type_id()?,
+                "game_type",
+                self.responses.get_game_type_id()?,
             )?;
-        trace!("Successfully translated match type.");
+        trace!("Successfully translated game type.");
 
         trace!("Getting match status ...");
         let match_status = if let Ok(time) =
@@ -190,14 +192,14 @@ impl MatchInfoProcessor {
     fn process_all_players(
         &mut self,
         players_vec: &Vec<aoe2net::Player>,
-        translation: &Option<Value>,
+        translation: &Value,
         players_raw: &mut Vec<PlayerRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
         trace!("Processing all players ...");
         let player_amount = players_vec.len();
         for (_player_number, req_player) in players_vec.iter().enumerate() {
-            self.assemble_player_to_vec(req_player, translation, players_raw)?;
+            self.assemble_player_to_vec(req_player, &translation, players_raw)?;
             if !diff_team.contains(&req_player.team) {
                 diff_team.push(req_player.team)
             }
@@ -210,7 +212,7 @@ impl MatchInfoProcessor {
     fn assemble_player_to_vec(
         &mut self,
         req_player: &aoe2net::Player,
-        translation: &Option<Value>,
+        translation: &Value,
         players_raw: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
         trace!("Assemble player {:#?} to vector", req_player);
@@ -229,13 +231,27 @@ impl MatchInfoProcessor {
         trace!("Successfully looked up leaderboard.");
 
         trace!("Getting requested player ...");
-        let requested_player = self.get_requested_player(req_player);
-        trace!("Successfully got requested player: {:#?}", requested_player);
+        let requested_player_boolean = self.get_requested_player(req_player);
+        trace!(
+            "Successfully got requested player: {:#?}",
+            requested_player_boolean
+        );
 
         trace!("Getting player rating ...");
         let mut player_rating =
             get_rating(looked_up_rating, looked_up_leaderboard)?;
         trace!("Successfully got requested player rating.");
+
+        trace!("Getting player civilisation translation ...");
+        let translated_civilisation_string =
+            &self.responses.get_translated_string_from_id(
+                "civ",
+                req_player
+                    .civ
+                    .try_into()
+                    .expect("Conversion of civilisation id failed."),
+            )?;
+        trace!("Successfully translated player civilisation.");
 
         // TODO: check if winrate calculation is right
         trace!("Calculating player win rate ...");
@@ -247,8 +263,8 @@ impl MatchInfoProcessor {
             player_rating,
             req_player,
             looked_up_alias,
-            translation,
-            requested_player,
+            translated_civilisation_string.to_string(),
+            requested_player_boolean,
         )?;
         trace!("Successfully built player struct.");
 
@@ -383,7 +399,7 @@ fn build_player(
     player_rating: Rating,
     req_player: &aoe2net::Player,
     looked_up_alias: Option<crate::domain::types::aoc_ref::players::Player>,
-    translation: &Option<Value>,
+    translated_civilisation_string: String,
     requested: bool,
 ) -> Result<PlayerRaw> {
     let player_raw = PlayerRaw::builder()
@@ -398,14 +414,7 @@ fn build_player(
             || req_player.country.to_string(),
             |lookup_player| lookup_player.country.clone(),
         ))
-        .civilisation(
-            if let Some(translation) = &translation {
-                translation["civ"][req_player.civ.to_string()].to_string()
-            }
-            else {
-                return Err(ProcessingError::CivilisationError);
-            },
-        )
+        .civilisation(translated_civilisation_string)
         .requested(requested)
         .build();
 

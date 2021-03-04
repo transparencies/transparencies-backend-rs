@@ -45,6 +45,8 @@ pub enum ResponderError {
     TranslationError(String, usize),
     #[error("Couldn't get the value of the translation string: {0} at given index {1}")]
     TranslationPosError(String, usize),
+    #[error("Couldn't get the value of the translation string, because it has already been moved.")]
+    TranslationHasBeenMovedError,
 }
 
 #[derive(Error, Debug)]

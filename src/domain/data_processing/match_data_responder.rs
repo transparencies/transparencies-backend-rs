@@ -94,20 +94,26 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_translation_for_language(&mut self) -> Option<Value> {
+    pub fn get_translation_for_language(&mut self) -> Result<Value> {
         let mut translation: Option<serde_json::Value> = None;
+
+        trace!(
+            "Length of self.db.aoe2net_languages is: {:?}",
+            self.db.aoe2net_languages.len()
+        );
 
         if self.db.aoe2net_languages.len() == 1 {
             for (language, translation_value) in
-                self.db.aoe2net_languages.drain().take(1)
+                self.db.aoe2net_languages.clone().drain().take(1)
             {
                 translation = Some(translation_value);
                 trace!("Translation that was used: {:?}", language);
-                trace!("Content of translation: {:#?}", translation);
             }
         }
-
-        translation
+        else {
+            return Err(ResponderError::TranslationHasBeenMovedError);
+        }
+        Ok(translation.expect("Translation should never be None value."))
     }
 
     pub fn get_translated_string_from_id(
@@ -117,7 +123,7 @@ impl MatchDataResponses {
     ) -> Result<String> {
         trace!("Getting translated string in {:?} with id: {:?}", first, id);
         let language =
-            if let Some(lang) = self.clone().get_translation_for_language() {
+            if let Ok(lang) = self.clone().get_translation_for_language() {
                 lang
             }
             else {
@@ -166,11 +172,11 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_match_type_id(&self) -> Result<usize> {
+    pub fn get_game_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("match type".to_string())),
+            || Err(ResponderError::NotFound("game type".to_string())),
             |val| {
-                Ok(val["last_match"]["match_type"]
+                Ok(val["last_match"]["game_type"]
                     .to_string()
                     .parse::<usize>()?)
             },
@@ -251,6 +257,11 @@ impl MatchDataResponses {
         let mut language: String = STANDARD_LANGUAGE.to_string();
         let mut game: String = STANDARD_GAME.to_string();
 
+        let mut db_cloned: InMemoryDb;
+        {
+            // Just clone and drop the lock
+            db_cloned = in_memory_db.lock().await.clone();
+        }
         // Set `language` to Query value if specified
         if let Some(lang) = par.language {
             language = lang;
@@ -263,7 +274,7 @@ impl MatchDataResponses {
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: in_memory_db.lock().await.with_language(&language),
+            db: db_cloned.retain_language(&language),
             ..Default::default()
         };
 
