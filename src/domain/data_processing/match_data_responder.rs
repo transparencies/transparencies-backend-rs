@@ -14,13 +14,6 @@ use crate::domain::types::{
     MatchDataResponses,
 };
 use aoe2net::Aoe2netStringObj;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -36,6 +29,12 @@ use std::{
     time::Duration,
 };
 use tokio::sync::Mutex;
+use tracing::{
+    debug,
+    info,
+    trace,
+    warn,
+};
 
 use super::error::ResponderError;
 

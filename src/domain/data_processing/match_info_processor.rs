@@ -1,8 +1,10 @@
-use log::{
+use tracing::{
     debug,
+    info,
     trace,
+    warn,
 };
-// use predicates::str::diff;
+
 use serde_json::Value;
 
 use crate::domain::{
@@ -211,8 +213,6 @@ impl MatchInfoProcessor {
         req_player: &aoe2net::Player,
         players_processing: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
-        trace!("Assemble player {:#?} to vector", req_player);
-
         // Lookups
         trace!("Looking up alias ...");
         let looked_up_alias = self.lookup_alias(req_player);
@@ -276,8 +276,7 @@ impl MatchInfoProcessor {
         self.responses.aoe2net.player_last_match.as_ref().map_or(
             false,
             |player_last_match| {
-                player_last_match["last_match"]["profile_id"]
-                    == req_player.profile_id
+                player_last_match["profile_id"] == req_player.profile_id
             },
         )
     }

@@ -17,13 +17,7 @@ extern crate transparencies_backend_rs;
 
 use eyre::Error;
 use human_panic::setup_panic;
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use log::error;
 use simple_log::LogConfigBuilder;
 use std::{
     env,
@@ -74,6 +68,18 @@ use transparencies_backend_rs::{
     },
 };
 
+use tracing::{
+    debug,
+    info,
+    trace,
+    warn,
+};
+use tracing_subscriber::{
+    prelude::*,
+    Registry,
+};
+use tracing_tree::HierarchicalLayer;
+
 #[tokio::main]
 async fn main() {
     // Install the panic and error report handlers
@@ -88,6 +94,10 @@ async fn main() {
         // Access logs
         // env::set_var("RUST_LOG", "transparencies=info");
     }
+    // install global collector configured based on RUST_LOG env var.
+    //   tracing_subscriber::fmt::init();
+    let subscriber = Registry::default().with(HierarchicalLayer::new(2));
+    tracing::subscriber::set_global_default(subscriber).unwrap();
 
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]

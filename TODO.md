@@ -20,15 +20,15 @@
     - [x] periodically:
         - [x] at the start of the server
         - [x] once every 10 minutes
-- [ ] **WIP** Merge various data sources into a `MatchInfo` datastructure for giving back to client
+- [X] Merge various data sources into a `MatchInfo` datastructure for giving back to client
     - [x] await json from polska for new matchinfo DS for merging/exposing to our frontend
     - [x] Q: What's the best way in Rust to automatically map Datastructures
 
 ### Error Handling
 - [ ] **WIP** Implement good error handling
-    - [ ] **WIP** use crates error types for better `Error handling` e.g. `reqwest::Error`
+    - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [ ] use `claim` for better error reports
-    - [ ] **WIP** use `thiserror` in library part
+    - [X] use `thiserror` in library part
     - [ ] use `eyre` consistently for results with reports in binary part (?)
     - [ ] use `.map_err` and return HTTP status codes
 - [ ] implement `todo!()`s
@@ -38,8 +38,8 @@
     - [X] Data structure does not match with data from aoe2net
         - [X] Q: take a look for a `serde` attribute to mark fields in structs that are not as important for our processing,
               so we don't throw a parsing error if non-essential fields don't match/exist
-        - **A:** We only parse `Players` of `last_match` into some losely-typed datastructure for easier handling, the rest is `serde_json::Value`
-          and parsing on the run
+        - **A:** We only parse `Players` of `last_match` into some losely-typed datastructure for easier handling,
+          the rest is `serde_json::Value` and parsing on the run
     - [ ] New players without ranking
     - [ ] Deranked players
     - [ ] Coop games
@@ -57,9 +57,8 @@
 - [ ] what (other) architectural changes need to be made to support many clients on our api(?)
 - [ ] async stuff done right?
 - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
-- [ ] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
-      __Note:__ already partly done
-    - [ ] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
+- [X] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
+    - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Documentation
 - [ ] **WIP** create good documentation (!!!)
