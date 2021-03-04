@@ -11,40 +11,37 @@ use std::collections::HashMap;
 use typed_builder::TypedBuilder;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchSize {
-    G1v1,
-    G2v2,
-    G3v3,
-    G4v4,
-    Custom,
-    NoGame,
+pub enum MatchSize {
+    NoGame = -1,
+    Custom = 0,
+    G1v1 = 2,
+    G2v2 = 4,
+    G3v3 = 6,
+    G4v4 = 8,
+    G2v2v2,
+    G2v2v2v2,
 }
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchType {
-    RM,
-    DM,
-    CSTM,
-}
-
-type Time = String;
+type Time = usize;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchStatus {
+pub enum MatchStatus {
     Running,
     Finished(Time),
 }
 
 type ErrorMessage = String;
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfoResult {
     pub match_info: MatchInfo,
+    #[builder(default=None, setter(strip_option))]
     pub error_message: Option<ErrorMessage>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfo {
-    match_type: MatchType,
+    game_type: String,
+    rating_type: String,
     match_size: MatchSize,
     match_status: MatchStatus,
     map_name: String,

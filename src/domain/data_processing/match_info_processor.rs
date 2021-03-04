@@ -1,4 +1,5 @@
 use log::debug;
+// use predicates::str::diff;
 use serde_json::Value;
 
 use crate::domain::{
@@ -8,6 +9,8 @@ use crate::domain::{
         api::{
             MatchInfo,
             MatchInfoResult,
+            MatchSize,
+            MatchStatus,
             Players,
             PlayersRaw,
             Rating,
@@ -81,57 +84,104 @@ impl MatchInfoProcessor {
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
         let mut teams_raw: Vec<TeamRaw> = Vec::new();
 
-        let translation = &self.get_translation();
+        let language = &self.responses.get_translation_for_language();
 
         let mut diff_team = Vec::with_capacity(8);
 
-        for (_player_number, req_player) in players_vec.iter().enumerate() {
-            self.assemble_player_to_vec(
-                req_player,
-                translation,
+        // Create the vector for the player information
+        let amount_of_successfully_processed_players = self
+            .process_all_players(
+                players_vec,
+                language,
                 &mut players_raw,
+                &mut diff_team,
             )?;
+
+        // Create the different teams vectors
+        let amount_of_successfully_processed_teams =
+            assemble_teams_to_vec(diff_team, &players_raw, &mut teams_raw)?;
+
+        let match_size = match (
+            amount_of_successfully_processed_players,
+            amount_of_successfully_processed_teams,
+        ) {
+            (2, 2) => MatchSize::G1v1,
+            (4, 2) => MatchSize::G2v2,
+            (6, 2) => MatchSize::G3v3,
+            (8, 2) => MatchSize::G4v4,
+            (6, 3) => MatchSize::G2v2v2,
+            (8, 4) => MatchSize::G2v2v2v2,
+            (_, _) => MatchSize::Custom,
+        };
+
+        let translated_last_match_rating_type =
+            &self.responses.get_translated_string_from_id(
+                "rating_type",
+                self.responses.get_rating_type_id()?,
+            )?;
+
+        let translated_last_match_map_type =
+            &self.responses.get_translated_string_from_id(
+                "map_type",
+                self.responses.get_map_type_id()?,
+            )?;
+
+        let translated_last_match_match_type =
+            &self.responses.get_translated_string_from_id(
+                "match_type",
+                self.responses.get_match_type_id()?,
+            )?;
+
+        let match_status = if let Ok(time) =
+            &self.responses.get_finished_time()?.parse::<usize>()
+        {
+            MatchStatus::Finished(*time)
+        }
+        else {
+            MatchStatus::Running
+        };
+
+        // Assemble Information to MatchInfo
+        let match_info_raw = MatchInfo::builder()
+            .match_size(match_size)
+            .game_type(translated_last_match_match_type.to_string())
+            .rating_type(translated_last_match_rating_type.to_string())
+            .map_name(translated_last_match_map_type.to_string())
+            .server(self.responses.get_server_location()?)
+            .teams(Teams(teams_raw.clone()))
+            .match_status(match_status)
+            .build();
+
+        // Wrap MatchInfo with converted Errors into MatchInfoResult
+        let match_info_result = MatchInfoResult::builder()
+            .match_info(match_info_raw.clone())
+            .build();
+
+        Ok(Self {
+            responses: self.responses.clone(),
+            match_info: Some(match_info_raw),
+            players: Some(Players(players_raw)),
+            teams: Some(Teams(teams_raw)),
+            result: Some(match_info_result),
+            errors: None,
+        })
+    }
+
+    fn process_all_players(
+        &mut self,
+        players_vec: &Vec<aoe2net::Player>,
+        translation: &Option<Value>,
+        players_raw: &mut Vec<PlayersRaw>,
+        diff_team: &mut Vec<i64>,
+    ) -> Result<usize> {
+        let player_amount = players_vec.len();
+        for (_player_number, req_player) in players_vec.iter().enumerate() {
+            self.assemble_player_to_vec(req_player, translation, players_raw)?;
             if !diff_team.contains(&req_player.team) {
                 diff_team.push(req_player.team)
             }
         }
-
-        diff_team.sort();
-
-        // let team_count = diff_team.len();
-
-        let mut player_vec_helper: Vec<PlayersRaw> =
-            Vec::with_capacity(diff_team.len());
-
-        // Iterate through different teams
-        while let Some(team) = diff_team.pop() {
-            // Empty vec, as we start a new team
-            player_vec_helper.clear();
-            // Iterate through players
-            while let Some(player) = players_raw.clone().pop() {
-                player_vec_helper.push(player)
-            }
-
-            let team = TeamRaw::builder()
-                .team_number(team)
-                .players(Players(player_vec_helper.clone()))
-                .build();
-
-            teams_raw.push(team);
-        }
-
-        // Read in Teams
-        // Assemble Information to MatchInfo
-        // Wrap MatchInfo with converted Errors into MatchInfoResult
-
-        Ok(Self {
-            responses: self.responses.clone(),
-            match_info: None,
-            players: Some(Players(players_raw)),
-            teams: Some(Teams(teams_raw)),
-            result: None,
-            errors: None,
-        })
+        Ok(player_amount)
     }
 
     fn assemble_player_to_vec(
@@ -236,21 +286,6 @@ impl MatchInfoProcessor {
         looked_up_alias
     }
 
-    fn get_translation(&mut self) -> Option<Value> {
-        let mut translation: Option<serde_json::Value> = None;
-
-        if self.responses.db.aoe2net_languages.len() == 1 {
-            for (language, translation_value) in
-                self.responses.db.aoe2net_languages.drain().take(1)
-            {
-                debug!("Translation that was used: {:?}", language);
-                translation = Some(translation_value);
-            }
-        }
-
-        translation
-    }
-
     pub fn assemble(&self) -> Result<MatchInfoResult> {
         self.result
             .as_ref()
@@ -274,6 +309,38 @@ impl MatchInfoProcessor {
         to_writer_pretty(writer, &self.result, ron_config)
             .expect("Unable to write data");
     }
+}
+
+fn assemble_teams_to_vec(
+    mut diff_team: Vec<i64>,
+    players_raw: &Vec<PlayersRaw>,
+    teams_raw: &mut Vec<TeamRaw>,
+) -> Result<usize> {
+    diff_team.sort();
+
+    let team_amount = diff_team.len();
+
+    let mut player_vec_helper: Vec<PlayersRaw> =
+        Vec::with_capacity(diff_team.len());
+
+    // Iterate through different teams
+    while let Some(team) = diff_team.pop() {
+        // Empty vec, as we start a new team
+        player_vec_helper.clear();
+        // Iterate through players
+        while let Some(player) = players_raw.clone().pop() {
+            player_vec_helper.push(player)
+        }
+
+        let team = TeamRaw::builder()
+            .team_number(team)
+            .players(Players(player_vec_helper.clone()))
+            .build();
+
+        teams_raw.push(team);
+    }
+
+    Ok(team_amount)
 }
 
 fn build_player(

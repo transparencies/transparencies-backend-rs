@@ -13,6 +13,7 @@ use crate::domain::types::{
     InMemoryDb,
     MatchDataResponses,
 };
+use aoe2net::Aoe2netStringObj;
 use log::{
     debug,
     error,
@@ -82,10 +83,95 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_rating_type(&self) -> Result<String> {
+    pub fn get_rating_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating type".to_string())),
-            |val| Ok(val["last_match"]["rating_type"].to_string()),
+            |val| {
+                Ok(val["last_match"]["rating_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
+        )
+    }
+
+    pub fn get_translation_for_language(&mut self) -> Option<Value> {
+        let mut translation: Option<serde_json::Value> = None;
+
+        if self.db.aoe2net_languages.len() == 1 {
+            for (language, translation_value) in
+                self.db.aoe2net_languages.drain().take(1)
+            {
+                debug!("Translation that was used: {:?}", language);
+                translation = Some(translation_value);
+            }
+        }
+
+        translation
+    }
+
+    pub fn get_translated_string_from_id(
+        &self,
+        first: &str,
+        id: usize,
+    ) -> Result<String> {
+        let language =
+            if let Some(lang) = self.clone().get_translation_for_language() {
+                lang
+            }
+            else {
+                return Err(ResponderError::NotFound(
+                    "translation file".to_string(),
+                ));
+            };
+
+        let translated_vec = serde_json::from_str::<Vec<Aoe2netStringObj>>(
+            &serde_json::to_string(&language[first]).expect(
+                &format!(
+                    "Conversion of language[{:?}] to string failed.",
+                    first.to_string(),
+                )
+                .to_string(),
+            ),
+        )
+        .expect("Conversion from translated string failed.");
+
+        let mut translated_string: Option<String> = None;
+
+        for obj_string in translated_vec.iter() {
+            if *obj_string.id() == id {
+                translated_string = Some(obj_string.string().to_string())
+            }
+        }
+
+        if let None = translated_string {
+            return Err(ResponderError::TranslationPosError(
+                format!("[{:?}]", first.to_string(),),
+                id,
+            ));
+        }
+
+        Ok(translated_string.unwrap())
+    }
+
+    pub fn get_map_type_id(&self) -> Result<usize> {
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("map type".to_string())),
+            |val| {
+                Ok(val["last_match"]["map_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
+        )
+    }
+
+    pub fn get_match_type_id(&self) -> Result<usize> {
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("match type".to_string())),
+            |val| {
+                Ok(val["last_match"]["match_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
         )
     }
 
