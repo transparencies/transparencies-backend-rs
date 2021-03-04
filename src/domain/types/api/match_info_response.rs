@@ -48,6 +48,7 @@ pub struct MatchInfo {
     match_size: MatchSize,
     match_status: MatchStatus,
     map_name: String,
+    server: String,
     teams: Teams,
 }
 

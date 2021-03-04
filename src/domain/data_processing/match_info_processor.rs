@@ -48,6 +48,7 @@ impl Rating {
         }
     }
 }
+
 #[derive(Clone, Debug, Serialize)]
 pub struct MatchInfoProcessor {
     responses: MatchDataResponses,
@@ -75,21 +76,12 @@ impl MatchInfoProcessor {
         // TODO Error handling instead of unwrap
         // Collect errors in &self.errors or alike
 
-        let players_vec = &self.responses.aoe2net.players_temp;
+        let players_vec = &self.responses.aoe2net.players_temp.clone();
 
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
         let mut _teams_raw: Vec<TeamsRaw> = Vec::new();
 
-        let mut translation: Option<serde_json::Value> = None;
-
-        if self.responses.db.aoe2net_languages.len() == 1 {
-            for (language, translation_value) in
-                self.responses.db.aoe2net_languages.drain().take(1)
-            {
-                debug!("Translation that was used: {:?}", language);
-                translation = Some(translation_value);
-            }
-        }
+        let translation = &self.get_translation();
 
         for (_player_number, req_player) in players_vec.iter().enumerate() {
             // Lookup profile id in alias list
@@ -190,6 +182,21 @@ impl MatchInfoProcessor {
             result: None,
             errors: None,
         })
+    }
+
+    fn get_translation(&mut self) -> Option<Value> {
+        let mut translation: Option<serde_json::Value> = None;
+
+        if self.responses.db.aoe2net_languages.len() == 1 {
+            for (language, translation_value) in
+                self.responses.db.aoe2net_languages.drain().take(1)
+            {
+                debug!("Translation that was used: {:?}", language);
+                translation = Some(translation_value);
+            }
+        }
+
+        translation
     }
 
     pub fn assemble(&self) -> Result<MatchInfoResult> {
