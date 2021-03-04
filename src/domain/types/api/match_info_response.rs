@@ -3,74 +3,102 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+
+use derive_getters::Getters;
 use serde::{
     Deserialize,
     Serialize,
 };
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    fs,
+    io::BufWriter,
+};
 use typed_builder::TypedBuilder;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchSize {
-    G1v1,
-    G2v2,
-    G3v3,
-    G4v4,
-    Custom,
-    NoGame,
+pub enum MatchSize {
+    NoGame = -1,
+    Custom = 0,
+    G1v1 = 2,
+    G2v2 = 4,
+    G3v3 = 6,
+    G4v4 = 8,
+    G2v2v2,
+    G2v2v2v2,
 }
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchType {
-    RM,
-    DM,
-    CSTM,
-}
-
-type Time = String;
+type Time = usize;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-enum MatchStatus {
+pub enum MatchStatus {
     Running,
     Finished(Time),
 }
 
 type ErrorMessage = String;
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfoResult {
     pub match_info: MatchInfo,
+    #[builder(default=None, setter(strip_option))]
     pub error_message: Option<ErrorMessage>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+impl MatchInfoResult {
+    pub fn export_data_to_file(&self) {
+        let ron_config = PrettyConfig::new()
+            .with_depth_limit(8)
+            .with_separate_tuple_members(true)
+            .with_enumerate_arrays(true)
+            .with_indentor("\t".to_owned());
+
+        // Open the file in writable mode with buffer.
+        let file = fs::File::create("logs/match_info_result.ron").unwrap();
+        let writer = BufWriter::new(file);
+
+        // Write data to file
+        to_writer_pretty(writer, &self, ron_config)
+            .expect("Unable to write data");
+    }
+}
+
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfo {
-    match_type: MatchType,
+    game_type: String,
+    rating_type: String,
     match_size: MatchSize,
     match_status: MatchStatus,
     map_name: String,
+    server: String,
     teams: Teams,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Players(pub Vec<PlayersRaw>);
+pub struct Players(pub Vec<PlayerRaw>);
 
-#[derive(Clone, TypedBuilder, Debug, PartialEq, Serialize)]
-pub struct PlayersRaw {
+#[derive(Clone, TypedBuilder, Getters, Debug, PartialEq, Serialize)]
+pub struct PlayerRaw {
     rating: Rating,
     player_number: i64,
+    team_number: i64,
     name: String,
     country: String,
     civilisation: String,
+    requested: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Teams(Vec<TeamsRaw>);
+pub struct Teams(pub Vec<TeamRaw>);
 
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
-pub struct TeamsRaw {
+pub struct TeamRaw {
     players: Players,
     team_number: i64,
-    #[builder(setter(strip_option))]
+    #[builder(default, setter(strip_option))]
     team_name: Option<String>,
 }
 

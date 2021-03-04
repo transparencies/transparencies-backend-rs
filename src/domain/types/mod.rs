@@ -4,6 +4,7 @@ pub mod api;
 pub mod match_data;
 pub mod requests;
 
+use log::trace;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
 
@@ -26,24 +27,33 @@ pub struct InMemoryDb {
 
 impl InMemoryDb {
     // Return the `InMemoryDb` only with the language needed
-    pub fn with_language(
+    pub fn retain_language(
         &mut self,
         language: &str,
     ) -> Self {
-        let mut used_language = self.aoe2net_languages.clone();
-
-        if used_language.contains_key(language) {
-            used_language.retain(|&lang, _| lang == language);
+        trace!("Checking HashMap for language: {:?}", language);
+        if self.aoe2net_languages.contains_key(language) {
+            trace!(
+                "Cleaning HashMap of other languages than language: {:?} ...",
+                language
+            );
+            self.aoe2net_languages.retain(|&lang, _| lang == language);
         }
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
             let std_language = STANDARD_LANGUAGE;
-            used_language.retain(|&lang, _| lang == std_language);
+            trace!(
+                "Cleaning HashMap of other languages than language: {:?} ...",
+                std_language
+            );
+
+            self.aoe2net_languages
+                .retain(|&lang, _| lang == std_language);
         }
 
         Self {
-            aoe2net_languages: used_language,
+            aoe2net_languages: self.aoe2net_languages.clone(),
             github_file_content: self.github_file_content.clone(),
         }
     }

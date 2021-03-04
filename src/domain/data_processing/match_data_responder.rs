@@ -13,13 +13,7 @@ use crate::domain::types::{
     InMemoryDb,
     MatchDataResponses,
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
+use aoe2net::Aoe2netStringObj;
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -35,6 +29,12 @@ use std::{
     time::Duration,
 };
 use tokio::sync::Mutex;
+use tracing::{
+    debug,
+    info,
+    trace,
+    warn,
+};
 
 use super::error::ResponderError;
 
@@ -82,10 +82,102 @@ impl MatchDataResponses {
         )
     }
 
-    pub fn get_rating_type(&self) -> Result<String> {
+    pub fn get_rating_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating type".to_string())),
-            |val| Ok(val["last_match"]["rating_type"].to_string()),
+            |val| {
+                Ok(val["last_match"]["rating_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
+        )
+    }
+
+    pub fn get_translation_for_language(&mut self) -> Result<Value> {
+        let mut translation: Option<serde_json::Value> = None;
+
+        trace!(
+            "Length of self.db.aoe2net_languages is: {:?}",
+            self.db.aoe2net_languages.len()
+        );
+
+        if self.db.aoe2net_languages.len() == 1 {
+            for (language, translation_value) in
+                self.db.aoe2net_languages.clone().drain().take(1)
+            {
+                translation = Some(translation_value);
+                trace!("Translation that was used: {:?}", language);
+            }
+        }
+        else {
+            return Err(ResponderError::TranslationHasBeenMovedError);
+        }
+        Ok(translation.expect("Translation should never be None value."))
+    }
+
+    pub fn get_translated_string_from_id(
+        &self,
+        first: &str,
+        id: usize,
+    ) -> Result<String> {
+        trace!("Getting translated string in {:?} with id: {:?}", first, id);
+        let language =
+            if let Ok(lang) = self.clone().get_translation_for_language() {
+                lang
+            }
+            else {
+                return Err(ResponderError::NotFound(
+                    "translation file".to_string(),
+                ));
+            };
+
+        let translated_vec = serde_json::from_str::<Vec<Aoe2netStringObj>>(
+            &serde_json::to_string(&language[first]).unwrap_or_else(|_| {
+                panic!(format!(
+                    "Conversion of language[{:?}] to string failed.",
+                    first.to_string(),
+                ))
+            }),
+        )
+        .expect("Conversion from translated string failed.");
+
+        let mut translated_string: Option<String> = None;
+
+        for obj_string in &translated_vec {
+            if *obj_string.id() == id {
+                translated_string = Some(obj_string.string().to_string())
+            }
+        }
+
+        if translated_string.is_none() {
+            return Err(ResponderError::TranslationPosError(
+                format!("[{:?}]", first.to_string(),),
+                id,
+            ));
+        }
+
+        Ok(translated_string.unwrap())
+    }
+
+    pub fn get_map_type_id(&self) -> Result<usize> {
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("map type".to_string())),
+            |val| {
+                Ok(val["last_match"]["map_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
+        )
+    }
+
+    pub fn get_game_type_id(&self) -> Result<usize> {
+        self.aoe2net.player_last_match.as_ref().map_or_else(
+            || Err(ResponderError::NotFound("game type".to_string())),
+            |val| {
+                Ok(val["last_match"]["game_type"]
+                    .to_string()
+                    .parse::<usize>()?)
+            },
         )
     }
 
@@ -163,6 +255,11 @@ impl MatchDataResponses {
         let mut language: String = STANDARD_LANGUAGE.to_string();
         let mut game: String = STANDARD_GAME.to_string();
 
+        let mut db_cloned: InMemoryDb;
+        {
+            // Just clone and drop the lock
+            db_cloned = in_memory_db.lock().await.clone();
+        }
         // Set `language` to Query value if specified
         if let Some(lang) = par.language {
             language = lang;
@@ -175,7 +272,7 @@ impl MatchDataResponses {
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: in_memory_db.lock().await.with_language(&language),
+            db: db_cloned.retain_language(&language),
             ..Default::default()
         };
 

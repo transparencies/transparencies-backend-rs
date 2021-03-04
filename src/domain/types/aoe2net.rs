@@ -3,6 +3,8 @@ use serde::{
     Serialize,
 };
 
+use derive_getters::Getters;
+
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
@@ -41,4 +43,21 @@ pub struct Player {
     #[serde(skip)]
     pub wins: ::serde_json::Value,
     pub won: bool,
+}
+
+#[derive(
+    Default,
+    Clone,
+    Debug,
+    Getters,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    Eq,
+    Serialize,
+    Deserialize,
+)]
+pub struct Aoe2netStringObj {
+    id: usize,
+    string: String,
 }
