@@ -84,6 +84,7 @@ async fn main() {
     if env::var_os("RUST_LOG").is_none() {
         // TODO Deactivate Debug logs
         env::set_var("RUST_LOG", "transparencies=debug");
+        env::set_var("RUST_BACKTRACE", "1");
         // Access logs
         // env::set_var("RUST_LOG", "transparencies=info");
     }
