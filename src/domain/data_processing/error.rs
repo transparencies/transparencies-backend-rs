@@ -17,6 +17,8 @@ pub enum ProcessingError {
     ResponderMalfunction(#[from] ResponderError),
     #[error("Parsing of Integer data failed")]
     ProcessIntParsingError(#[from] ParseIntError),
+    #[error("Conversion to String failed.")]
+    SerdeStringConversionError(#[from] serde_json::Error),
     #[error("Dividing by Zero is not allowed.")]
     DividingByZeroError,
     #[error("Haven't found a rating for player id: {0}")]

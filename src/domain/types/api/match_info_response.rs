@@ -8,6 +8,7 @@ use ron::ser::{
     PrettyConfig,
 };
 
+use derive_getters::Getters;
 use serde::{
     Deserialize,
     Serialize,
@@ -77,12 +78,13 @@ pub struct MatchInfo {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct Players(pub Vec<PlayersRaw>);
+pub struct Players(pub Vec<PlayerRaw>);
 
-#[derive(Clone, TypedBuilder, Debug, PartialEq, Serialize)]
-pub struct PlayersRaw {
+#[derive(Clone, TypedBuilder, Getters, Debug, PartialEq, Serialize)]
+pub struct PlayerRaw {
     rating: Rating,
     player_number: i64,
+    team_number: i64,
     name: String,
     country: String,
     civilisation: String,

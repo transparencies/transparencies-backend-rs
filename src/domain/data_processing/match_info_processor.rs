@@ -14,8 +14,8 @@ use crate::domain::{
             MatchInfoResult,
             MatchSize,
             MatchStatus,
+            PlayerRaw,
             Players,
-            PlayersRaw,
             Rating,
             TeamRaw,
             Teams,
@@ -122,7 +122,7 @@ impl MatchInfoProcessor {
             (8, 4) => MatchSize::G2v2v2v2,
             (_, _) => MatchSize::Custom,
         };
-        trace!("Successfully calculated match size.");
+        trace!("Successfully calculated match size: {:?}", match_size);
 
         trace!("Translate rating type ...");
         let translated_last_match_rating_type =
@@ -191,7 +191,7 @@ impl MatchInfoProcessor {
         &mut self,
         players_vec: &Vec<aoe2net::Player>,
         translation: &Option<Value>,
-        players_raw: &mut Vec<PlayersRaw>,
+        players_raw: &mut Vec<PlayerRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
         trace!("Processing all players ...");
@@ -211,25 +211,22 @@ impl MatchInfoProcessor {
         &mut self,
         req_player: &aoe2net::Player,
         translation: &Option<Value>,
-        players_raw: &mut Vec<PlayersRaw>,
+        players_raw: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
         trace!("Assemble player {:#?} to vector", req_player);
 
         // Lookups
         trace!("Looking up alias ...");
         let looked_up_alias = self.lookup_alias(req_player);
-        trace!("Successfully looked up alias: {:#?}", looked_up_alias);
+        trace!("Successfully looked up alias.");
 
         trace!("Looking up rating ...");
         let looked_up_rating = self.lookup_rating(req_player)?;
-        trace!("Successfully looked up rating: {:#?}", looked_up_rating);
+        trace!("Successfully looked up rating.");
 
         trace!("Looking up leaderboard ...");
         let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
-        trace!(
-            "Successfully looked up leaderboard: {:#?}",
-            looked_up_leaderboard
-        );
+        trace!("Successfully looked up leaderboard.");
 
         trace!("Getting requested player ...");
         let requested_player = self.get_requested_player(req_player);
@@ -293,7 +290,7 @@ impl MatchInfoProcessor {
             ));
         };
 
-        Ok(looked_up_leaderboard)
+        Ok(looked_up_leaderboard["leaderboard"][0].clone())
     }
 
     fn lookup_rating(
@@ -312,7 +309,7 @@ impl MatchInfoProcessor {
             ));
         };
 
-        Ok(looked_up_rating)
+        Ok(looked_up_rating[0].clone())
     }
 
     fn lookup_alias(
@@ -343,25 +340,33 @@ impl MatchInfoProcessor {
 
 fn assemble_teams_to_vec(
     mut diff_team: Vec<i64>,
-    players_raw: &Vec<PlayersRaw>,
+    players_raw: &Vec<PlayerRaw>,
     teams_raw: &mut Vec<TeamRaw>,
 ) -> Result<usize> {
+    trace!("Sorting amount of teams vector ...");
     diff_team.sort();
+    trace!("Finished sorting amount of teams vector.");
 
     let team_amount = diff_team.len();
 
-    let mut player_vec_helper: Vec<PlayersRaw> =
+    let mut player_vec_helper: Vec<PlayerRaw> =
         Vec::with_capacity(diff_team.len());
 
+    trace!("Iterating through different teams ...");
     // Iterate through different teams
     while let Some(team) = diff_team.pop() {
         // Empty vec, as we start a new team
+        trace!("Emptying helper vector for players ...");
         player_vec_helper.clear();
         // Iterate through players
-        while let Some(player) = players_raw.clone().pop() {
-            player_vec_helper.push(player)
+        trace!("Iterating through players of team number {:?} ...", team);
+        for player in players_raw.clone() {
+            if *player.team_number() == team {
+                player_vec_helper.push(player);
+            }
         }
 
+        trace!("Build team number {:?} ...", team);
         let team = TeamRaw::builder()
             .team_number(team)
             .players(Players(player_vec_helper.clone()))
@@ -369,6 +374,7 @@ fn assemble_teams_to_vec(
 
         teams_raw.push(team);
     }
+    trace!("Finished iterating through teams.");
 
     Ok(team_amount)
 }
@@ -379,10 +385,11 @@ fn build_player(
     looked_up_alias: Option<crate::domain::types::aoc_ref::players::Player>,
     translation: &Option<Value>,
     requested: bool,
-) -> Result<PlayersRaw> {
-    let player_raw = PlayersRaw::builder()
+) -> Result<PlayerRaw> {
+    let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color)
+        .team_number(req_player.team)
         .name(looked_up_alias.as_ref().map_or_else(
             || req_player.name.clone(),
             |lookup_player| lookup_player.name.clone(),
@@ -409,20 +416,43 @@ fn get_rating(
     looked_up_rating: Value,
     looked_up_leaderboard: Value,
 ) -> Result<Rating> {
+    // TODO Get rid of expect and gracefully handle errors
     let player_rating = Rating::builder()
-        .mmr(looked_up_rating["rating"].to_string().parse::<u32>()?)
-        .rank(
-            looked_up_leaderboard["leaderboard"]["rank"]
-                .to_string()
-                .parse::<u64>()?,
+        .mmr(
+            serde_json::from_str::<u32>(&serde_json::to_string(
+                &looked_up_rating["rating"],
+            )?)
+            .expect("MMR parsing failed."),
         )
-        .wins(looked_up_rating["num_wins"].to_string().parse::<u64>()?)
-        .losses(looked_up_rating["num_losses"].to_string().parse::<u64>()?)
-        .streak(looked_up_rating["streak"].to_string().parse::<i32>()?)
+        .rank(
+            serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_leaderboard["rank"],
+            )?)
+            .expect("Rank parsing failed."),
+        )
+        .wins(
+            serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_rating["num_wins"],
+            )?)
+            .expect("Wins parsing failed."),
+        )
+        .losses(
+            serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_rating["num_losses"],
+            )?)
+            .expect("Losses parsing failed."),
+        )
+        .streak(
+            serde_json::from_str::<i32>(&serde_json::to_string(
+                &looked_up_rating["streak"],
+            )?)
+            .expect("Streak parsing failed."),
+        )
         .highest_mmr(
-            looked_up_leaderboard["leaderboard"]["highest_rating"]
-                .to_string()
-                .parse::<u32>()?,
+            serde_json::from_str::<u32>(&serde_json::to_string(
+                &looked_up_leaderboard["highest_rating"],
+            )?)
+            .expect("Highest-MMR parsing failed."),
         )
         .build();
 

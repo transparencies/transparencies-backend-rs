@@ -101,8 +101,9 @@ impl MatchDataResponses {
             for (language, translation_value) in
                 self.db.aoe2net_languages.drain().take(1)
             {
-                debug!("Translation that was used: {:?}", language);
                 translation = Some(translation_value);
+                trace!("Translation that was used: {:?}", language);
+                trace!("Content of translation: {:#?}", translation);
             }
         }
 
@@ -114,6 +115,7 @@ impl MatchDataResponses {
         first: &str,
         id: usize,
     ) -> Result<String> {
+        trace!("Getting translated string in {:?} with id: {:?}", first, id);
         let language =
             if let Some(lang) = self.clone().get_translation_for_language() {
                 lang
