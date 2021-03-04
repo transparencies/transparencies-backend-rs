@@ -253,7 +253,7 @@ impl MatchInfoProcessor {
         trace!("Successfully calculated player win rate.");
 
         trace!("Building player struct ...");
-        let player_raw = build_player(
+        let player_built = build_player(
             player_rating,
             req_player,
             looked_up_alias,
@@ -262,7 +262,7 @@ impl MatchInfoProcessor {
         )?;
         trace!("Successfully built player struct.");
 
-        players_raw.push(player_raw);
+        players_raw.push(player_built);
 
         Ok(())
     }
