@@ -1,4 +1,7 @@
-use log::debug;
+use log::{
+    debug,
+    trace,
+};
 // use predicates::str::diff;
 use serde_json::Value;
 
@@ -78,6 +81,7 @@ impl MatchInfoProcessor {
     pub fn process(&mut self) -> Result<Self> {
         // TODO Error handling instead of unwrap
         // Collect errors in &self.errors or alike
+        trace!("Processing MatchDataResponses ...");
 
         let players_vec = &self.responses.aoe2net.players_temp.clone();
 
@@ -88,6 +92,7 @@ impl MatchInfoProcessor {
 
         let mut diff_team = Vec::with_capacity(8);
 
+        trace!("Creating vector for player information.");
         // Create the vector for the player information
         let amount_of_successfully_processed_players = self
             .process_all_players(
@@ -96,11 +101,15 @@ impl MatchInfoProcessor {
                 &mut players_raw,
                 &mut diff_team,
             )?;
+        trace!("Successfully created vector for player information.");
 
+        trace!("Creating different teams vectors.");
         // Create the different teams vectors
         let amount_of_successfully_processed_teams =
             assemble_teams_to_vec(diff_team, &players_raw, &mut teams_raw)?;
+        trace!("Successfully created different teams vectors.");
 
+        trace!("Calculating match size ...");
         let match_size = match (
             amount_of_successfully_processed_players,
             amount_of_successfully_processed_teams,
@@ -113,25 +122,33 @@ impl MatchInfoProcessor {
             (8, 4) => MatchSize::G2v2v2v2,
             (_, _) => MatchSize::Custom,
         };
+        trace!("Successfully calculated match size.");
 
+        trace!("Translate rating type ...");
         let translated_last_match_rating_type =
             &self.responses.get_translated_string_from_id(
                 "rating_type",
                 self.responses.get_rating_type_id()?,
             )?;
+        trace!("Successfully translated rating type.");
 
+        trace!("Translate map type ...");
         let translated_last_match_map_type =
             &self.responses.get_translated_string_from_id(
                 "map_type",
                 self.responses.get_map_type_id()?,
             )?;
+        trace!("Successfully translated map type.");
 
+        trace!("Translate match type ...");
         let translated_last_match_match_type =
             &self.responses.get_translated_string_from_id(
                 "match_type",
                 self.responses.get_match_type_id()?,
             )?;
+        trace!("Successfully translated match type.");
 
+        trace!("Getting match status ...");
         let match_status = if let Ok(time) =
             &self.responses.get_finished_time()?.parse::<usize>()
         {
@@ -140,7 +157,9 @@ impl MatchInfoProcessor {
         else {
             MatchStatus::Running
         };
+        trace!("Sucessfully got match status.");
 
+        trace!("Assembling information to MatchInfo and MatchInfoResult ...");
         // Assemble Information to MatchInfo
         let match_info_raw = MatchInfo::builder()
             .match_size(match_size)
@@ -156,6 +175,7 @@ impl MatchInfoProcessor {
         let match_info_result = MatchInfoResult::builder()
             .match_info(match_info_raw.clone())
             .build();
+        trace!("Successfully assembled information to MatchInfo and MatchInfoResult.");
 
         Ok(Self {
             responses: self.responses.clone(),
@@ -174,6 +194,7 @@ impl MatchInfoProcessor {
         players_raw: &mut Vec<PlayersRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
+        trace!("Processing all players ...");
         let player_amount = players_vec.len();
         for (_player_number, req_player) in players_vec.iter().enumerate() {
             self.assemble_player_to_vec(req_player, translation, players_raw)?;
@@ -181,6 +202,8 @@ impl MatchInfoProcessor {
                 diff_team.push(req_player.team)
             }
         }
+        trace!("Successfully processed all players.");
+
         Ok(player_amount)
     }
 
@@ -190,18 +213,39 @@ impl MatchInfoProcessor {
         translation: &Option<Value>,
         players_raw: &mut Vec<PlayersRaw>,
     ) -> Result<()> {
-        // Lookups
-        let looked_up_alias = self.lookup_alias(req_player);
-        let looked_up_rating = self.lookup_rating(req_player)?;
-        let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
-        let requested_player = self.get_requested_player(req_player);
+        trace!("Assemble player {:#?} to vector", req_player);
 
+        // Lookups
+        trace!("Looking up alias ...");
+        let looked_up_alias = self.lookup_alias(req_player);
+        trace!("Successfully looked up alias: {:#?}", looked_up_alias);
+
+        trace!("Looking up rating ...");
+        let looked_up_rating = self.lookup_rating(req_player)?;
+        trace!("Successfully looked up rating: {:#?}", looked_up_rating);
+
+        trace!("Looking up leaderboard ...");
+        let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
+        trace!(
+            "Successfully looked up leaderboard: {:#?}",
+            looked_up_leaderboard
+        );
+
+        trace!("Getting requested player ...");
+        let requested_player = self.get_requested_player(req_player);
+        trace!("Successfully got requested player: {:#?}", requested_player);
+
+        trace!("Getting player rating ...");
         let mut player_rating =
             get_rating(looked_up_rating, looked_up_leaderboard)?;
+        trace!("Successfully got requested player rating.");
 
         // TODO: check if winrate calculation is right
+        trace!("Calculating player win rate ...");
         player_rating.calculate_win_rate();
+        trace!("Successfully calculated player win rate.");
 
+        trace!("Building player struct ...");
         let player_raw = build_player(
             player_rating,
             req_player,
@@ -209,6 +253,7 @@ impl MatchInfoProcessor {
             translation,
             requested_player,
         )?;
+        trace!("Successfully built player struct.");
 
         players_raw.push(player_raw);
 
@@ -287,6 +332,7 @@ impl MatchInfoProcessor {
     }
 
     pub fn assemble(&self) -> Result<MatchInfoResult> {
+        trace!("Assembling MatchInfoResult to frontend ...");
         self.result
             .as_ref()
             .map_or(Err(ProcessingError::AssemblyError), |result| {
