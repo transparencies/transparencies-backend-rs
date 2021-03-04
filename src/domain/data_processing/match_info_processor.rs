@@ -84,90 +84,25 @@ impl MatchInfoProcessor {
         let translation = &self.get_translation();
 
         for (_player_number, req_player) in players_vec.iter().enumerate() {
-            // Lookup profile id in alias list
-            let looked_up_alias = self
-                .responses
-                .db
-                .github_file_content
-                .lookup_player_alias_for_profile_id(
-                    &(req_player.profile_id.to_string()),
-                );
+            // Lookups
+            let looked_up_alias = self.lookup_alias(req_player);
+            let looked_up_rating = self.lookup_rating(req_player)?;
+            let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
 
-            if let Some(looked_up_rating) =
-                self.responses.lookup_player_rating_for_profile_id(
-                    &(req_player.profile_id.to_string()),
-                )
-            {
-                if let Some(looked_up_leaderboard) =
-                    self.responses.lookup_leaderboard_for_profile_id(
-                        &(req_player.profile_id.to_string()),
-                    )
-                {
-                    let mut player_rating = Rating::builder()
-                        .mmr(
-                            looked_up_rating["rating"]
-                                .to_string()
-                                .parse::<u32>()?,
-                        )
-                        .rank(
-                            looked_up_leaderboard["leaderboard"]["rank"]
-                                .to_string()
-                                .parse::<u64>()?,
-                        )
-                        .wins(
-                            looked_up_rating["num_wins"]
-                                .to_string()
-                                .parse::<u64>()?,
-                        )
-                        .losses(
-                            looked_up_rating["num_losses"]
-                                .to_string()
-                                .parse::<u64>()?,
-                        )
-                        .streak(
-                            looked_up_rating["streak"]
-                                .to_string()
-                                .parse::<i32>()?,
-                        )
-                        .highest_mmr(
-                            looked_up_leaderboard["leaderboard"]
-                                ["highest_rating"]
-                                .to_string()
-                                .parse::<u32>()?,
-                        )
-                        .build();
+            let mut player_rating =
+                get_rating(looked_up_rating, looked_up_leaderboard)?;
 
-                    // TODO: check if winrate calculation is right
-                    player_rating.calculate_win_rate();
+            // TODO: check if winrate calculation is right
+            player_rating.calculate_win_rate();
 
-                    players_raw.push(
-                        PlayersRaw::builder()
-                            .rating(player_rating)
-                            .player_number(req_player.color)
-                            .name(looked_up_alias.as_ref().map_or_else(
-                                || req_player.name.clone(),
-                                |lookup_player| lookup_player.name.clone(),
-                            ))
-                            .country(looked_up_alias.as_ref().map_or_else(
-                                || req_player.country.to_string(),
-                                |lookup_player| lookup_player.country.clone(),
-                            ))
-                            .civilisation(
-                                if let Some(translation) = &translation {
-                                    translation["civ"]
-                                        [req_player.civ.to_string()]
-                                    .to_string()
-                                }
-                                else {
-                                    return Err(
-                                        ProcessingError::CivilisationError,
-                                    );
-                                },
-                            )
-                            .build(),
-                    )
-                }
-            }
+            let player_raw = build_player(
+                player_rating,
+                req_player,
+                looked_up_alias,
+                translation,
+            )?;
+
+            players_raw.push(player_raw)
         }
 
         // Read in Teams
@@ -182,6 +117,60 @@ impl MatchInfoProcessor {
             result: None,
             errors: None,
         })
+    }
+
+    fn lookup_leaderboard(
+        &mut self,
+        req_player: &aoe2net::Player,
+    ) -> Result<Value> {
+        let looked_up_leaderboard = if let Some(looked_up_leaderboard) =
+            self.responses.lookup_leaderboard_for_profile_id(
+                &(req_player.profile_id.to_string()),
+            ) {
+            looked_up_leaderboard
+        }
+        else {
+            return Err(ProcessingError::LeaderboardNotFound(
+                req_player.profile_id,
+            ));
+        };
+
+        Ok(looked_up_leaderboard)
+    }
+
+    fn lookup_rating(
+        &mut self,
+        req_player: &aoe2net::Player,
+    ) -> Result<Value> {
+        let looked_up_rating = if let Some(looked_up_rating) =
+            self.responses.lookup_player_rating_for_profile_id(
+                &(req_player.profile_id.to_string()),
+            ) {
+            looked_up_rating
+        }
+        else {
+            return Err(ProcessingError::LookupRatingNotFound(
+                req_player.profile_id,
+            ));
+        };
+
+        Ok(looked_up_rating)
+    }
+
+    fn lookup_alias(
+        &mut self,
+        req_player: &aoe2net::Player,
+    ) -> Option<crate::domain::types::aoc_ref::players::Player> {
+        // Lookup profile id in alias list
+        let looked_up_alias = self
+            .responses
+            .db
+            .github_file_content
+            .lookup_player_alias_for_profile_id(
+                &(req_player.profile_id.to_string()),
+            );
+
+        looked_up_alias
     }
 
     fn get_translation(&mut self) -> Option<Value> {
@@ -222,4 +211,58 @@ impl MatchInfoProcessor {
         to_writer_pretty(writer, &self.result, ron_config)
             .expect("Unable to write data");
     }
+}
+
+fn build_player(
+    player_rating: Rating,
+    req_player: &aoe2net::Player,
+    looked_up_alias: Option<crate::domain::types::aoc_ref::players::Player>,
+    translation: &Option<Value>,
+) -> Result<PlayersRaw> {
+    let player_raw = PlayersRaw::builder()
+        .rating(player_rating)
+        .player_number(req_player.color)
+        .name(looked_up_alias.as_ref().map_or_else(
+            || req_player.name.clone(),
+            |lookup_player| lookup_player.name.clone(),
+        ))
+        .country(looked_up_alias.as_ref().map_or_else(
+            || req_player.country.to_string(),
+            |lookup_player| lookup_player.country.clone(),
+        ))
+        .civilisation(
+            if let Some(translation) = &translation {
+                translation["civ"][req_player.civ.to_string()].to_string()
+            }
+            else {
+                return Err(ProcessingError::CivilisationError);
+            },
+        )
+        .build();
+
+    Ok(player_raw)
+}
+
+fn get_rating(
+    looked_up_rating: Value,
+    looked_up_leaderboard: Value,
+) -> Result<Rating> {
+    let mut player_rating = Rating::builder()
+        .mmr(looked_up_rating["rating"].to_string().parse::<u32>()?)
+        .rank(
+            looked_up_leaderboard["leaderboard"]["rank"]
+                .to_string()
+                .parse::<u64>()?,
+        )
+        .wins(looked_up_rating["num_wins"].to_string().parse::<u64>()?)
+        .losses(looked_up_rating["num_losses"].to_string().parse::<u64>()?)
+        .streak(looked_up_rating["streak"].to_string().parse::<i32>()?)
+        .highest_mmr(
+            looked_up_leaderboard["leaderboard"]["highest_rating"]
+                .to_string()
+                .parse::<u32>()?,
+        )
+        .build();
+
+    Ok(player_rating)
 }

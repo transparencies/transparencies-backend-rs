@@ -19,6 +19,10 @@ pub enum ProcessingError {
     IntParsingError(#[from] ParseIntError),
     #[error("Dividing by Zero is not allowed.")]
     DividingByZeroError,
+    #[error("Haven't found a rating for player id: {0}")]
+    LookupRatingNotFound(i64),
+    #[error("Haven't found a leaderboard value for player id: {0}")]
+    LeaderboardNotFound(i64),
 }
 
 #[derive(Error, Debug)]
