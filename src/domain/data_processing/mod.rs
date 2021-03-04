@@ -92,7 +92,6 @@ pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    // ) -> Result<MatchInfoResult, ProcessingError> {
 ) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",
@@ -103,12 +102,17 @@ pub async fn process_match_info_request(
         MatchDataResponses::new_with_match_data(par, client, in_memory_db)
             .await?;
 
-    // Debugging
-    responses.export_data_to_file();
+    // Debugging responses
+    // responses.export_data_to_file();
 
     let result = MatchInfoProcessor::new_with_response(responses)
         .process()?
         .assemble()?;
+
+    debug!("MatchInfoResult: {:#?}", result);
+
+    // Debugging result
+    // result.export_data_to_file();
 
     Ok(result)
 }

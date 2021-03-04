@@ -16,9 +16,17 @@ pub enum ProcessingError {
     #[error("Responder experienced an error.")]
     ResponderMalfunction(#[from] ResponderError),
     #[error("Parsing of Integer data failed")]
-    IntParsingError(#[from] ParseIntError),
+    ProcessIntParsingError(#[from] ParseIntError),
+    #[error("Conversion to String failed.")]
+    SerdeStringConversionError(#[from] serde_json::Error),
     #[error("Dividing by Zero is not allowed.")]
     DividingByZeroError,
+    #[error("Haven't found a rating for player id: {0}")]
+    LookupRatingNotFound(i64),
+    #[error("Haven't found a leaderboard value for player id: {0}")]
+    LeaderboardNotFound(i64),
+    #[error("Haven't found a translation for {0}: {1}")]
+    TranslationError(String, usize),
 }
 
 #[derive(Error, Debug)]
@@ -32,7 +40,13 @@ pub enum ResponderError {
     #[error("HTTP-Client experienced an error.")]
     HttpClientError(#[from] reqwest::Error),
     #[error("Parsing of Integer data failed")]
-    IntParsingError(#[from] ParseIntError),
+    RespondIntParsingError(#[from] ParseIntError),
+    #[error("Haven't found a translation for {0}: {1}")]
+    TranslationError(String, usize),
+    #[error("Couldn't get the value of the translation string: {0} at given index {1}")]
+    TranslationPosError(String, usize),
+    #[error("Couldn't get the value of the translation string, because it has already been moved.")]
+    TranslationHasBeenMovedError,
 }
 
 #[derive(Error, Debug)]

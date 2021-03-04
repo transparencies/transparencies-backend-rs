@@ -4,8 +4,10 @@ combine_control_expr = false
 format_code_in_doc_comments = true
 format_macro_matchers = true
 hard_tabs = false
-#imports_granularity = "Crate"
-merge_imports = true
+# Nightly
+imports_granularity = "Crate"
+# Stable
+# merge_imports = true
 normalize_comments = true
 wrap_comments = true
 normalize_doc_attributes = true
