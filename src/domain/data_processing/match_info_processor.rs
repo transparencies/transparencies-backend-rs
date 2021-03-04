@@ -104,7 +104,7 @@ impl MatchInfoProcessor {
         trace!("Creating different teams vectors.");
         // Create the different teams vectors
         let amount_of_successfully_processed_teams =
-            assemble_teams_to_vec(diff_team, &players_raw, &mut teams_raw)?;
+            assemble_teams_to_vec(diff_team, &players_raw, &mut teams_raw);
         trace!("Successfully created different teams vectors.");
 
         trace!("Calculating match size ...");
@@ -187,7 +187,7 @@ impl MatchInfoProcessor {
 
     fn process_all_players(
         &mut self,
-        players_vec: &Vec<aoe2net::Player>,
+        players_vec: &[aoe2net::Player],
         players_raw: &mut Vec<PlayerRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
@@ -233,7 +233,7 @@ impl MatchInfoProcessor {
 
         trace!("Getting player rating ...");
         let mut player_rating =
-            get_rating(looked_up_rating, looked_up_leaderboard)?;
+            get_rating(&looked_up_rating, &looked_up_leaderboard)?;
         trace!("Successfully got requested player rating.");
 
         trace!("Getting player civilisation translation ...");
@@ -256,10 +256,10 @@ impl MatchInfoProcessor {
         let player_built = build_player(
             player_rating,
             req_player,
-            looked_up_alias,
+            &looked_up_alias,
             translated_civilisation_string.to_string(),
             requested_player_boolean,
-        )?;
+        );
         trace!("Successfully built player struct.");
 
         players_processing.push(player_built);
@@ -271,17 +271,13 @@ impl MatchInfoProcessor {
         &self,
         req_player: &aoe2net::Player,
     ) -> bool {
-        let requested_player = if let Some(player_last_match) =
-            &self.responses.aoe2net.player_last_match
-        {
-            player_last_match["last_match"]["profile_id"]
-                == req_player.profile_id
-        }
-        else {
-            false
-        };
-
-        requested_player
+        self.responses.aoe2net.player_last_match.as_ref().map_or(
+            false,
+            |player_last_match| {
+                player_last_match["last_match"]["profile_id"]
+                    == req_player.profile_id
+            },
+        )
     }
 
     fn lookup_leaderboard(
@@ -327,15 +323,12 @@ impl MatchInfoProcessor {
         req_player: &aoe2net::Player,
     ) -> Option<crate::domain::types::aoc_ref::players::Player> {
         // Lookup profile id in alias list
-        let looked_up_alias = self
-            .responses
+        self.responses
             .db
             .github_file_content
             .lookup_player_alias_for_profile_id(
                 &(req_player.profile_id.to_string()),
-            );
-
-        looked_up_alias
+            )
     }
 
     pub fn assemble(&self) -> Result<MatchInfoResult> {
@@ -350,11 +343,11 @@ impl MatchInfoProcessor {
 
 fn assemble_teams_to_vec(
     mut diff_team: Vec<i64>,
-    players_raw: &Vec<PlayerRaw>,
+    players_raw: &[PlayerRaw],
     teams_raw: &mut Vec<TeamRaw>,
-) -> Result<usize> {
+) -> usize {
     trace!("Sorting amount of teams vector ...");
-    diff_team.sort();
+    diff_team.sort_unstable();
     trace!("Finished sorting amount of teams vector.");
 
     let team_amount = diff_team.len();
@@ -370,7 +363,7 @@ fn assemble_teams_to_vec(
         player_vec_helper.clear();
         // Iterate through players
         trace!("Iterating through players of team number {:?} ...", team);
-        for player in players_raw.clone() {
+        for player in players_raw.to_owned() {
             if *player.team_number() == team {
                 player_vec_helper.push(player);
             }
@@ -386,16 +379,16 @@ fn assemble_teams_to_vec(
     }
     trace!("Finished iterating through teams.");
 
-    Ok(team_amount)
+    team_amount
 }
 
 fn build_player(
     player_rating: Rating,
     req_player: &aoe2net::Player,
-    looked_up_alias: Option<crate::domain::types::aoc_ref::players::Player>,
+    looked_up_alias: &Option<crate::domain::types::aoc_ref::players::Player>,
     translated_civilisation_string: String,
     requested: bool,
-) -> Result<PlayerRaw> {
+) -> PlayerRaw {
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color)
@@ -412,12 +405,12 @@ fn build_player(
         .requested(requested)
         .build();
 
-    Ok(player_raw)
+    player_raw
 }
 
 fn get_rating(
-    looked_up_rating: Value,
-    looked_up_leaderboard: Value,
+    looked_up_rating: &Value,
+    looked_up_leaderboard: &Value,
 ) -> Result<Rating> {
     // TODO Get rid of expect and gracefully handle errors
     let player_rating = Rating::builder()

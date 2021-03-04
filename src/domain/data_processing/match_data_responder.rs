@@ -133,25 +133,25 @@ impl MatchDataResponses {
             };
 
         let translated_vec = serde_json::from_str::<Vec<Aoe2netStringObj>>(
-            &serde_json::to_string(&language[first]).expect(
-                &format!(
+            &serde_json::to_string(&language[first]).unwrap_or_else(|_| {
+                panic!(format!(
                     "Conversion of language[{:?}] to string failed.",
                     first.to_string(),
                 )
-                .to_string(),
-            ),
+                .to_string())
+            }),
         )
         .expect("Conversion from translated string failed.");
 
         let mut translated_string: Option<String> = None;
 
-        for obj_string in translated_vec.iter() {
+        for obj_string in &translated_vec {
             if *obj_string.id() == id {
                 translated_string = Some(obj_string.string().to_string())
             }
         }
 
-        if let None = translated_string {
+        if translated_string.is_none() {
             return Err(ResponderError::TranslationPosError(
                 format!("[{:?}]", first.to_string(),),
                 id,
