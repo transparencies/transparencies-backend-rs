@@ -137,8 +137,7 @@ impl MatchDataResponses {
                 panic!(format!(
                     "Conversion of language[{:?}] to string failed.",
                     first.to_string(),
-                )
-                .to_string())
+                ))
             }),
         )
         .expect("Conversion from translated string failed.");
