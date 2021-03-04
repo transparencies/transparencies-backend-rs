@@ -46,12 +46,12 @@ type Result<T> = result::Result<T, ProcessingError>;
 impl Rating {
     #[allow(clippy::cast_precision_loss)]
     pub fn calculate_win_rate(&mut self) {
-        if self.wins == 0 {
-            self.win_rate = None;
+        if self.losses == 0 {
+            self.win_rate = Some(100_f32);
         }
         else {
             self.win_rate =
-                Some((self.losses as f32 / self.wins as f32) * 100_f32);
+                Some((self.wins as f32 / self.losses as f32) * 100_f32);
         }
     }
 }
@@ -89,9 +89,6 @@ impl MatchInfoProcessor {
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
         let mut teams_raw: Vec<TeamRaw> = Vec::new();
 
-        let language =
-            &self.responses.clone().get_translation_for_language()?;
-
         let mut diff_team = Vec::with_capacity(8);
 
         trace!("Creating vector for player information.");
@@ -99,7 +96,6 @@ impl MatchInfoProcessor {
         let amount_of_successfully_processed_players = self
             .process_all_players(
                 players_vec,
-                language,
                 &mut players_raw,
                 &mut diff_team,
             )?;
@@ -192,14 +188,13 @@ impl MatchInfoProcessor {
     fn process_all_players(
         &mut self,
         players_vec: &Vec<aoe2net::Player>,
-        translation: &Value,
         players_raw: &mut Vec<PlayerRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
         trace!("Processing all players ...");
         let player_amount = players_vec.len();
         for (_player_number, req_player) in players_vec.iter().enumerate() {
-            self.assemble_player_to_vec(req_player, &translation, players_raw)?;
+            self.assemble_player_to_vec(req_player, players_raw)?;
             if !diff_team.contains(&req_player.team) {
                 diff_team.push(req_player.team)
             }
@@ -212,7 +207,6 @@ impl MatchInfoProcessor {
     fn assemble_player_to_vec(
         &mut self,
         req_player: &aoe2net::Player,
-        translation: &Value,
         players_raw: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
         trace!("Assemble player {:#?} to vector", req_player);
