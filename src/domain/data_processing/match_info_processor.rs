@@ -207,7 +207,7 @@ impl MatchInfoProcessor {
     fn assemble_player_to_vec(
         &mut self,
         req_player: &aoe2net::Player,
-        players_raw: &mut Vec<PlayerRaw>,
+        players_processing: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
         trace!("Assemble player {:#?} to vector", req_player);
 
@@ -262,7 +262,7 @@ impl MatchInfoProcessor {
         )?;
         trace!("Successfully built player struct.");
 
-        players_raw.push(player_built);
+        players_processing.push(player_built);
 
         Ok(())
     }
