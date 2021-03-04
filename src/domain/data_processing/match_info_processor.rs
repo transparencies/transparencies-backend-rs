@@ -50,8 +50,10 @@ impl Rating {
             self.win_rate = Some(100_f32);
         }
         else {
-            self.win_rate =
-                Some((self.wins as f32 / self.losses as f32) * 100_f32);
+            self.win_rate = Some(
+                (self.wins as f32 / (self.wins as f32 + self.losses as f32))
+                    * 100_f32,
+            );
         }
     }
 }
