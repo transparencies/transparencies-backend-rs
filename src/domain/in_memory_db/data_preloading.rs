@@ -6,10 +6,7 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::Mutex;
-use tracing::{
-    trace,
-    warn,
-};
+use tracing::warn;
 
 use crate::domain::{
     types::{
@@ -146,7 +143,7 @@ pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), FileRequestError> {
-    let files = create_file_list();
+    let files = create_github_file_list();
 
     for file in files {
         let req = util::build_github_request(
@@ -221,7 +218,7 @@ async fn update_data_in_db(
 }
 
 /// Create a list of files that need to be downloaded from github repository
-fn create_file_list() -> Vec<File> {
+fn create_github_file_list() -> Vec<File> {
     let mut files: Vec<File> = Vec::with_capacity(3);
 
     files.push(File {

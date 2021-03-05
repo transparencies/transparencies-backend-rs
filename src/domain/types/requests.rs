@@ -26,7 +26,7 @@ pub struct ApiClient {
 pub struct File {
     /// Filename
     pub name: String,
-    /// [Fileformat]
+    /// stores a [FileFormat]
     pub ext: FileFormat,
 }
 

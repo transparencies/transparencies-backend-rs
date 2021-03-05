@@ -40,6 +40,9 @@ type Result<T> = result::Result<T, ResponderError>;
 
 impl MatchDataResponses {
     /// Return `serde_json::Value` for `leaderboard_id` for future requests
+    ///
+    /// # Errors
+    /// Will return an error if the `leaderboard_id` could not be found
     pub fn get_leaderboard_id_for_request(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("leaderboard_id".to_string())),
@@ -49,6 +52,11 @@ impl MatchDataResponses {
 
     /// Parses all the players into a `type T`
     /// from the `last_match` response for convenience
+    ///
+    /// # Errors
+    /// Will return an error if either the `players array` can not be found
+    /// or will `panic!` if the deserialisation failed or the parsing of the
+    /// `Player` struct failed
     pub fn parse_all_players<T>(&self) -> Result<T>
     where T: for<'de> serde::Deserialize<'de> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -64,6 +72,9 @@ impl MatchDataResponses {
     }
 
     /// Returns the number of players from the `last_match` response
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_number_of_players(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("number of players".to_string())),
@@ -74,6 +85,9 @@ impl MatchDataResponses {
     /// Returns the finishing time of a match
     /// We use that to see if a match is currently running (`Null`)
     /// or already finished
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_finished_time(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("finished time".to_string())),
@@ -84,6 +98,9 @@ impl MatchDataResponses {
     /// Returns the rating type id for a match
     /// We use that to check if a game is rated/unrated
     /// or in which ladder to look for the Rating
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_rating_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating type".to_string())),
@@ -96,6 +113,11 @@ impl MatchDataResponses {
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
+    ///
+    /// # Errors
+    /// Won't throw an error, but `Option` is set to `None` resulting in an
+    /// empty player name that is taken if the `looked_up_player` doesn't
+    /// give any value
     pub fn get_country(looked_up_leaderboard: &Value) -> Option<String> {
         if let Some(mut country) =
             Some(looked_up_leaderboard["country"].to_string().to_lowercase())
@@ -110,48 +132,40 @@ impl MatchDataResponses {
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
+    ///
+    /// # Arguments
+    /// * `looked_up_rating` - a [serde_json::Value] type that holds the
+    ///   [aoe2net::RatingHistory] of an [aoe2net::Player]
+    /// * `looked_up_leaderboard` - a [serde_json::Value] type that holds
+    ///   Leaderboard data of an [aoe2net::Player]
+    ///
+    /// # Errors
+    /// Function will throw errors in cases the deserialisation and conversion
+    /// to the corresponding types is not successful
     pub fn get_rating(
         looked_up_rating: &Value,
         looked_up_leaderboard: &Value,
     ) -> Result<Rating> {
         // TODO Get rid of expect and gracefully handle errors
         let player_rating = Rating::builder()
-            .mmr(
-                serde_json::from_str::<u32>(&serde_json::to_string(
-                    &looked_up_rating["rating"],
-                )?)
-                .expect("MMR parsing failed."),
-            )
-            .rank(
-                serde_json::from_str::<u64>(&serde_json::to_string(
-                    &looked_up_leaderboard["rank"],
-                )?)
-                .expect("Rank parsing failed."),
-            )
-            .wins(
-                serde_json::from_str::<u64>(&serde_json::to_string(
-                    &looked_up_rating["num_wins"],
-                )?)
-                .expect("Wins parsing failed."),
-            )
-            .losses(
-                serde_json::from_str::<u64>(&serde_json::to_string(
-                    &looked_up_rating["num_losses"],
-                )?)
-                .expect("Losses parsing failed."),
-            )
-            .streak(
-                serde_json::from_str::<i32>(&serde_json::to_string(
-                    &looked_up_rating["streak"],
-                )?)
-                .expect("Streak parsing failed."),
-            )
-            .highest_mmr(
-                serde_json::from_str::<u32>(&serde_json::to_string(
-                    &looked_up_leaderboard["highest_rating"],
-                )?)
-                .expect("Highest-MMR parsing failed."),
-            )
+            .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                &looked_up_rating["rating"],
+            )?)?)
+            .rank(serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_leaderboard["rank"],
+            )?)?)
+            .wins(serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_rating["num_wins"],
+            )?)?)
+            .losses(serde_json::from_str::<u64>(&serde_json::to_string(
+                &looked_up_rating["num_losses"],
+            )?)?)
+            .streak(serde_json::from_str::<i32>(&serde_json::to_string(
+                &looked_up_rating["streak"],
+            )?)?)
+            .highest_mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                &looked_up_leaderboard["highest_rating"],
+            )?)?)
             .build();
 
         Ok(player_rating)
@@ -159,6 +173,12 @@ impl MatchDataResponses {
 
     /// Returns a`serde_json::Value`of the downloaded translation
     /// strings from AoE2.net
+    ///
+    /// # Errors
+    /// Will throw an error if the translation has moved due to consuming a
+    /// value from the in-memory database. Errors there, due to threaded
+    /// behaviour, will result in `runtime` errors, no compile-time checks
+    /// possible.
     pub fn get_translation_for_language(&mut self) -> Result<Value> {
         let mut translation: Option<serde_json::Value> = None;
 
@@ -181,9 +201,19 @@ impl MatchDataResponses {
         Ok(translation.expect("Translation should never be None value."))
     }
 
-    /// Gets a corresponding `String` from something that looks like
-    /// [`AoE2NetStringObj`] (Struct {id: "2", string: "translated text"})
-    /// also for convenience
+    /// Returns the corresponding `String` for our convenience
+    /// by searching through [Aoe2netStringObj]'s field `id`
+    ///
+    /// # Arguments
+    /// * `first` - A string slice that holds the element name to be used to
+    ///   lookup inside the `language` (e.g. `civ` or `game_type`).
+    /// * `id` - An integer holding the number that we get from `last_match` or
+    ///   `leaderboard` to translate and be looked up
+    ///
+    /// # Errors
+    /// This will error if the `translation data` cannot be found. Most likely
+    /// due to being moved/consumed. See also
+    /// [Self::get_translation_for_language()].
     pub fn get_translated_string_from_id(
         &self,
         first: &str,
@@ -196,14 +226,14 @@ impl MatchDataResponses {
             }
             else {
                 return Err(ResponderError::NotFound(
-                    "translation file".to_string(),
+                    "translation data".to_string(),
                 ));
             };
 
         let translated_vec = serde_json::from_str::<Vec<Aoe2netStringObj>>(
             &serde_json::to_string(&language[first]).unwrap_or_else(|_| {
                 panic!(format!(
-                    "Conversion of language[{:?}] to string failed.",
+                    "Conversion of language [{:?}] to string failed.",
                     first.to_string(),
                 ))
             }),

@@ -80,9 +80,8 @@ impl RefDataLists {
         if indexing_errors.len() > 0 {
             return Err(indexing_errors);
         }
-        else {
-            Ok(())
-        }
+
+        Ok(())
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
