@@ -1,13 +1,9 @@
 //! Backend for dynamic stream overlays
+//! Executable part
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
-#![allow(clippy::module_name_repetitions)]
-#![allow(clippy::struct_excessive_bools)]
-// TODO: Temporary, remove later
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(missing_docs)]
-#![allow(clippy::too_many_lines)]
+// #![allow(clippy::module_name_repetitions)]
+// #![allow(clippy::struct_excessive_bools)]
 
 // Error handling
 #[macro_use]
@@ -15,18 +11,8 @@ extern crate log;
 
 extern crate transparencies_backend_rs;
 
-use eyre::Error;
-use human_panic::setup_panic;
-use log::error;
-use simple_log::LogConfigBuilder;
-use std::{
-    env,
-    process,
-};
-use warp::{
-    http::StatusCode,
-    Filter,
-};
+use std::env;
+use warp::Filter;
 
 // CLI
 use structopt::StructOpt;
@@ -34,29 +20,16 @@ use structopt::StructOpt;
 // Threads
 use std::sync::Arc;
 
-use tokio::{
-    io::AsyncReadExt,
-    sync::Mutex,
-    time::{
-        self,
-        Duration,
-    },
-};
+use tokio::sync::Mutex;
 
-use std::{
-    convert::Infallible,
-    net::IpAddr,
-};
+use std::net::IpAddr;
 
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
         data_processing::get_static_data_inside_thread,
         types::{
-            requests::{
-                ApiClient,
-                ApiRequest,
-            },
+            requests::ApiClient,
             InMemoryDb,
         },
     },
@@ -68,12 +41,6 @@ use transparencies_backend_rs::{
     },
 };
 
-use tracing::{
-    debug,
-    info,
-    trace,
-    warn,
-};
 use tracing_subscriber::{
     prelude::*,
     Registry,

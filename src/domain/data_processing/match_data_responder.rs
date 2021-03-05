@@ -1,14 +1,11 @@
+//! Everything around `MatchDataResponses` resembles in here
+//! Beware, there is a close connection to the `MatchInfoProcessing`
+//! in many places
+
 use crate::domain::types::{
-    aoc_ref::{
-        players,
-        RefDataLists,
-    },
     aoe2net,
-    api::{
-        match_info_response::*,
-        MatchInfoRequest,
-        MatchInfoResult,
-    },
+    api::MatchInfoRequest,
+    error::ResponderError,
     requests::ApiRequest,
     InMemoryDb,
     MatchDataResponses,
@@ -20,23 +17,16 @@ use ron::ser::{
 };
 use serde_json::Value;
 use std::{
-    collections::HashMap,
     fs,
     io::BufWriter,
     result,
-    str::FromStr,
     sync::Arc,
-    time::Duration,
 };
 use tokio::sync::Mutex;
 use tracing::{
     debug,
-    info,
     trace,
-    warn,
 };
-
-use super::error::ResponderError;
 
 use crate::{
     STANDARD_GAME,

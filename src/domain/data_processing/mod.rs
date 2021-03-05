@@ -1,55 +1,23 @@
-pub mod error;
+//! Starting point of our data processing stage
+
 mod match_data_responder;
 pub mod match_info_processor;
-use match_info_processor::MatchInfoProcessor;
-
-use serde::{
-    Deserialize,
-    Serialize,
-};
-use serde_json::Value;
 
 use crate::domain::{
-    api_handler::client::{
-        APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT,
-        CLIENT_REQUEST_TIMEOUT,
-    },
+    data_processing::match_info_processor::MatchInfoProcessor,
     types::{
-        aoc_ref::{
-            AoePlatforms,
-            AoePlayers,
-            AoeTeams,
-            RefDataLists,
-        },
         api::{
-            match_info_response::*,
             MatchInfoRequest,
             MatchInfoResult,
-        },
-        requests::{
-            ApiRequest,
-            File,
-            FileFormat,
-            GithubFileRequest,
         },
         MatchDataResponses,
     },
 };
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
 
-use std::{
-    collections::HashMap,
-    sync::Arc,
-};
+use tracing::debug;
+
+use std::sync::Arc;
 use tokio::{
-    io::AsyncReadExt,
     sync::Mutex,
     time::{
         self,
@@ -58,15 +26,15 @@ use tokio::{
 };
 
 use crate::domain::{
-    data_processing::error::{
-        FileRequestError,
-        ProcessingError,
-    },
     in_memory_db::data_preloading::preload_data,
-    types::InMemoryDb,
+    types::{
+        error::ProcessingError,
+        InMemoryDb,
+    },
 };
 
-/// Download static files continously every 10 minutes inside a thread
+/// Download static files (Github files, language strings) continously every 10
+/// minutes inside a thread
 pub fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
     api_client_clone: reqwest::Client,
@@ -112,7 +80,7 @@ pub async fn process_match_info_request(
     debug!("MatchInfoResult: {:#?}", result);
 
     // Debugging result
-    // result.export_data_to_file();
+    result.export_data_to_file();
 
     Ok(result)
 }

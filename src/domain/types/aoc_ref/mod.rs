@@ -2,14 +2,10 @@ pub mod platforms;
 pub mod players;
 pub mod teams;
 
-use ::serde::{
-    Deserialize,
-    Serialize,
-};
-use serde::de::DeserializeOwned;
+use ::serde::Serialize;
 use std::collections::HashMap;
 
-use crate::domain::data_processing::error::IndexingError;
+use crate::domain::types::error::IndexingError;
 
 pub type AoePlayers = Vec<players::Player>;
 pub type AoeTeams = Vec<teams::Teams>;

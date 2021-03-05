@@ -3,36 +3,16 @@
 use crate::domain::{
     data_processing::process_match_info_request,
     types::{
-        aoc_ref::RefDataLists,
         api::MatchInfoRequest,
-        requests::{
-            ApiClient,
-            ApiRequest,
-        },
         InMemoryDb,
-        MatchDataResponses,
     },
 };
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
 use std::{
     convert::Infallible,
     sync::Arc,
 };
 use tokio::sync::Mutex;
-use warp::{
-    http::StatusCode,
-    reject::Reject,
-    Filter,
-    Rejection,
-    Reply,
-};
 
 /// Small `health_check` function to return 200 on `health_check` endpoint
 pub async fn return_health_check_to_client(

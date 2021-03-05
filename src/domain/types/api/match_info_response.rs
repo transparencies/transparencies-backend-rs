@@ -9,17 +9,14 @@ use ron::ser::{
 };
 
 use derive_getters::Getters;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::Serialize;
 use std::{
-    collections::HashMap,
     fs,
     io::BufWriter,
 };
 use typed_builder::TypedBuilder;
 
+/// An enum describing the different `MatchSizes` we support on our overlay
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum MatchSize {
     NoGame = -1,
@@ -31,8 +28,11 @@ pub enum MatchSize {
     G2v2v2,
     G2v2v2v2,
 }
+/// Convenience type
 type Time = usize;
 
+/// Status of a match derived from `Last_match` AoE2.net endpoint
+/// if a game has no finished time, we threat it as running
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum MatchStatus {
     Running,
@@ -41,6 +41,8 @@ pub enum MatchStatus {
 
 type ErrorMessage = String;
 
+/// Head struct to assemble `MatchInfo` into and save `error_messages` within to
+/// delegate to the frontend
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfoResult {
     pub match_info: MatchInfo,
@@ -49,6 +51,8 @@ pub struct MatchInfoResult {
 }
 
 impl MatchInfoResult {
+    /// Write a RON file of MatchInfoResult to `logs/match_info_result.ron` for
+    /// debugging purposes
     pub fn export_data_to_file(&self) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
@@ -66,6 +70,9 @@ impl MatchInfoResult {
     }
 }
 
+/// Basic information needed in the `MatchInfo`
+/// Used to aggregate all the other data inside
+/// a single struct
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfo {
     game_type: String,
@@ -77,6 +84,7 @@ pub struct MatchInfo {
     teams: Teams,
 }
 
+/// Wrapper struct around `PlayerRaw` for `Players`
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Players(pub Vec<PlayerRaw>);
 
@@ -91,9 +99,12 @@ pub struct PlayerRaw {
     requested: bool,
 }
 
+/// Wrapper around `TeamRaw` for `Teams`
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Teams(pub Vec<TeamRaw>);
 
+/// A single Team used for Builder pattern and later
+/// for assemblance of the Teams(T) wrapper
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct TeamRaw {
     players: Players,
@@ -102,6 +113,7 @@ pub struct TeamRaw {
     team_name: Option<String>,
 }
 
+/// Rating part of the our `matchinfo` endpoint
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct Rating {
     mmr: u32,
@@ -114,48 +126,6 @@ pub struct Rating {
     #[builder(setter(strip_option))]
     highest_mmr: Option<u32>,
 }
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-pub enum Civilisation {
-    Aztecs = 0,
-    Berbers,
-    Britons,
-    Bulgarians,
-    Burgundians,
-    Burmese,
-    Byzantines,
-    Celts,
-    Chinese,
-    Cumans,
-    Ethiopians,
-    Franks,
-    Goths,
-    Huns,
-    Incas,
-    Indians,
-    Italians,
-    Japanese,
-    Khmer,
-    Koreans,
-    Lithuanians,
-    Magyars,
-    Malay,
-    Malians,
-    Mayans,
-    Mongols,
-    Persians,
-    Portuguese,
-    Saracens,
-    Sicilians,
-    Slavs,
-    Spanish,
-    Tatars,
-    Teutons,
-    Turks,
-    Vietnamese,
-    Vikings,
-}
-
 // #[test]
 // fn ensure_match_info_roundtrips() {
 //     let t = <MatchInfo>::default();

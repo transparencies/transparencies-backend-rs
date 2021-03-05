@@ -1,9 +1,8 @@
-use tracing::{
-    debug,
-    info,
-    trace,
-    warn,
-};
+//! Everything around `MatchInfoProcessing` resembles in here
+//! Beware, there is a close connection to the `MatchDataResponses`
+//! in many places
+
+use tracing::trace;
 
 use serde_json::Value;
 
@@ -24,24 +23,17 @@ use crate::domain::{
         },
     },
 };
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
+
 use std::{
     convert::TryInto,
-    fs,
-    io::BufWriter,
     result,
-    sync::Arc,
-    time::Duration,
 };
 
 use serde::Serialize;
 
 // Error handling
 type ProcessingErrorStrings = Vec<String>;
-use super::error::ProcessingError;
+use crate::domain::types::error::ProcessingError;
 
 type Result<T> = result::Result<T, ProcessingError>;
 

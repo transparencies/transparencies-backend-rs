@@ -1,71 +1,45 @@
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    Report,
-    WrapErr,
-};
+//! Everything around preloading data in another thread for future use within
+//! our in-memory DB implemented by `Arc<Mutex<T>>`
 
 use std::{
     collections::HashMap,
     sync::Arc,
 };
-use tokio::{
-    io::AsyncReadExt,
-    sync::Mutex,
-    time::{
-        self,
-        Duration,
-    },
-};
+use tokio::sync::Mutex;
 
-use crate::domain::{
-    api_handler::client::{
-        APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT,
-        CLIENT_REQUEST_TIMEOUT,
+use crate::domain::types::{
+    aoc_ref::{
+        AoePlatforms,
+        AoePlayers,
+        AoeTeams,
     },
-    data_processing::error::{
+    error::{
         ApiRequestError,
         FileRequestError,
         IndexingError,
-        ProcessingError,
     },
-    types::{
-        aoc_ref::{
-            AoePlatforms,
-            AoePlayers,
-            AoeTeams,
-            RefDataLists,
-        },
-        api::{
-            match_info_response::*,
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
-        requests::{
-            ApiRequest,
-            File,
-            FileFormat,
-            GithubFileRequest,
-        },
-        InMemoryDb,
-        MatchDataResponses,
+    requests::{
+        ApiRequest,
+        File,
+        FileFormat,
+        GithubFileRequest,
     },
+    InMemoryDb,
 };
 
+/// All of the current `language strings` of the AoE2.net API
+/// used for preloading the Language files
 pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
     "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms", "nl",
     "pt", "ru", "tr", "vi", "zh", "zh-TW",
 ];
 
+/// `Game strings` used for preloading and other request towards the AoE2.net
+/// API.
+/// Can be used later also for adding AoE3DE and/or AoE4 support
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
-/// Preload data from `aoe2net`
+/// Preload data from `aoe2net` and `Github`
 pub async fn preload_data(
     api_client: reqwest::Client,
     git_client: reqwest::Client,
@@ -86,6 +60,9 @@ pub async fn preload_data(
     Ok(())
 }
 
+/// Index the `player_ids` of Players in the `players.yaml` file of
+/// aoc-reference-data repository in a HashMap to make them be easily looked-up
+/// during the processing stage
 async fn index_aoc_ref_data(
     in_memory_db: Arc<Mutex<InMemoryDb>>
 ) -> Result<(), IndexingError> {
@@ -115,6 +92,8 @@ pub async fn preload_aoe2_net_data(
     Ok(())
 }
 
+/// Pull responses for `language strings` into a HashMap for being easily
+/// looked-up later on
 async fn load_language_responses_into_hashmap(
     language_requests: Vec<(&str, ApiRequest)>
 ) -> Result<HashMap<&str, serde_json::Value>, ApiRequestError> {
@@ -128,7 +107,7 @@ async fn load_language_responses_into_hashmap(
     Ok(responses)
 }
 
-/// Assembles all requests for the `LANGUAGE_STRINGS`
+/// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
     api_client: &reqwest::Client
 ) -> Vec<(&'static str, ApiRequest)> {
@@ -260,7 +239,8 @@ fn assemble_github_request(
         .build()
 }
 
-/// Assembles a get request for an API
+/// Assembles a `GET` request for an API
+/// Refactoring: Use this function
 fn assemble_api_request(
     api_client: reqwest::Client,
     root: &str,

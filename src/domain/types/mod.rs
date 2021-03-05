@@ -1,6 +1,7 @@
 pub mod aoc_ref;
 pub mod aoe2net;
 pub mod api;
+pub mod error;
 pub mod match_data;
 pub mod requests;
 
@@ -8,12 +9,7 @@ use log::trace;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
 
-use std::{
-    collections::HashMap,
-    sync::Arc,
-};
-
-use tokio::sync::Mutex;
+use std::collections::HashMap;
 
 use self::aoc_ref::RefDataLists;
 use crate::STANDARD_LANGUAGE;

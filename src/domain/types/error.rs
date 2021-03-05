@@ -1,3 +1,4 @@
+//! Error types of our library part
 use std::num::ParseIntError;
 
 use thiserror::Error;

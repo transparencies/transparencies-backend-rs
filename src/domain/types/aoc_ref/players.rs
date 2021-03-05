@@ -1,3 +1,5 @@
+//! Players datastructures to be used with `aoc-reference-data` repository
+
 use ::serde::{
     Deserialize,
     Serialize,

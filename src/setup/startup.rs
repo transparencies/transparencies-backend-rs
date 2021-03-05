@@ -1,3 +1,5 @@
+//! Everything regarding startup of the backend
+
 use log::{
     debug,
     error,

@@ -1,6 +1,5 @@
 //! Everything regarding the commandline interface
 
-use std::path::PathBuf;
 use structopt::StructOpt;
 
 /// `StructOpt`'s struct for parsing commandline input
