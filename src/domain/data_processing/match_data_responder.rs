@@ -4,13 +4,15 @@
 
 use crate::domain::types::{
     aoe2net,
+    aoe2net::Aoe2netStringObj,
     api::MatchInfoRequest,
     error::ResponderError,
-    requests::ApiRequest,
     InMemoryDb,
     MatchDataResponses,
 };
-use aoe2net::Aoe2netStringObj;
+
+use crate::domain::util;
+
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -178,18 +180,6 @@ impl MatchDataResponses {
         )
     }
 
-    // TODO Generic function stuff
-    // pub fn get_match_data<T>(&self, obj: &str, field: &str) -> Result<T>
-    // where
-    // T: FromStr,
-    //  {
-    // TODO: Leaderboard
-    //     self.aoe2net.leaderboard.as_ref().map_or_else(
-    //         || Err(ResponderError::NotFound(concat!(obj, '-', field))),
-    //         |val| Ok(val[obj][field].to_string().parse::<T>()?),
-    //     )
-    // }
-
     /// Lookup player rating list for `player_id` and return
     /// `serde_json::Value`
     #[must_use]
@@ -216,10 +206,12 @@ impl MatchDataResponses {
         }
     }
 
+    /// Print debug information of this data structure
     pub fn print_debug_information(&self) {
         debug!("DEBUG: {:#?}", self)
     }
 
+    /// Write the data in RON format to a file for debugging purposes
     pub fn export_data_to_file(&self) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
@@ -236,7 +228,8 @@ impl MatchDataResponses {
             .expect("Unable to write data");
     }
 
-    /// Create new [`MatchDataResponses`] struct by calling for match data
+    /// Create new [`MatchDataResponses`] struct by executing requests for match
+    /// data
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
@@ -244,6 +237,9 @@ impl MatchDataResponses {
     ) -> Result<MatchDataResponses> {
         let mut language: String = STANDARD_LANGUAGE.to_string();
         let mut game: String = STANDARD_GAME.to_string();
+
+        // API root for aoe2net
+        let root = "https://aoe2.net/api";
 
         let mut db_cloned: InMemoryDb;
         {
@@ -267,15 +263,15 @@ impl MatchDataResponses {
         };
 
         // GET `PlayerLastMatch` data
-        let last_match_request = ApiRequest::builder()
-            .client(client.clone())
-            .root("https://aoe2.net/api")
-            .endpoint("player/lastmatch")
-            .query(vec![
+        let last_match_request = util::build_api_request(
+            client.clone(),
+            root,
+            "player/lastmatch",
+            vec![
                 ("game".to_string(), game.clone()),
                 (par.id_type.clone(), par.id_number.clone()),
-            ])
-            .build();
+            ],
+        );
 
         responses.aoe2net.player_last_match =
             last_match_request.execute().await?;
@@ -289,29 +285,29 @@ impl MatchDataResponses {
 
         for player in &responses.aoe2net.players_temp {
             // Get Rating `HistoryData` for each player
-            let req_rating = ApiRequest::builder()
-                .client(client.clone())
-                .root("https://aoe2.net/api")
-                .endpoint("player/ratinghistory")
-                .query(vec![
+            let req_rating = util::build_api_request(
+                client.clone(),
+                root,
+                "player/ratinghistory",
+                vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
                     ("leaderboard_id".to_string(), leaderboard_id.clone()),
                     ("count".to_string(), "1".to_string()),
-                ])
-                .build();
+                ],
+            );
 
             // GET `Leaderboard` data
-            let req_lead = ApiRequest::builder()
-                .client(client.clone())
-                .root("https://aoe2.net/api")
-                .endpoint("leaderboard")
-                .query(vec![
+            let req_lead = util::build_api_request(
+                client.clone(),
+                root,
+                "leaderboard",
+                vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
                     ("leaderboard_id".to_string(), leaderboard_id.clone()),
-                ])
-                .build();
+                ],
+            );
 
             responses.aoe2net.rating_history.insert(
                 player.profile_id.to_string(),

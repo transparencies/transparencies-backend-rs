@@ -21,8 +21,8 @@ pub struct ApiClient {
 #[derive(Getters, TypedBuilder, Debug, Clone)]
 #[builder(field_defaults(setter(into)))]
 pub struct File {
-    name: String,
-    ext: FileFormat,
+    pub name: String,
+    pub ext: FileFormat,
 }
 
 /// `FileFormat` stores all the parsable files that we can pull in

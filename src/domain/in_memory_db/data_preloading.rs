@@ -7,24 +7,27 @@ use std::{
 };
 use tokio::sync::Mutex;
 
-use crate::domain::types::{
-    aoc_ref::{
-        AoePlatforms,
-        AoePlayers,
-        AoeTeams,
+use crate::domain::{
+    types::{
+        aoc_ref::{
+            AoePlatforms,
+            AoePlayers,
+            AoeTeams,
+        },
+        error::{
+            ApiRequestError,
+            FileRequestError,
+            IndexingError,
+        },
+        requests::{
+            ApiRequest,
+            File,
+            FileFormat,
+            GithubFileRequest,
+        },
+        InMemoryDb,
     },
-    error::{
-        ApiRequestError,
-        FileRequestError,
-        IndexingError,
-    },
-    requests::{
-        ApiRequest,
-        File,
-        FileFormat,
-        GithubFileRequest,
-    },
-    InMemoryDb,
+    util,
 };
 
 /// All of the current `language strings` of the AoE2.net API
@@ -119,16 +122,16 @@ fn assemble_language_requests(
         for language in &LANGUAGE_STRINGS {
             language_requests.push((
                 language,
-                ApiRequest::builder()
-                    .client(api_client.clone())
-                    .root("https://aoe2.net/api")
-                    .endpoint("strings")
-                    .query(vec![
+                util::build_api_request(
+                    api_client.clone(),
+                    "https://aoe2.net/api",
+                    "strings",
+                    vec![
                         ("game".to_string(), (*game).to_string()),
                         ("language".to_string(), (*language).to_string()),
-                    ])
-                    .build(),
-            ))
+                    ],
+                ),
+            ));
         }
     }
 
@@ -141,20 +144,14 @@ pub async fn preload_aoc_ref_data(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), FileRequestError> {
     let files = create_file_list();
-    let par: [&str; 4] = [
-        "https://raw.githubusercontent.com",
-        "SiegeEngineers",
-        "aoc-reference-data",
-        "master/data",
-    ];
 
     for file in files {
-        let req = assemble_github_request(
+        let req = util::build_github_request(
             git_client.clone(),
-            par[0],
-            par[1],
-            par[2],
-            par[3],
+            "https://raw.githubusercontent.com",
+            "SiegeEngineers",
+            "aoc-reference-data",
+            "master/data",
             &file,
         );
 
@@ -220,59 +217,22 @@ async fn update_data_in_db(
     Ok(())
 }
 
-/// Assembles a request for the `aoc-reference-data` Github repository
-fn assemble_github_request(
-    git_client: reqwest::Client,
-    root: &str,
-    user: &str,
-    repo: &str,
-    uri: &str,
-    file: &File,
-) -> GithubFileRequest {
-    GithubFileRequest::builder()
-        .client(git_client)
-        .root(root)
-        .user(user)
-        .repo(repo)
-        .uri(uri)
-        .file(file.clone())
-        .build()
-}
-
-/// Assembles a `GET` request for an API
-/// Refactoring: Use this function
-fn assemble_api_request(
-    api_client: reqwest::Client,
-    root: &str,
-    endpoint: &str,
-    query: Vec<(String, String)>,
-) -> ApiRequest {
-    ApiRequest::builder()
-        .client(api_client)
-        .root(root)
-        .endpoint(endpoint)
-        .query(query)
-        .build()
-}
-
 /// Create a list of files that need to be downloaded from github repository
 fn create_file_list() -> Vec<File> {
     let mut files: Vec<File> = Vec::with_capacity(3);
-    files.push(
-        File::builder()
-            .name("players")
-            .ext(FileFormat::Yaml)
-            .build(),
-    );
 
-    files.push(
-        File::builder()
-            .name("platforms")
-            .ext(FileFormat::Json)
-            .build(),
-    );
-
-    files.push(File::builder().name("teams").ext(FileFormat::Json).build());
+    files.push(File {
+        name: "players".to_string(),
+        ext: FileFormat::Yaml,
+    });
+    files.push(File {
+        name: "platforms".to_string(),
+        ext: FileFormat::Json,
+    });
+    files.push(File {
+        name: "teams".to_string(),
+        ext: FileFormat::Json,
+    });
 
     files
 }

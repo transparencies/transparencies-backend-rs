@@ -22,6 +22,7 @@ use crate::domain::{
             Teams,
         },
     },
+    util,
 };
 
 use std::{
@@ -38,6 +39,7 @@ use crate::domain::types::error::ProcessingError;
 type Result<T> = result::Result<T, ProcessingError>;
 
 impl Rating {
+    /// Calculate the win rate of for that Rating data structure
     #[allow(clippy::cast_precision_loss)]
     pub fn calculate_win_rate(&mut self) {
         if self.losses == 0 {
@@ -52,6 +54,7 @@ impl Rating {
     }
 }
 
+/// Contains everything needed to assemble a `MatchInfoResult`
 #[derive(Clone, Debug, Serialize)]
 pub struct MatchInfoProcessor {
     responses: MatchDataResponses,
@@ -63,6 +66,7 @@ pub struct MatchInfoProcessor {
 }
 
 impl MatchInfoProcessor {
+    /// Create a new `MatchInfoProcessor` from `MatchDataResponses`
     #[must_use]
     pub fn new_with_response(responses: MatchDataResponses) -> Self {
         Self {
@@ -75,6 +79,8 @@ impl MatchInfoProcessor {
         }
     }
 
+    /// Process all given information and set up this datastructure to be
+    /// finally assembled to a `MatchInfoResult`
     pub fn process(&mut self) -> Result<Self> {
         // TODO Error handling instead of unwrap
         // Collect errors in &self.errors or alike
@@ -181,6 +187,7 @@ impl MatchInfoProcessor {
         })
     }
 
+    /// Process all the players given in a `Last_Match` response
     fn process_all_players(
         &mut self,
         players_vec: &[aoe2net::Player],
@@ -241,7 +248,6 @@ impl MatchInfoProcessor {
             )?;
         trace!("Successfully translated player civilisation.");
 
-        // TODO: check if winrate calculation is right
         trace!("Calculating player win rate ...");
         player_rating.calculate_win_rate();
         trace!("Successfully calculated player win rate.");
@@ -261,6 +267,8 @@ impl MatchInfoProcessor {
         Ok(())
     }
 
+    /// Check if the player we currently iterate over is the player the request
+    /// was made for on the `matchinfo` endpoint
     fn get_requested_player(
         &self,
         req_player: &aoe2net::Player,
@@ -273,6 +281,7 @@ impl MatchInfoProcessor {
         )
     }
 
+    // Lookup a corresponding player in the `leaderboard` response
     fn lookup_leaderboard(
         &mut self,
         req_player: &aoe2net::Player,
@@ -292,6 +301,7 @@ impl MatchInfoProcessor {
         Ok(looked_up_leaderboard["leaderboard"][0].clone())
     }
 
+    // Lookup a corresponding player's `rating`
     fn lookup_rating(
         &mut self,
         req_player: &aoe2net::Player,
@@ -311,6 +321,8 @@ impl MatchInfoProcessor {
         Ok(looked_up_rating[0].clone())
     }
 
+    // Lookup a corresponding player's `alias` in the `index` of the
+    // aoc-reference-data
     fn lookup_alias(
         &mut self,
         req_player: &aoe2net::Player,
@@ -324,6 +336,7 @@ impl MatchInfoProcessor {
             )
     }
 
+    /// Create a `MatchInfoResult`
     pub fn assemble(&self) -> Result<MatchInfoResult> {
         trace!("Assembling MatchInfoResult to frontend ...");
         self.result
@@ -334,6 +347,7 @@ impl MatchInfoProcessor {
     }
 }
 
+/// Create the `Teams` vectors from the `Players`
 fn assemble_teams_to_vec(
     mut diff_team: Vec<i64>,
     players_raw: &[PlayerRaw],
@@ -375,6 +389,7 @@ fn assemble_teams_to_vec(
     team_amount
 }
 
+/// Build a player with the builder pattern
 fn build_player(
     player_rating: Rating,
     req_player: &aoe2net::Player,
@@ -401,6 +416,7 @@ fn build_player(
     player_raw
 }
 
+/// Get a `Rating` datastructure from a `response` for a given player
 fn get_rating(
     looked_up_rating: &Value,
     looked_up_leaderboard: &Value,
