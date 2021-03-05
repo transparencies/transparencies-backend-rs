@@ -199,7 +199,7 @@ impl MatchInfoProcessor {
     /// Process all the players given in a `Last_Match` response
     ///
     /// # Arguments
-    /// * `players_vec` - a slice of a vector of [aoe2net:Player]s that holds
+    /// * `players_vec` - a slice of a vector of [aoe2net::Player]s that holds
     ///   all the players that are in that corresponding game
     /// * `players_raw` - a mutable reference to a vector of raw Players to push
     ///   each processed [PlayerRaw] to
