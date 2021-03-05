@@ -388,7 +388,7 @@ impl MatchDataResponses {
     }
 
     /// Creates a new [`MatchDataResponses`] struct by executing requests for
-    /// match data
+    /// match data and putting them into a HashMap
     ///
     /// # Arguments
     /// * `par` - holds a [MatchInfoRequest] that contains all the request
@@ -399,6 +399,8 @@ impl MatchDataResponses {
     ///   [Mutex] due to threading
     ///
     /// # Errors
+    /// This function may throw errors in the form of [reqwest::Error] when
+    /// requests fail
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
