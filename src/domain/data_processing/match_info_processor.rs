@@ -231,10 +231,17 @@ impl MatchInfoProcessor {
             requested_player_boolean
         );
 
-        trace!("Getting player rating ...");
-        let mut player_rating =
-            get_rating(&looked_up_rating, &looked_up_leaderboard)?;
-        trace!("Successfully got requested player rating.");
+        trace!("Getting player's rating ...");
+        let mut player_rating = MatchDataResponses::get_rating(
+            &looked_up_rating,
+            &looked_up_leaderboard,
+        )?;
+        trace!("Successfully got requested player's rating.");
+
+        trace!("Getting player country ...");
+        let player_country =
+            MatchDataResponses::get_country(&looked_up_leaderboard);
+        trace!("Successfully got requested player's country.");
 
         trace!("Getting player civilisation translation ...");
         let translated_civilisation_string =
@@ -254,6 +261,7 @@ impl MatchInfoProcessor {
         trace!("Building player struct ...");
         let player_built = build_player(
             player_rating,
+            player_country,
             req_player,
             &looked_up_alias,
             translated_civilisation_string.to_string(),
@@ -391,6 +399,7 @@ fn assemble_teams_to_vec(
 /// Build a player with the builder pattern
 fn build_player(
     player_rating: Rating,
+    player_country: Option<String>,
     req_player: &aoe2net::Player,
     looked_up_alias: &Option<crate::domain::types::aoc_ref::players::Player>,
     translated_civilisation_string: String,
@@ -405,7 +414,7 @@ fn build_player(
             |lookup_player| lookup_player.name.clone(),
         ))
         .country(looked_up_alias.as_ref().map_or_else(
-            || req_player.country.to_string(),
+            || player_country.unwrap_or("".to_string()),
             |lookup_player| lookup_player.country.clone(),
         ))
         .civilisation(translated_civilisation_string)
@@ -413,52 +422,4 @@ fn build_player(
         .build();
 
     player_raw
-}
-
-/// Get a `Rating` datastructure from a `response` for a given player
-fn get_rating(
-    looked_up_rating: &Value,
-    looked_up_leaderboard: &Value,
-) -> Result<Rating> {
-    // TODO Get rid of expect and gracefully handle errors
-    let player_rating = Rating::builder()
-        .mmr(
-            serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_rating["rating"],
-            )?)
-            .expect("MMR parsing failed."),
-        )
-        .rank(
-            serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_leaderboard["rank"],
-            )?)
-            .expect("Rank parsing failed."),
-        )
-        .wins(
-            serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_wins"],
-            )?)
-            .expect("Wins parsing failed."),
-        )
-        .losses(
-            serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_losses"],
-            )?)
-            .expect("Losses parsing failed."),
-        )
-        .streak(
-            serde_json::from_str::<i32>(&serde_json::to_string(
-                &looked_up_rating["streak"],
-            )?)
-            .expect("Streak parsing failed."),
-        )
-        .highest_mmr(
-            serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_leaderboard["highest_rating"],
-            )?)
-            .expect("Highest-MMR parsing failed."),
-        )
-        .build();
-
-    Ok(player_rating)
 }

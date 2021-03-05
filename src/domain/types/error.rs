@@ -48,6 +48,8 @@ pub enum ResponderError {
     HttpClientError(#[from] reqwest::Error),
     /// Parsing of Integer data failed
     RespondIntParsingError(#[from] ParseIntError),
+    /// Conversion to String failed.
+    SerdeStringConversionError(#[from] serde_json::Error),
     /// Haven't found a translation for {0}: {1}
     TranslationError(String, usize),
     /// Couldn't get the value of the translation string: {0} at given index

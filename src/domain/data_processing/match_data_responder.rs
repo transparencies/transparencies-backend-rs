@@ -7,6 +7,7 @@ use crate::domain::types::{
     aoe2net::Aoe2netStringObj,
     api::{
         MatchInfoRequest,
+        Rating,
         Server,
     },
     error::ResponderError,
@@ -92,6 +93,68 @@ impl MatchDataResponses {
                     .parse::<usize>()?)
             },
         )
+    }
+
+    /// Get a `Rating` datastructure from a `response` for a given player
+    pub fn get_country(looked_up_leaderboard: &Value) -> Option<String> {
+        if let Some(mut country) =
+            Some(looked_up_leaderboard["country"].to_string().to_lowercase())
+        {
+            country.retain(|s| s != '\\');
+            country.retain(|s| s != '\"');
+            Some(country)
+        }
+        else {
+            None
+        }
+    }
+
+    /// Get a `Rating` datastructure from a `response` for a given player
+    pub fn get_rating(
+        looked_up_rating: &Value,
+        looked_up_leaderboard: &Value,
+    ) -> Result<Rating> {
+        // TODO Get rid of expect and gracefully handle errors
+        let player_rating = Rating::builder()
+            .mmr(
+                serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_rating["rating"],
+                )?)
+                .expect("MMR parsing failed."),
+            )
+            .rank(
+                serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_leaderboard["rank"],
+                )?)
+                .expect("Rank parsing failed."),
+            )
+            .wins(
+                serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_wins"],
+                )?)
+                .expect("Wins parsing failed."),
+            )
+            .losses(
+                serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_losses"],
+                )?)
+                .expect("Losses parsing failed."),
+            )
+            .streak(
+                serde_json::from_str::<i32>(&serde_json::to_string(
+                    &looked_up_rating["streak"],
+                )?)
+                .expect("Streak parsing failed."),
+            )
+            .highest_mmr(
+                serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_leaderboard["highest_rating"],
+                )?)
+                .expect("Highest-MMR parsing failed."),
+            )
+            .build();
+
+        Ok(player_rating)
     }
 
     /// Returns a`serde_json::Value`of the downloaded translation
