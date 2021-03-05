@@ -17,14 +17,19 @@ use self::aoc_ref::RefDataLists;
 use crate::STANDARD_LANGUAGE;
 use serde::Serialize;
 
+/// The "Database" we use, which is in-memory for lookup of
+/// player names and other "more" static content
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
+    /// Translations for aoe2net
     pub aoe2net_languages: HashMap<&'static str, serde_json::Value>,
+    /// Containing the Players (Aliases), Platforms and Teams of
+    /// aoc-reference-data
     pub github_file_content: RefDataLists,
 }
 
 impl InMemoryDb {
-    // Return the `InMemoryDb` only with the language needed
+    /// Return the `InMemoryDb` only with the language needed
     pub fn retain_language(
         &mut self,
         language: &str,

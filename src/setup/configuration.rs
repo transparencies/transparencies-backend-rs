@@ -58,11 +58,14 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
 /// The possible runtime environment for our application
 pub enum Environment {
+    /// Local for testing purposes
     Local,
+    /// Production for running 24/7
     Production,
 }
 
 impl Environment {
+    /// Get &str Value of Enum
     #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
