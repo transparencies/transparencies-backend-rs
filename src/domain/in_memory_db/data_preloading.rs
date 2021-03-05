@@ -43,6 +43,8 @@ pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
 /// Preload data from `aoe2net` and `Github`
+// TODO: Better error handling, how should we deal with it, if one of these
+// doesn't work or get parsed correctly?
 pub async fn preload_data(
     api_client: reqwest::Client,
     git_client: reqwest::Client,

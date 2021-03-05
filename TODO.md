@@ -27,14 +27,16 @@
 ### Error Handling
 - [ ] **WIP** Implement good error handling
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
-    - [ ] use `claim` for tests
     - [X] use `thiserror` in library part
-    - [ ] use `eyre` consistently for results with reports in binary part (?)
+    - [X] use `eyre` consistently for results with reports in binary part
     - [ ] use `.map_err` and return HTTP status codes
-- [ ] implement `todo!()`s
+    - [ ] Handle errors that got bubbled up to the MatchInfoProcessor gracefully and return a maximum of valuable information
+      on the MatchInfo and the errors to the client
+        - [ ] Send `log entry` to Client for better error handling on client-side
+        - [ ] On `hard error`, no match_info but instead error status code (HTTP)
+- [x] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have at least one working version
-- [ ] Send `log entry` to Client for better error handling on client-side
-- [ ] Special cases done right?
+- [ ] Special cases done right? (talk through them together)
     - [X] Data structure does not match with data from aoe2net
         - [X] Q: take a look for a `serde` attribute to mark fields in structs that are not as important for our processing,
               so we don't throw a parsing error if non-essential fields don't match/exist
@@ -44,27 +46,27 @@
     - [ ] Deranked players
     - [ ] Coop games
     - [ ] Game Type except RM (0) and DM (2)
-    - [ ] On error, no match_info & error status code
 
 ### Testing
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
+    - [ ] use `claim` for tests
 
 ### Refactoring
 - [X] create only new clients for each new api-root not for each request to us
 - [ ] Q: how can we make creating requests easier and less boilerplate? (trait objects, etc.)
-- [ ] what (other) architectural changes need to be made to support many clients on our api(?)
-- [ ] async stuff done right?
+- [X] async stuff done right?
 - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join> for `base_path` and joining files for DS: `reqwest::Url`
 - [X] structured logging: use `tracing` crate in addition to `log` and refactor accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for structured summaries of tracing
 
 ### Documentation
-- [ ] **WIP** create good documentation (!!!)
+- [X] Create good documentation
 
 ### Benchmarking
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?
+    - [ ] what architectural changes need to be made to support many clients on our api
 
 
 ## Release 1.1.0 - SUBSCRIPTION requests

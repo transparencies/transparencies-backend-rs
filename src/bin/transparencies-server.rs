@@ -63,19 +63,9 @@ use human_panic::setup_panic;
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     // Install the panic and error report handlers
-    // TODO: Temporary disabled due to return value
     stable_eyre::install()?;
 
-    // Webserver logging
-    if env::var_os("RUST_LOG").is_none() {
-        // TODO Deactivate Debug logs
-        env::set_var("RUST_LOG", "transparencies=debug");
-        env::set_var("RUST_BACKTRACE", "1");
-        // Access logs
-        // env::set_var("RUST_LOG", "transparencies=info");
-    }
     // install global collector configured based on RUST_LOG env var.
-    //   tracing_subscriber::fmt::init();
     let subscriber = Registry::default().with(HierarchicalLayer::new(2));
     tracing::subscriber::set_global_default(subscriber)?;
 
@@ -95,6 +85,19 @@ async fn main() -> Result<(), Report> {
 
     // Calling the command line parsing logic with the argument values
     let cli_args = CommandLineSettings::from_args();
+
+    // Webserver logging
+    if env::var_os("RUST_LOG").is_none() {
+        // Show debug logs only when running with `debug` flags
+        if cli_args.debug {
+            env::set_var("RUST_LOG", "transparencies=debug");
+            env::set_var("RUST_BACKTRACE", "1");
+        }
+        else {
+            // Access logs
+            env::set_var("RUST_LOG", "transparencies=info");
+        }
+    }
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
