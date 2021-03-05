@@ -22,7 +22,6 @@ use crate::domain::{
             Teams,
         },
     },
-    util,
 };
 
 use std::{
