@@ -38,6 +38,7 @@ human-panic = "1.0.3"
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
 thiserror = "1.0.24"
+displaydoc = "0.1.7"
 
 # Logging
 log = "0.4.14"
