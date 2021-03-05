@@ -43,6 +43,7 @@ pub(crate) fn build_api_request(
 
 /// Parses the `serde_json::Value` into a given Type T
 /// TODO: Implement Error handling for Serde, ResponderError, ProcessingError
+#[allow(dead_code)]
 pub(crate) fn parse_into<T, E>(val: &serde_json::Value) -> Result<T, E>
 where
     T: for<'de> serde::Deserialize<'de>,
