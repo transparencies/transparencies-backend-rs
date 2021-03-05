@@ -100,7 +100,7 @@ impl Default for MatchInfoResult {
                 game_type: "Random Map".to_string(),
                 rating_type: "1v1 Random Map".to_string(),
                 match_size: MatchSize::G1v1,
-                match_status: MatchStatus::Finished(1614949859),
+                match_status: MatchStatus::Finished(1_614_949_859),
                 map_name: "Arabia".to_string(),
                 server: Server::India,
                 teams: Teams({
@@ -140,7 +140,7 @@ impl Default for MatchInfoResult {
                                     wins: 1905,
                                     losses: 1432,
                                     streak: -1,
-                                    win_rate: Some(57.087208),
+                                    win_rate: Some(57.087_208),
                                     highest_mmr: Some(2345),
                                 },
                                 player_number: 2,
