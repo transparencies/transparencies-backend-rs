@@ -261,6 +261,9 @@ impl MatchDataResponses {
     /// Returns the `map_type` id from a match
     /// used only for translation purposes to get the id
     /// for the translation lookup function
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_map_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("map type".to_string())),
@@ -275,6 +278,9 @@ impl MatchDataResponses {
     /// Returns the `game_type` id from a match
     /// used only for translation purposes to get the id
     /// for the translation lookup function
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_game_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("game type".to_string())),
@@ -286,7 +292,11 @@ impl MatchDataResponses {
         )
     }
 
-    /// Returns the server location of the match
+    /// Returns the server location of the match while looking it up from
+    /// aoe2.net data and matching against [Server]
+    ///
+    /// # Errors
+    /// Will return an error if the `last_match` could not be found
     pub fn get_server_location(&self) -> Result<Server> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("server location".to_string())),
@@ -311,8 +321,17 @@ impl MatchDataResponses {
         )
     }
 
-    /// Lookup player rating list for `player_id` and return
-    /// `serde_json::Value`
+    /// Looks up a player rating list in a [std::collections::HashMap] for
+    /// `player_id` and returns a `serde_json::Value` with the `rating
+    /// history` for that corresponding player
+    ///
+    /// # Arguments
+    /// * `profile_id` - A string slice that contains the Aoe2.net profile ID of
+    ///   a player
+    ///
+    /// # Errors
+    /// Doesn't throw any errors, but returns an Option type that is `None` if
+    /// the profile ID couldn't be found in the index
     #[must_use]
     pub fn lookup_player_rating_for_profile_id(
         &self,
@@ -324,8 +343,17 @@ impl MatchDataResponses {
         }
     }
 
-    /// Lookup leaderboard entry for `player_id` and return
-    /// `serde_json::Value`
+    /// Looks up a leaderboard entry in a [std::collections::HashMap] for
+    /// `player_id` and returns a `serde_json::Value` with the `leaderboard` for
+    /// that corresponding player
+    ///
+    /// # Arguments
+    /// * `profile_id` - A string slice that contains the Aoe2.net profile ID of
+    ///   a player
+    ///
+    /// # Errors
+    /// Doesn't throw any errors, but returns an Option type that is `None` if
+    /// the profile ID couldn't be found in the index
     #[must_use]
     pub fn lookup_leaderboard_for_profile_id(
         &self,
@@ -359,8 +387,18 @@ impl MatchDataResponses {
             .expect("Unable to write data");
     }
 
-    /// Create new [`MatchDataResponses`] struct by executing requests for match
-    /// data
+    /// Creates a new [`MatchDataResponses`] struct by executing requests for
+    /// match data
+    ///
+    /// # Arguments
+    /// * `par` - holds a [MatchInfoRequest] that contains all the request
+    ///   parameters to our backend
+    /// * `client` - holds a clone of a [reqwest::Client] for connection pooling
+    ///   purposes
+    /// * `in_memory_db` - holds [InMemoryDb] wrapped inside an [Arc] with a
+    ///   [Mutex] due to threading
+    ///
+    /// # Errors
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
@@ -395,18 +433,19 @@ impl MatchDataResponses {
         };
 
         // GET `PlayerLastMatch` data
-        let last_match_request = util::build_api_request(
-            client.clone(),
-            root,
-            "player/lastmatch",
-            vec![
-                ("game".to_string(), game.clone()),
-                (par.id_type.clone(), par.id_number.clone()),
-            ],
-        );
-
-        responses.aoe2net.player_last_match =
-            last_match_request.execute().await?;
+        responses.aoe2net.player_last_match = {
+            util::build_api_request(
+                client.clone(),
+                root,
+                "player/lastmatch",
+                vec![
+                    ("game".to_string(), game.clone()),
+                    (par.id_type.clone(), par.id_number.clone()),
+                ],
+            )
+            .execute()
+            .await?
+        };
 
         // Get `leaderboard_id` for future requests
         let leaderboard_id = responses.get_leaderboard_id_for_request()?;
@@ -451,7 +490,6 @@ impl MatchDataResponses {
                 req_lead.execute().await?,
             );
         }
-
         Ok(responses)
     }
 }
