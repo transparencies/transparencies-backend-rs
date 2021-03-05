@@ -2,9 +2,6 @@
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
-// #![allow(clippy::struct_excessive_bools)]
-// #![allow(clippy::default_trait_access)]
-// #![allow(clippy::missing_errors_doc)]
 
 pub mod domain;
 pub mod server;
