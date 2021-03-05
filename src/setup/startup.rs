@@ -1,13 +1,10 @@
 //! Everything regarding startup of the backend
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
 use simple_log::LogConfigBuilder;
+use tracing::{
+    debug,
+    trace,
+};
 
 use super::cli::CommandLineSettings;
 
