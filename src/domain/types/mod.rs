@@ -14,7 +14,7 @@ pub use requests::*;
 use std::collections::HashMap;
 
 use self::aoc_ref::RefDataLists;
-use crate::STANDARD_LANGUAGE;
+use crate::STANDARD;
 use serde::Serialize;
 
 /// The "Database" we use, which is in-memory for lookup of
@@ -45,7 +45,7 @@ impl InMemoryDb {
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
-            let std_language = STANDARD_LANGUAGE;
+            let std_language = *(STANDARD.get(&"language").unwrap());
             trace!(
                 "Cleaning HashMap of other languages than language: {:?} ...",
                 std_language

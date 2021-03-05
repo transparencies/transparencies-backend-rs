@@ -5,12 +5,25 @@
 // TODO: Deny again, when more doc content is in
 #![allow(missing_docs)]
 
+use std::collections::HashMap;
+
 pub mod domain;
 pub mod server;
 pub mod setup;
 
-/// Standard language for everything our http clients requests
-pub(crate) static STANDARD_LANGUAGE: &str = "en";
+#[macro_use]
+extern crate lazy_static;
 
-/// Standard game within the aoe2net universe
-pub(crate) static STANDARD_GAME: &str = "aoe2de";
+lazy_static! {
+/// These are our standard values over the whole library part
+static ref STANDARD: HashMap<&'static str, &'static str> = {
+        let mut std = HashMap::new();
+        // Standard language for everything our http clients requests
+        std.insert("language", "en");
+        // Standard game within the aoe2net universe
+        std.insert("game", "aoe2de");
+
+        std
+    };
+
+}

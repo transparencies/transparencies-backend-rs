@@ -6,6 +6,7 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::Mutex;
+use tracing::warn;
 
 use crate::domain::{
     types::{
@@ -52,9 +53,7 @@ pub async fn preload_data(
         .await
         .expect("Unable to preload files from Github");
 
-    index_aoc_ref_data(in_memory_db.clone())
-        .await
-        .expect("Indexing of players failed.");
+    index_aoc_ref_data(in_memory_db.clone()).await;
 
     preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
         .await
@@ -66,15 +65,15 @@ pub async fn preload_data(
 /// Index the `player_ids` of Players in the `players.yaml` file of
 /// aoc-reference-data repository in a HashMap to make them be easily looked-up
 /// during the processing stage
-async fn index_aoc_ref_data(
-    in_memory_db: Arc<Mutex<InMemoryDb>>
-) -> Result<(), IndexingError> {
+async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
     {
         let mut guard = in_memory_db.lock().await;
-        guard.github_file_content.index()?;
+        guard.github_file_content.index().map_err(|errs| {
+            errs.into_iter().map(|err| {
+                warn!("Indexing of player aliases threw an error: {:#?}\n", err)
+            })
+        });
     }
-
-    Ok(())
 }
 
 /// Preload data from `aoe2net`

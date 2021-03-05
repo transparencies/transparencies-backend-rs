@@ -30,10 +30,7 @@ use tracing::{
     trace,
 };
 
-use crate::{
-    STANDARD_GAME,
-    STANDARD_LANGUAGE,
-};
+use crate::STANDARD;
 
 type Result<T> = result::Result<T, ResponderError>;
 
@@ -256,8 +253,9 @@ impl MatchDataResponses {
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
     ) -> Result<MatchDataResponses> {
-        let mut language: String = STANDARD_LANGUAGE.to_string();
-        let mut game: String = STANDARD_GAME.to_string();
+        let mut language: String =
+            STANDARD.get(&"language").unwrap().to_string();
+        let mut game: String = STANDARD.get(&"game").unwrap().to_string();
 
         // API root for aoe2net
         let root = "https://aoe2.net/api";

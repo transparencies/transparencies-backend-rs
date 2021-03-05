@@ -18,11 +18,8 @@ use tracing::debug;
 
 use std::sync::Arc;
 use tokio::{
+    self,
     sync::Mutex,
-    time::{
-        self,
-        Duration,
-    },
 };
 
 use crate::domain::{
@@ -33,26 +30,23 @@ use crate::domain::{
     },
 };
 
+use stable_eyre::eyre::Result;
+
+use super::types::error::ApiRequestError;
+
 /// Download static files (Github files, language strings) continously every 10
 /// minutes inside a thread
-pub fn get_static_data_inside_thread(
+pub async fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
     api_client_clone: reqwest::Client,
     in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
-) {
-    tokio::spawn(async move {
-        loop {
-            preload_data(
-                api_client_clone.clone(),
-                git_client_clone.clone(),
-                in_memory_db_clone.clone(),
-            )
-            .await
-            .expect("Unable to preload data.");
-
-            time::sleep(Duration::from_secs(600)).await;
-        }
-    });
+) -> Result<(), ApiRequestError> {
+    Ok(preload_data(
+        api_client_clone.clone(),
+        git_client_clone.clone(),
+        in_memory_db_clone.clone(),
+    )
+    .await?)
 }
 
 /// Entry point for processing part of `matchinfo` endpoint

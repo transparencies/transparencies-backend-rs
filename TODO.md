@@ -27,7 +27,7 @@
 ### Error Handling
 - [ ] **WIP** Implement good error handling
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
-    - [ ] use `claim` for better error reports
+    - [ ] use `claim` for tests
     - [X] use `thiserror` in library part
     - [ ] use `eyre` consistently for results with reports in binary part (?)
     - [ ] use `.map_err` and return HTTP status codes

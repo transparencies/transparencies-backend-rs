@@ -98,7 +98,7 @@ pub enum IndexingError {
         profile_id: String,
         /// Position in Vector
         pos: usize,
-        /// Position of doublette
-        doublette: usize,
+        /// Position of doublet
+        doublet: usize,
     },
 }

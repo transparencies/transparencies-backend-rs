@@ -41,8 +41,10 @@ impl RefDataLists {
     }
 
     /// Index `players` into `players_index` `HashMap`
-    pub fn index(&mut self) -> std::result::Result<(), IndexingError> {
+    pub fn index(&mut self) -> std::result::Result<(), Vec<IndexingError>> {
         let mut index: HashMap<String, PositionInAoePlayers> = HashMap::new();
+
+        let mut indexing_errors: Vec<IndexingError> = Vec::new();
 
         for (player_number, player) in self.players.iter().enumerate() {
             if !&player.platforms.de.is_empty() {
@@ -51,12 +53,21 @@ impl RefDataLists {
                         index.insert(profile_id.to_string(), player_number);
 
                     if let Some(x) = old_value {
-                        return Err(IndexingError::PlayerAlreadyExisting {
-                            name: player.name.clone(),
-                            profile_id: profile_id.to_string(),
-                            pos: player_number,
-                            doublette: x,
-                        });
+                        // Better error handling, we shouldn't fail to
+                        // create an index, just because there is an doublet
+                        //
+                        // Better would be to `.collect()` this error and not
+                        // `continue` the loop and write the rest of the data
+                        // into the hashmap
+                        indexing_errors.push(
+                            IndexingError::PlayerAlreadyExisting {
+                                name: player.name.clone(),
+                                profile_id: profile_id.to_string(),
+                                pos: player_number,
+                                doublet: x,
+                            },
+                        );
+                        continue;
                     }
                 }
             }
@@ -65,7 +76,13 @@ impl RefDataLists {
         // Fill index field in struct
         self.players_index_aoe2de = index;
 
-        Ok(())
+        // Return `indexing_errors`
+        if indexing_errors.len() > 0 {
+            return Err(indexing_errors);
+        }
+        else {
+            Ok(())
+        }
     }
 
     /// Search through alias list for `player_id` and return `players::Player`
