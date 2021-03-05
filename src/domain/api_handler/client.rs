@@ -118,6 +118,11 @@ impl Default for ApiRequest {
 }
 
 impl ApiRequest {
+    /// Executes the Request
+    ///
+    /// # Errors
+    ///
+    /// see [`reqwest::Error`]
     pub async fn execute<R>(&self) -> Result<R, reqwest::Error>
     where R: for<'de> serde::Deserialize<'de> {
         Ok(self
