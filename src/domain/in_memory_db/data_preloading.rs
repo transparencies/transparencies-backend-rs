@@ -6,7 +6,10 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::Mutex;
-use tracing::warn;
+use tracing::{
+    trace,
+    warn,
+};
 
 use crate::domain::{
     types::{
@@ -18,7 +21,6 @@ use crate::domain::{
         error::{
             ApiRequestError,
             FileRequestError,
-            IndexingError,
         },
         requests::{
             ApiRequest,
@@ -65,6 +67,8 @@ pub async fn preload_data(
 /// Index the `player_ids` of Players in the `players.yaml` file of
 /// aoc-reference-data repository in a HashMap to make them be easily looked-up
 /// during the processing stage
+// TODO: Handle Result better for indexing errors
+#[allow(unused_must_use)]
 async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
     {
         let mut guard = in_memory_db.lock().await;

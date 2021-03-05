@@ -5,7 +5,10 @@
 use crate::domain::types::{
     aoe2net,
     aoe2net::Aoe2netStringObj,
-    api::MatchInfoRequest,
+    api::{
+        MatchInfoRequest,
+        Server,
+    },
     error::ResponderError,
     InMemoryDb,
     MatchDataResponses,
@@ -191,10 +194,27 @@ impl MatchDataResponses {
     }
 
     /// Returns the server location of the match
-    pub fn get_server_location(&self) -> Result<String> {
+    pub fn get_server_location(&self) -> Result<Server> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("server location".to_string())),
-            |val| Ok(val["last_match"]["server"].to_string()),
+            |val| {
+                let mut string = val["last_match"]["server"].to_string();
+                string.retain(|char| char != '\\');
+                string.retain(|char| char != '\"');
+
+                Ok(match string.as_str() {
+                    "australiasoutheast" => Server::Australia,
+                    "brazilsouth" => Server::Brazil,
+                    "ukwest" => Server::UK,
+                    "westindia" => Server::India,
+                    "southeastasia" => Server::SoutheastAsia,
+                    "westeurope" => Server::WesternEurope,
+                    "eastus" => Server::UsEast,
+                    "koreacentral" => Server::Korea,
+                    "westus2" => Server::UsWest,
+                    _ => Server::NotFound,
+                })
+            },
         )
     }
 

@@ -118,9 +118,7 @@ async fn main() -> Result<(), Report> {
             )
             .await
             {
-                Ok(_) => {
-                    continue;
-                }
+                Ok(_) => {}
                 Err(e) => {
                     warn!(
                         "Threaded data pulling experienced an error: {:#?}",

@@ -51,6 +51,30 @@ pub enum MatchStatus {
     /// Game was finished at `Time` (Unix)
     Finished(Time),
 }
+/// The servers the games can be played on
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub enum Server {
+    /// Australia
+    Australia,
+    /// Brazil
+    Brazil,
+    /// U.K.
+    UK,
+    /// India
+    India,
+    /// Southeast Asia
+    SoutheastAsia,
+    /// Western Europe
+    WesternEurope,
+    /// U.S. (East)
+    UsEast,
+    /// U.S. (West)
+    UsWest,
+    /// Korea
+    Korea,
+    /// NotFound
+    NotFound,
+}
 
 /// Head struct to assemble `MatchInfo` into and save `error_messages` within to
 /// delegate to the frontend
@@ -104,7 +128,7 @@ pub struct MatchInfo {
     /// Name of the currently played map
     map_name: String,
     /// Server location
-    server: String,
+    server: Server,
     /// Vector of Teams
     teams: Teams,
 }
