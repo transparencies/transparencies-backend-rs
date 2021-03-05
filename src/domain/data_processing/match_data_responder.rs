@@ -1,5 +1,5 @@
-//! Everything around `MatchDataResponses` resembles in here
-//! Beware, there is a close connection to the `MatchInfoProcessing`
+//! Everything around [MatchDataResponses] resembles in here
+//! Beware, there is a close connection to the [MatchInfoProcessor]`
 //! in many places
 
 use crate::domain::types::{

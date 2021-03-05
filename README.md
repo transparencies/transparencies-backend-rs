@@ -2,5 +2,8 @@
 
 ## A backend for dynamic stream overlays written in Rust
 
+## Documentation
+Documentation can be easily build and opened with `cargo doc --no-deps --open`.
+
 ## License
 **GNU AGPLv3** or later; see [LICENSE](LICENSE).

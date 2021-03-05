@@ -1,5 +1,5 @@
-//! Everything around `MatchInfoProcessing` resembles in here
-//! Beware, there is a close connection to the `MatchDataResponses`
+//! Everything around [MatchInfoProcessor] resembles in here
+//! Beware, there is a close connection to the [MatchDataResponses]
 //! in many places
 
 use tracing::trace;
