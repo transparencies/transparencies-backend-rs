@@ -46,6 +46,8 @@ impl MatchDataResponses {
         )
     }
 
+    /// Parses all the players into a `type T`
+    /// from the `last_match` response for convenience
     pub fn parse_all_players<T>(&self) -> Result<T>
     where T: for<'de> serde::Deserialize<'de> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -60,6 +62,7 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns the number of players from the `last_match` response
     pub fn get_number_of_players(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("number of players".to_string())),
@@ -67,6 +70,9 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns the finishing time of a match
+    /// We use that to see if a match is currently running (`Null`)
+    /// or already finished
     pub fn get_finished_time(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("finished time".to_string())),
@@ -74,6 +80,9 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns the rating type id for a match
+    /// We use that to check if a game is rated/unrated
+    /// or in which ladder to look for the Rating
     pub fn get_rating_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("rating type".to_string())),
@@ -85,6 +94,8 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns a`serde_json::Value`of the downloaded translation
+    /// strings from AoE2.net
     pub fn get_translation_for_language(&mut self) -> Result<Value> {
         let mut translation: Option<serde_json::Value> = None;
 
@@ -107,6 +118,9 @@ impl MatchDataResponses {
         Ok(translation.expect("Translation should never be None value."))
     }
 
+    /// Gets a corresponding `String` from something that looks like
+    /// [`AoE2NetStringObj`] (Struct {id: "2", string: "translated text"})
+    /// also for convenience
     pub fn get_translated_string_from_id(
         &self,
         first: &str,
@@ -151,6 +165,9 @@ impl MatchDataResponses {
         Ok(translated_string.unwrap())
     }
 
+    /// Returns the `map_type` id from a match
+    /// used only for translation purposes to get the id
+    /// for the translation lookup function
     pub fn get_map_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("map type".to_string())),
@@ -162,6 +179,9 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns the `game_type` id from a match
+    /// used only for translation purposes to get the id
+    /// for the translation lookup function
     pub fn get_game_type_id(&self) -> Result<usize> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("game type".to_string())),
@@ -173,6 +193,7 @@ impl MatchDataResponses {
         )
     }
 
+    /// Returns the server location of the match
     pub fn get_server_location(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("server location".to_string())),

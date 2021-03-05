@@ -1,6 +1,7 @@
 //! Core logic of the application within the library
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
+#![deny(missing_docs)]
 #![allow(clippy::module_name_repetitions)]
 
 pub mod domain;

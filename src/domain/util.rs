@@ -1,3 +1,5 @@
+//! Additional utility functions that are useful in different modules
+
 use std::error::Error;
 
 use crate::domain::types::{

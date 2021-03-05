@@ -7,20 +7,34 @@ use std::collections::HashMap;
 
 use crate::domain::types::error::IndexingError;
 
+/// A list of Players
 pub type AoePlayers = Vec<players::Player>;
-pub type AoeTeams = Vec<teams::Teams>;
+
+/// A list of Teams
+pub type AoeTeams = Vec<teams::Team>;
+
+/// A list of Platforms
 pub type AoePlatforms = Vec<platforms::Platforms>;
+
+/// The position a Player in the Players vector
+/// used for mainly for indexing
 pub type PositionInAoePlayers = usize;
 
+/// A wrapper struct around all of the preloaded responses
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct RefDataLists {
+    /// from `players.yaml`
     pub players: AoePlayers,
+    /// Index over `players.yaml` `profile_id` for Aoe2DE
     pub players_index_aoe2de: HashMap<String, PositionInAoePlayers>,
+    /// from `teams.json`
     pub teams: AoeTeams,
+    /// from `platforms.json`
     pub platforms: AoePlatforms,
 }
 
 impl RefDataLists {
+    /// Create a new `RefDataLists` struct with `default` initialisation
     #[must_use]
     pub fn new() -> Self {
         RefDataLists::default()

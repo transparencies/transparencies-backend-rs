@@ -19,33 +19,49 @@ use typed_builder::TypedBuilder;
 /// An enum describing the different `MatchSizes` we support on our overlay
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum MatchSize {
-    NoGame = -1,
+    /// (Unused)
+    /// NoGame = -1,
+    /// Custom Game
     Custom = 0,
+    /// 1v1 Game (2 players, 2 teams)
     G1v1 = 2,
+    /// 2v2 Game (4 players, 2 teams)
     G2v2 = 4,
+    /// 3v3 Game (6 players, 2 teams)
     G3v3 = 6,
+    /// 4v4 Game (8 players, 2 teams)
     G4v4 = 8,
+    /// 2v2v2 Game (6 players, 3 teams)
     G2v2v2,
+    /// 2v2v2v2 Game (8 players, 4 teams)
     G2v2v2v2,
 }
 /// Convenience type
 type Time = usize;
 
+/// Convenience type
+type ErrorMessage = String;
+
 /// Status of a match derived from `Last_match` AoE2.net endpoint
 /// if a game has no finished time, we threat it as running
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum MatchStatus {
+    /// Game is currently running
     Running,
+    /// Game was finished at `Time` (Unix)
     Finished(Time),
 }
-
-type ErrorMessage = String;
 
 /// Head struct to assemble `MatchInfo` into and save `error_messages` within to
 /// delegate to the frontend
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfoResult {
+    /// Contains all the data about the players and the match
     pub match_info: MatchInfo,
+    /// Error message strings that are important to give to the frontend
+    /// e.g. parsing errors to keep that in cache in the frontend,
+    /// or also problems with the HTTP client in general, for example if
+    /// the aoe2net API is not reachable
     #[builder(default=None, setter(strip_option))]
     pub error_message: Option<ErrorMessage>,
 }
@@ -75,12 +91,21 @@ impl MatchInfoResult {
 /// a single struct
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize)]
 pub struct MatchInfo {
+    /// TODO: If it's matchmaking or custom lobby games, what is the difference
+    /// to rating_type? Look into translation file
     game_type: String,
+    /// TODO: If it's matchmaking or custom lobby games
     rating_type: String,
+    /// How many players are participating in the match
     match_size: MatchSize,
+    /// Shows if the match is still running or
+    /// when it has been finished
     match_status: MatchStatus,
+    /// Name of the currently played map
     map_name: String,
+    /// Server location
     server: String,
+    /// Vector of Teams
     teams: Teams,
 }
 

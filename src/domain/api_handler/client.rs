@@ -90,6 +90,11 @@ impl Default for GithubFileRequest {
 }
 
 impl GithubFileRequest {
+    /// Executes the Request
+    ///
+    /// # Errors
+    ///
+    /// see [`reqwest::Error`]
     pub async fn execute(&self) -> Result<reqwest::Response, reqwest::Error> {
         Ok(self
             .client()
