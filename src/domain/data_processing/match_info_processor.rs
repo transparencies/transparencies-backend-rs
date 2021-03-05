@@ -91,8 +91,7 @@ impl MatchInfoProcessor {
     /// # Errors
     // TODO: Many errors can come up here, that need to be collected and named
     pub fn process(&mut self) -> Result<Self> {
-        // TODO Error handling instead of unwrap
-        // Collect errors in &self.errors or alike
+        // TODO: Collect errors in &self.errors or alike
         trace!("Processing MatchDataResponses ...");
 
         let players_vec = &self.responses.aoe2net.players_temp.clone();

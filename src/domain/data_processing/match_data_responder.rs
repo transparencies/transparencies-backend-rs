@@ -146,7 +146,6 @@ impl MatchDataResponses {
         looked_up_rating: &Value,
         looked_up_leaderboard: &Value,
     ) -> Result<Rating> {
-        // TODO Get rid of expect and gracefully handle errors
         let player_rating = Rating::builder()
             .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
                 &looked_up_rating["rating"],

@@ -9,7 +9,6 @@ extern crate log;
 
 extern crate transparencies_backend_rs;
 
-use std::env;
 use warp::Filter;
 
 // CLI
@@ -39,12 +38,6 @@ use transparencies_backend_rs::{
     },
 };
 
-use tracing_subscriber::{
-    prelude::*,
-    Registry,
-};
-use tracing_tree::HierarchicalLayer;
-
 use tracing::warn;
 
 use stable_eyre::eyre::{
@@ -65,10 +58,6 @@ async fn main() -> Result<(), Report> {
     // Install the panic and error report handlers
     stable_eyre::install()?;
 
-    // install global collector configured based on RUST_LOG env var.
-    let subscriber = Registry::default().with(HierarchicalLayer::new(2));
-    tracing::subscriber::set_global_default(subscriber)?;
-
     // Human Panic. Only enabled when *not* debugging.
     #[cfg(not(debug_assertions))]
     {
@@ -86,25 +75,11 @@ async fn main() -> Result<(), Report> {
     // Calling the command line parsing logic with the argument values
     let cli_args = CommandLineSettings::from_args();
 
-    // Webserver logging
-    if env::var_os("RUST_LOG").is_none() {
-        // Show debug logs only when running with `debug` flags
-        if cli_args.debug {
-            env::set_var("RUST_LOG", "transparencies=debug");
-            env::set_var("RUST_BACKTRACE", "1");
-        }
-        else {
-            // Access logs
-            env::set_var("RUST_LOG", "transparencies=info");
-        }
-    }
-
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
-        set_up_logging(&cli_args);
+        set_up_logging(&cli_args)?;
     }
 
-    // TODO Replace in-memory DB here with a struct holding different fields
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
