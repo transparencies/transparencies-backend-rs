@@ -101,9 +101,12 @@ pub async fn get_static_data_inside_thread(
 /// async fn main() {
 ///     use std::sync::Arc;
 ///     use tokio::sync::Mutex;
-///     use transparencies_backend_rs::domain::types::{
-///         requests::ApiClient,
-///         InMemoryDb,
+///     use transparencies_backend_rs::domain::{
+///         in_memory_db::data_preloading::preload_data,
+///         types::{
+///             requests::ApiClient,
+///             InMemoryDb,
+///         },
 ///     };
 ///
 ///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
