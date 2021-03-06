@@ -36,10 +36,6 @@ async fn get_resources_for_tests() {
     .await
     .expect("Preloading data failed.");
 
-    let mut guard = in_memory_db.lock().await.clone();
-
-    guard.github_file_content.index().expect("Indexing failed.");
-
     process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
