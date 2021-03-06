@@ -32,7 +32,8 @@ impl InMemoryDb {
     /// Return the [`InMemoryDb`] with only the language needed
     ///
     /// # Panics
-    /// Could panic if the [`HashMap`] in [`STANDARD`] is returning None
+    /// Could panic if the [`HashMap`] in [`static@crate::STANDARD`] is
+    /// returning None
     pub fn retain_language(
         &mut self,
         language: &str,
