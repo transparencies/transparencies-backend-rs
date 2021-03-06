@@ -180,7 +180,7 @@ impl MatchInfoResult {
 
         let mut assembly_path = PathBuf::new();
         assembly_path.push(path);
-        assembly_path.push(format!("{}", "match_info_result.ron"));
+        assembly_path.push("match_info_result.ron".to_string());
 
         // Open the file in writable mode with buffer.
         let file = fs::File::create(assembly_path).unwrap();
