@@ -97,23 +97,26 @@ pub async fn get_static_data_inside_thread(
 ///
 /// # Example
 /// ```rust
-/// use std::sync::Arc;
-/// use tokio::sync::Mutex;
-/// use transparencies_backend_rs::domain::types::{
-///     requests::ApiClient,
-///     InMemoryDb,
-/// };
+/// #[tokio::main]
+/// async fn main() {
+///     use std::sync::Arc;
+///     use tokio::sync::Mutex;
+///     use transparencies_backend_rs::domain::types::{
+///         requests::ApiClient,
+///         InMemoryDb,
+///     };
 ///
-/// let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
-/// let api_clients = ApiClient::default();
+///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
+///     let api_clients = ApiClient::default();
 ///
-/// preload_data(
-///     api_clients.github.clone(),
-///     api_clients.aoe2net.clone(),
-///     in_memory_db.clone(),
-/// )
-/// .await
-/// .unwrap();
+///     preload_data(
+///         api_clients.github.clone(),
+///         api_clients.aoe2net.clone(),
+///         in_memory_db.clone(),
+///     )
+///     .await
+///     .unwrap()
+/// }
 /// ```
 ///
 /// # Errors
