@@ -3,9 +3,15 @@
 
 use std::{
     collections::HashMap,
+    path::PathBuf,
+    str::FromStr,
     sync::Arc,
+    time::Duration,
 };
-use tokio::sync::Mutex;
+use tokio::{
+    sync::Mutex,
+    time,
+};
 use tracing::warn;
 
 use crate::domain::{
@@ -42,7 +48,75 @@ pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
 /// Can be used later also for adding `AoE3DE` and/or `AoE4` support
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
+/// Gets all of our static data in a separated thread
+///
+/// # Arguments
+/// * `git_client_clone` - a [`reqwest::Client`] clone for connection pooling
+///   purposes separated for Github root
+/// * `aoe2net_client_clone` - a [`reqwest::Client`] clone for connection
+///   pooling purposes separated for AoE2.net root
+/// * `in_memory_db_clone` - an [`InMemoryDb`] that is wrapped by [`Arc`] and
+///   guarded by a [`Mutex`]
+///
+/// # Errors
+/// This functions doesn't error out or returns a Result, but it throws a
+/// warning in console if the process experienced an error.
+///
+/// # Panics
+/// This function shouldn't panic.
+pub async fn get_static_data_inside_thread(
+    git_client_clone: reqwest::Client,
+    aoe2net_client_clone: reqwest::Client,
+    in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
+) {
+    tokio::spawn(async move {
+        loop {
+            match preload_data(
+                git_client_clone.clone(),
+                aoe2net_client_clone.clone(),
+                in_memory_db_clone.clone(),
+                false,
+            )
+            .await
+            {
+                Ok(_) => {}
+                Err(e) => {
+                    warn!(
+                        "Threaded data pulling experienced an error: {:#?}",
+                        e
+                    );
+                }
+            }
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+}
+
 /// Preload data from `aoe2net` and `Github`
+///
+/// # Example
+/// ```rust
+/// main() {
+/// use crate::domain::types::{
+///     requests::ApiClient,
+///     InMemoryDb,
+/// };
+/// use std::sync::Arc;
+/// use tokio::sync::Mutex;
+///
+/// let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
+/// let api_clients = ApiClient::default();
+///
+/// preload_data(
+///     api_clients.github.clone(),
+///     api_clients.aoe2net.clone(),
+///     in_memory_db.clone(),
+/// )
+/// .await
+/// .unwrap()
+/// }
+/// ```
 ///
 /// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
@@ -51,14 +125,15 @@ pub async fn preload_data(
     api_client: reqwest::Client,
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    export: bool,
 ) -> Result<(), ApiRequestError> {
-    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone())
+    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone(), export)
         .await
         .expect("Unable to preload files from Github");
 
     index_aoc_ref_data(in_memory_db.clone()).await;
 
-    preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
+    preload_aoe2_net_data(api_client.clone(), in_memory_db.clone(), export)
         .await
         .expect("Unable to preload data from AoE2.net");
 
@@ -88,6 +163,7 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    _export: bool,
 ) -> Result<(), ApiRequestError> {
     let language_requests = assemble_language_requests(&api_client);
 
@@ -155,6 +231,7 @@ fn assemble_language_requests(
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    export: bool,
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();
 
@@ -170,7 +247,8 @@ pub async fn preload_aoc_ref_data(
 
         let response = req.execute().await?;
 
-        update_data_in_db(file, in_memory_db.clone(), response, req).await?;
+        update_data_in_db(file, in_memory_db.clone(), response, req, export)
+            .await?;
     }
 
     Ok(())
@@ -183,18 +261,39 @@ async fn update_data_in_db(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     response: reqwest::Response,
     req: GithubFileRequest,
+    export: bool,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                let mut guard = in_memory_db.lock().await;
-                guard.github_file_content.platforms =
-                    response.json::<AoePlatforms>().await?
+                if export {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str("tests/integration/resources")
+                            .unwrap(),
+                        &response.json().await?,
+                    )
+                }
+                else {
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.platforms =
+                        response.json::<AoePlatforms>().await?
+                }
             }
             "teams" => {
-                let mut guard = in_memory_db.lock().await;
-                guard.github_file_content.teams =
-                    response.json::<AoeTeams>().await?
+                if export {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str("tests/integration/resources")
+                            .unwrap(),
+                        &response.json().await?,
+                    )
+                }
+                else {
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.teams =
+                        response.json::<AoeTeams>().await?
+                }
             }
             _ => {
                 return Err(FileRequestError::RequestNotMatching {
@@ -205,12 +304,23 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
-                let mut guard = in_memory_db.lock().await;
-                guard.github_file_content.players =
-                    serde_yaml::from_slice::<AoePlayers>(
-                        &response.bytes().await?,
+                if export {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str("tests/integration/resources")
+                            .unwrap(),
+                        &serde_yaml::from_slice(&response.bytes().await?)
+                            .unwrap(),
                     )
-                    .unwrap()
+                }
+                else {
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players =
+                        serde_yaml::from_slice::<AoePlayers>(
+                            &response.bytes().await?,
+                        )
+                        .unwrap()
+                }
             }
             else {
                 return Err(FileRequestError::RequestNotMatching {
@@ -219,12 +329,8 @@ async fn update_data_in_db(
                 });
             }
         }
-        _ => {
-            return Err(FileRequestError::RequestNotMatching {
-                name: file.name().to_string(),
-                req: req.clone(),
-            })
-        }
+
+        _ => {}
     }
 
     Ok(())

@@ -42,6 +42,15 @@ pub enum FileFormat {
     Url,
     Uninitialized,
 }
+
+impl FileFormat {
+    /// Returns `true` if the `file_format` is [`Json`].
+    #[must_use]
+    pub fn is_json(&self) -> bool {
+        matches!(self, Self::Json)
+    }
+}
+
 /// A generic response implementation
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Response<T> {

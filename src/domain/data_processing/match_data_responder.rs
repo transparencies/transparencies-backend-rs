@@ -410,6 +410,7 @@ impl MatchDataResponses {
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
+        _export: bool,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();

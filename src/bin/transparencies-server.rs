@@ -24,7 +24,7 @@ use std::net::IpAddr;
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
-        data_processing::get_static_data_inside_thread,
+        in_memory_db::data_preloading::get_static_data_inside_thread,
         types::{
             requests::ApiClient,
             InMemoryDb,
@@ -38,16 +38,9 @@ use transparencies_backend_rs::{
     },
 };
 
-use tracing::warn;
-
 use stable_eyre::eyre::{
     Report,
     Result,
-};
-
-use tokio::time::{
-    self,
-    Duration,
 };
 
 #[cfg(not(debug_assertions))]
@@ -87,27 +80,12 @@ async fn main() -> Result<(), Report> {
     let git_client_clone = api_clients.github.clone();
     let aoe2net_client_clone = api_clients.aoe2net.clone();
 
-    tokio::spawn(async move {
-        loop {
-            match get_static_data_inside_thread(
-                git_client_clone.clone(),
-                aoe2net_client_clone.clone(),
-                in_memory_db_clone.clone(),
-            )
-            .await
-            {
-                Ok(_) => {}
-                Err(e) => {
-                    warn!(
-                        "Threaded data pulling experienced an error: {:#?}",
-                        e
-                    );
-                }
-            }
-
-            time::sleep(Duration::from_secs(600)).await;
-        }
-    });
+    get_static_data_inside_thread(
+        git_client_clone,
+        aoe2net_client_clone,
+        in_memory_db_clone,
+    )
+    .await;
 
     let api = filters::transparencies(
         api_clients.aoe2net.clone(),

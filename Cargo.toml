@@ -37,8 +37,15 @@ harness = true                              # Use libtest harness.
 edition = "2018"                            # The edition of the target.
 #required-features = []                     # Features required to build this target (N/A for lib).
 
-# For examples
-#[[example]]
+
+[[example]]
+name = "export-test-data"                   # The name of the target.
+path = "examples/export_test_data.rs"       # The source file of the target.
+test = true                                 # Is tested by default.
+bench = true                                # Is benchmarked by default.
+doc = true                                  # Is documented by default.
+harness = true                              # Use libtest harness.
+edition = "2018" 
 
 # For benchmarks
 #[[bench]]

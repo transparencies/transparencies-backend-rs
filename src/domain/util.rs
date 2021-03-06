@@ -1,8 +1,17 @@
 //! Additional utility functions that are useful in different modules
 
-use std::error::Error;
+use std::{
+    error::Error,
+    fs,
+    io::BufWriter,
+    path::{
+        Path,
+        PathBuf,
+    },
+};
 
 use crate::domain::types::{
+    requests::FileFormat,
     ApiRequest,
     File,
     GithubFileRequest,
@@ -56,4 +65,43 @@ where
         &serde_json::to_string(&val).expect("Serialisation to String failed."),
     )
     .expect("Deserialisation to Type T failed."))
+}
+/// Write the data in JSON format to a file for debugging purposes
+///
+/// # Arguments
+/// * `file` - holds a [`File`] with `Filename` and a file extension as
+///   [`FileFormat`]
+/// * `path` - holding a [`PathBuf`] with the output path
+/// * `data` - a [`serde_json::Value`] that holds the `data` that need to be
+///   serialized
+///  
+/// # Panics
+/// Will panic if data cannot be written or file can not be created in
+/// Filesystem
+pub(crate) fn export_to_json(
+    file: &File,
+    path: &Path,
+    data: &serde_json::Value,
+) {
+    let json_file = if file.ext().is_json() {
+        file.clone()
+    }
+    else {
+        File {
+            name: (file.name()).to_string(),
+            ext: FileFormat::Json,
+        }
+    };
+    let mut assembly_path = PathBuf::new();
+    assembly_path.push(path);
+    assembly_path.push(format!("{}", json_file));
+
+    // Open the file in writable mode with buffer.
+    let file = fs::File::create(assembly_path.as_os_str())
+        .expect("Couldn't create file.");
+    let mut writer = BufWriter::new(file);
+
+    // Write data to file
+    serde_json::to_writer(&mut writer, &data)
+        .expect("Wrting data to file experienced an error.");
 }
