@@ -20,17 +20,28 @@ pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
 [lib]
 path = "src/lib.rs"
-
-[[bin]]
-name = "transparencies-backend-rs"          # The name of the target.
-path = "src/bin/transparencies-server.rs"   # The source file of the target.
 test = true                                 # Is tested by default.
 doctest = true                              # Documentation examples are tested by default.
 bench = true                                # Is benchmarked by default.
 doc = true                                  # Is documented by default.
 harness = true                              # Use libtest harness.
+edition = "2018"
+
+[[bin]]
+name = "transparencies-backend-rs"          # The name of the target.
+path = "src/bin/transparencies-server.rs"   # The source file of the target.
+test = true                                 # Is tested by default.
+bench = true                                # Is benchmarked by default.
+doc = true                                  # Is documented by default.
+harness = true                              # Use libtest harness.
 edition = "2018"                            # The edition of the target.
 #required-features = []                     # Features required to build this target (N/A for lib).
+
+# For examples
+#[[example]]
+
+# For benchmarks
+#[[bench]]
 
 [dependencies]
 # Error handling
@@ -97,6 +108,7 @@ assert_cmd = "1.0.3"
 predicates = "1.0.7"
 pretty_assertions = "0.6.1"
 claim = "0.5.0"
+rstest = "0.6.4"
 
 [profile.dev]
 opt-level=0
