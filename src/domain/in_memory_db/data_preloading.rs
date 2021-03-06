@@ -97,7 +97,6 @@ pub async fn get_static_data_inside_thread(
 ///
 /// # Example
 /// ```rust
-/// main() {
 /// use crate::domain::types::{
 ///     requests::ApiClient,
 ///     InMemoryDb,
@@ -114,8 +113,7 @@ pub async fn get_static_data_inside_thread(
 ///     in_memory_db.clone(),
 /// )
 /// .await
-/// .unwrap()
-/// }
+/// .unwrap();
 /// ```
 ///
 /// # Errors
