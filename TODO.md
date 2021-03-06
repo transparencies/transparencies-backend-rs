@@ -52,6 +52,10 @@
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
     - [ ] use `claim` for tests
+- [ ] Write functioality to save a set of JSON responses (also our own) to a file to use them inside the
+      integration tests and be able to update frequently
+    - [ ] Parse requests into MatchDataResponses and shove them up through the MatchInfoProcessor to test offline as well
+    - [ ] Compare our parsed initial response (manually checked) with the one in memory from the offline data 
 
 ### Refactoring
 - [X] create only new clients for each new api-root not for each request to us
