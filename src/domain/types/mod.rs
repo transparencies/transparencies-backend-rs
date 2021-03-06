@@ -1,6 +1,9 @@
+//! Collection of all the types used in this repository
+
 pub mod aoc_ref;
 pub mod aoe2net;
 pub mod api;
+pub mod error;
 pub mod match_data;
 pub mod requests;
 
@@ -8,25 +11,28 @@ use log::trace;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
 
-use std::{
-    collections::HashMap,
-    sync::Arc,
-};
-
-use tokio::sync::Mutex;
+use std::collections::HashMap;
 
 use self::aoc_ref::RefDataLists;
-use crate::STANDARD_LANGUAGE;
+use crate::STANDARD;
 use serde::Serialize;
 
+/// The "Database" we use, which is in-memory for lookup of
+/// player names and other "more" static content
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
+    /// Translations for aoe2net
     pub aoe2net_languages: HashMap<&'static str, serde_json::Value>,
+    /// Containing the Players (Aliases), Platforms and Teams of
+    /// aoc-reference-data
     pub github_file_content: RefDataLists,
 }
 
 impl InMemoryDb {
-    // Return the `InMemoryDb` only with the language needed
+    /// Return the [`InMemoryDb`] with only the language needed
+    ///
+    /// # Panics
+    /// Could panic if the [`HashMap`] in [`STANDARD`] is returning None
     pub fn retain_language(
         &mut self,
         language: &str,
@@ -42,7 +48,7 @@ impl InMemoryDb {
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
-            let std_language = STANDARD_LANGUAGE;
+            let std_language = *(STANDARD.get(&"language").unwrap());
             trace!(
                 "Cleaning HashMap of other languages than language: {:?} ...",
                 std_language

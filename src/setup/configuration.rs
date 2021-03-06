@@ -24,6 +24,9 @@ pub struct Settings {
 
 /// Parses the settings from our configuration files and returns a `Settings`
 /// struct
+///
+/// # Errors
+// TODO
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let mut settings = config::Config::default();
     let base_path = std::env::current_dir()
@@ -58,11 +61,14 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
 /// The possible runtime environment for our application
 pub enum Environment {
+    /// Local for testing purposes
     Local,
+    /// Production for running 24/7
     Production,
 }
 
 impl Environment {
+    /// Get &str Value of Enum
     #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {

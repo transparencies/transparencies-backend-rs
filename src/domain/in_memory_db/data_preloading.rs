@@ -1,51 +1,23 @@
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    Report,
-    WrapErr,
-};
+//! Everything around preloading data in another thread for future use within
+//! our in-memory DB implemented by `Arc<Mutex<T>>`
 
 use std::{
     collections::HashMap,
     sync::Arc,
 };
-use tokio::{
-    io::AsyncReadExt,
-    sync::Mutex,
-    time::{
-        self,
-        Duration,
-    },
-};
+use tokio::sync::Mutex;
+use tracing::warn;
 
 use crate::domain::{
-    api_handler::client::{
-        APP_USER_AGENT,
-        CLIENT_CONNECTION_TIMEOUT,
-        CLIENT_REQUEST_TIMEOUT,
-    },
-    data_processing::error::{
-        ApiRequestError,
-        FileRequestError,
-        IndexingError,
-        ProcessingError,
-    },
     types::{
         aoc_ref::{
             AoePlatforms,
             AoePlayers,
             AoeTeams,
-            RefDataLists,
         },
-        api::{
-            match_info_response::*,
-            MatchInfoRequest,
-            MatchInfoResult,
+        error::{
+            ApiRequestError,
+            FileRequestError,
         },
         requests::{
             ApiRequest,
@@ -54,18 +26,27 @@ use crate::domain::{
             GithubFileRequest,
         },
         InMemoryDb,
-        MatchDataResponses,
     },
+    util,
 };
 
+/// All of the current `language strings` of the AoE2.net API
+/// used for preloading the Language files
 pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
     "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms", "nl",
     "pt", "ru", "tr", "vi", "zh", "zh-TW",
 ];
 
+/// `Game strings` used for preloading and other request towards the AoE2.net
+/// API.
+/// Can be used later also for adding `AoE3DE` and/or `AoE4` support
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
-/// Preload data from `aoe2net`
+/// Preload data from `aoe2net` and `Github`
+///
+/// # Errors
+// TODO: Better error handling, how should we deal with it, if one of these
+// doesn't work or get parsed correctly?
 pub async fn preload_data(
     api_client: reqwest::Client,
     git_client: reqwest::Client,
@@ -75,9 +56,7 @@ pub async fn preload_data(
         .await
         .expect("Unable to preload files from Github");
 
-    index_aoc_ref_data(in_memory_db.clone())
-        .await
-        .expect("Indexing of players failed.");
+    index_aoc_ref_data(in_memory_db.clone()).await;
 
     preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
         .await
@@ -86,18 +65,26 @@ pub async fn preload_data(
     Ok(())
 }
 
-async fn index_aoc_ref_data(
-    in_memory_db: Arc<Mutex<InMemoryDb>>
-) -> Result<(), IndexingError> {
+/// Index the `player_ids` of Players in the `players.yaml` file of
+/// aoc-reference-data repository in a [`HashMap`] to make them be easily
+/// looked-up during the processing stage
+// TODO: Handle Result better for indexing errors
+#[allow(unused_must_use)]
+async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
     {
         let mut guard = in_memory_db.lock().await;
-        guard.github_file_content.index()?;
+        guard.github_file_content.index().map_err(|errs| {
+            errs.into_iter().map(|err| {
+                warn!("Indexing of player aliases threw an error: {:#?}\n", err)
+            })
+        });
     }
-
-    Ok(())
 }
 
 /// Preload data from `aoe2net`
+///
+/// # Errors
+// TODO
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
@@ -115,6 +102,11 @@ pub async fn preload_aoe2_net_data(
     Ok(())
 }
 
+/// Pull responses for `language strings` into a [`HashMap`] for being easily
+/// looked-up later on
+///
+/// # Errors
+// TODO
 async fn load_language_responses_into_hashmap(
     language_requests: Vec<(&str, ApiRequest)>
 ) -> Result<HashMap<&str, serde_json::Value>, ApiRequestError> {
@@ -128,7 +120,7 @@ async fn load_language_responses_into_hashmap(
     Ok(responses)
 }
 
-/// Assembles all requests for the `LANGUAGE_STRINGS`
+/// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
     api_client: &reqwest::Client
 ) -> Vec<(&'static str, ApiRequest)> {
@@ -140,16 +132,16 @@ fn assemble_language_requests(
         for language in &LANGUAGE_STRINGS {
             language_requests.push((
                 language,
-                ApiRequest::builder()
-                    .client(api_client.clone())
-                    .root("https://aoe2.net/api")
-                    .endpoint("strings")
-                    .query(vec![
+                util::build_api_request(
+                    api_client.clone(),
+                    "https://aoe2.net/api",
+                    "strings",
+                    vec![
                         ("game".to_string(), (*game).to_string()),
                         ("language".to_string(), (*language).to_string()),
-                    ])
-                    .build(),
-            ))
+                    ],
+                ),
+            ));
         }
     }
 
@@ -157,25 +149,22 @@ fn assemble_language_requests(
 }
 
 /// Preload data from `aoc-reference-data` Github repository
+///
+/// # Errors
+// TODO
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<(), FileRequestError> {
-    let files = create_file_list();
-    let par: [&str; 4] = [
-        "https://raw.githubusercontent.com",
-        "SiegeEngineers",
-        "aoc-reference-data",
-        "master/data",
-    ];
+    let files = create_github_file_list();
 
     for file in files {
-        let req = assemble_github_request(
+        let req = util::build_github_request(
             git_client.clone(),
-            par[0],
-            par[1],
-            par[2],
-            par[3],
+            "https://raw.githubusercontent.com",
+            "SiegeEngineers",
+            "aoc-reference-data",
+            "master/data",
             &file,
         );
 
@@ -241,58 +230,20 @@ async fn update_data_in_db(
     Ok(())
 }
 
-/// Assembles a request for the `aoc-reference-data` Github repository
-fn assemble_github_request(
-    git_client: reqwest::Client,
-    root: &str,
-    user: &str,
-    repo: &str,
-    uri: &str,
-    file: &File,
-) -> GithubFileRequest {
-    GithubFileRequest::builder()
-        .client(git_client)
-        .root(root)
-        .user(user)
-        .repo(repo)
-        .uri(uri)
-        .file(file.clone())
-        .build()
-}
-
-/// Assembles a get request for an API
-fn assemble_api_request(
-    api_client: reqwest::Client,
-    root: &str,
-    endpoint: &str,
-    query: Vec<(String, String)>,
-) -> ApiRequest {
-    ApiRequest::builder()
-        .client(api_client)
-        .root(root)
-        .endpoint(endpoint)
-        .query(query)
-        .build()
-}
-
 /// Create a list of files that need to be downloaded from github repository
-fn create_file_list() -> Vec<File> {
-    let mut files: Vec<File> = Vec::with_capacity(3);
-    files.push(
-        File::builder()
-            .name("players")
-            .ext(FileFormat::Yaml)
-            .build(),
-    );
-
-    files.push(
-        File::builder()
-            .name("platforms")
-            .ext(FileFormat::Json)
-            .build(),
-    );
-
-    files.push(File::builder().name("teams").ext(FileFormat::Json).build());
-
-    files
+fn create_github_file_list() -> Vec<File> {
+    vec![
+        File {
+            name: "players".to_string(),
+            ext: FileFormat::Yaml,
+        },
+        File {
+            name: "platforms".to_string(),
+            ext: FileFormat::Json,
+        },
+        File {
+            name: "teams".to_string(),
+            ext: FileFormat::Json,
+        },
+    ]
 }

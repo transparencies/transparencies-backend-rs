@@ -1,42 +1,31 @@
-//! Core logic of the application
+//! Core logic of the application within the library
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
-#![allow(clippy::struct_excessive_bools)]
-#![allow(clippy::default_trait_access)]
-#![allow(clippy::missing_errors_doc)]
-// TODO: Temporary, remove later
-#![allow(dead_code)]
-#![allow(unused_imports)]
+// TODO: Deny again, when more doc content is in
 #![allow(missing_docs)]
-#![allow(clippy::too_many_lines)]
+// Allowed until https://github.com/rust-lang/rust-clippy/issues/6858 is fixed
+#![allow(clippy::default_trait_access)]
+
+use std::collections::HashMap;
 
 pub mod domain;
 pub mod server;
 pub mod setup;
 
-use futures::{
-    FutureExt,
-    StreamExt,
-};
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use stable_eyre::eyre::{
-    eyre,
-    Result,
-    WrapErr,
-};
+#[macro_use]
+extern crate lazy_static;
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
-use std::collections::HashMap;
+lazy_static! {
+/// These are our standard values over the whole library part
+static ref STANDARD: HashMap<&'static str, &'static str> = {
+        let mut std = HashMap::new();
+        // Standard language for everything our http clients requests
+        std.insert("language", "en");
+        // Standard game within the aoe2net universe
+        std.insert("game", "aoe2de");
 
-pub(crate) static STANDARD_LANGUAGE: &str = "en";
-pub(crate) static STANDARD_GAME: &str = "aoe2de";
+        std
+    };
+
+}
