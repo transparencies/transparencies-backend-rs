@@ -97,12 +97,12 @@ pub async fn get_static_data_inside_thread(
 ///
 /// # Example
 /// ```rust
-/// use crate::domain::types::{
+/// use std::sync::Arc;
+/// use tokio::sync::Mutex;
+/// use transparencies_backend_rs::domain::types::{
 ///     requests::ApiClient,
 ///     InMemoryDb,
 /// };
-/// use std::sync::Arc;
-/// use tokio::sync::Mutex;
 ///
 /// let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
 /// let api_clients = ApiClient::default();
