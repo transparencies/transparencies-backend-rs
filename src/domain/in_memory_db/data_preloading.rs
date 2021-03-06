@@ -116,6 +116,7 @@ pub async fn get_static_data_inside_thread(
 ///         api_clients.github.clone(),
 ///         api_clients.aoe2net.clone(),
 ///         in_memory_db.clone(),
+///         false,
 ///     )
 ///     .await
 ///     .unwrap()
