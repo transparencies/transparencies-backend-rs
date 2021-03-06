@@ -22,6 +22,7 @@ use crate::domain::{
             TeamRaw,
             Teams,
         },
+        error::ProcessingError,
     },
 };
 
@@ -34,7 +35,6 @@ use serde::Serialize;
 
 // Error handling
 type ProcessingErrorStrings = Vec<String>;
-use crate::domain::types::error::ProcessingError;
 
 type Result<T> = result::Result<T, ProcessingError>;
 

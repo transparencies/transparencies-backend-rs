@@ -3,8 +3,10 @@
 //! in many places
 
 use crate::domain::types::{
-    aoe2net,
-    aoe2net::Aoe2netStringObj,
+    aoe2net::{
+        self,
+        Aoe2netStringObj,
+    },
     api::{
         MatchInfoRequest,
         Rating,

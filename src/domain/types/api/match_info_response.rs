@@ -54,6 +54,7 @@ pub enum MatchStatus {
     /// Game was finished at `Time` (Unix)
     Finished(Time),
 }
+
 /// The servers the games can be played on
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Server {
