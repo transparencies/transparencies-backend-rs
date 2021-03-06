@@ -387,7 +387,7 @@ impl MatchDataResponses {
     }
 
     /// Creates a new [`MatchDataResponses`] struct by executing requests for
-    /// match data and putting them into a [`HashMap`]
+    /// match data and putting them into a [`std::collections::HashMap`]
     ///
     /// # Arguments
     /// * `par` - holds a [`MatchInfoRequest`] that contains all the request
@@ -402,8 +402,8 @@ impl MatchDataResponses {
     /// requests fail
     ///
     /// # Panics
-    /// Function could panic if the [`HashMap`] of static global variable
-    /// [`STANDARD`] delivers `None`
+    /// Function could panic if the [`std::collections::HashMap`] of static
+    /// global variable [`static@crate::STANDARD`] delivers `None`
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
