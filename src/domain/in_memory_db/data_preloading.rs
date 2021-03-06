@@ -330,7 +330,12 @@ async fn update_data_in_db(
             }
         }
 
-        _ => {}
+        _ => {
+            return Err(FileRequestError::RequestNotMatching {
+                name: file.name().to_string(),
+                req: req.clone(),
+            })
+        }
     }
 
     Ok(())

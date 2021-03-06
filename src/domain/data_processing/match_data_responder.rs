@@ -13,6 +13,8 @@ use crate::domain::types::{
         Server,
     },
     error::ResponderError,
+    File,
+    FileFormat,
     InMemoryDb,
     MatchDataResponses,
 };
@@ -27,7 +29,9 @@ use serde_json::Value;
 use std::{
     fs,
     io::BufWriter,
+    path::PathBuf,
     result,
+    str::FromStr,
     sync::Arc,
 };
 use tokio::sync::Mutex;
@@ -410,7 +414,7 @@ impl MatchDataResponses {
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
-        _export: bool,
+        export: bool,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();
@@ -455,8 +459,23 @@ impl MatchDataResponses {
             .await?
         };
 
+        if export {
+            util::export_to_json(
+                &File {
+                    name: "last_match".to_string(),
+                    ext: FileFormat::Json,
+                },
+                &PathBuf::from_str("tests/integration/resources").unwrap(),
+                &responses
+                    .clone()
+                    .aoe2net
+                    .player_last_match
+                    .map_or(serde_json::Value::Null, |x| x),
+            )
+        }
+
         // Get `leaderboard_id` for future requests
-        let leaderboard_id = responses.get_leaderboard_id_for_request()?;
+        let leaderboard_id = &responses.get_leaderboard_id_for_request()?;
 
         // Get all players from `LastMatch` response
         responses.aoe2net.players_temp =
@@ -488,15 +507,35 @@ impl MatchDataResponses {
                 ],
             );
 
-            responses.aoe2net.rating_history.insert(
-                player.profile_id.to_string(),
-                req_rating.execute().await?,
-            );
+            if export {
+                util::export_to_json(
+                    &File {
+                        name: format!("rating_history_{:?}", player.profile_id),
+                        ext: FileFormat::Json,
+                    },
+                    &PathBuf::from_str("tests/integration/resources").unwrap(),
+                    &req_rating.execute().await?,
+                );
+                util::export_to_json(
+                    &File {
+                        name: format!("leaderboard_{:?}", player.profile_id),
+                        ext: FileFormat::Json,
+                    },
+                    &PathBuf::from_str("tests/integration/resources").unwrap(),
+                    &req_lead.execute().await?,
+                );
+            }
+            else {
+                responses.aoe2net.rating_history.insert(
+                    player.profile_id.to_string(),
+                    req_rating.execute().await?,
+                );
 
-            responses.aoe2net.leaderboard.insert(
-                player.profile_id.to_string(),
-                req_lead.execute().await?,
-            );
+                responses.aoe2net.leaderboard.insert(
+                    player.profile_id.to_string(),
+                    req_lead.execute().await?,
+                );
+            }
         }
         Ok(responses)
     }
