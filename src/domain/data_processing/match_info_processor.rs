@@ -216,7 +216,7 @@ impl MatchInfoProcessor {
     ) -> Result<usize> {
         trace!("Processing all players ...");
         let player_amount = players_vec.len();
-        for (_player_number, req_player) in players_vec.iter().enumerate() {
+        for req_player in players_vec.iter() {
             self.assemble_player_to_vec(req_player, players_raw)?;
             if !diff_team.contains(&req_player.team) {
                 diff_team.push(req_player.team)
