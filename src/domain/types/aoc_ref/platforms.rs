@@ -1,15 +1,9 @@
+//! Platforms datastructures to be used with `aoc-reference-data` repository
+
 use serde::{
     Deserialize,
     Serialize,
 };
-
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
-pub struct PlatformsList {
-    #[serde(rename = "Platforms")]
-    pub list: Vec<Platforms>,
-}
 
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,

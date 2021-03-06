@@ -1,3 +1,5 @@
+//! Datastructures used to deal with the aoe2net API
+
 use serde::{
     Deserialize,
     Serialize,
@@ -5,6 +7,8 @@ use serde::{
 
 use derive_getters::Getters;
 
+/// Convenience datastructure for the `RatingHistory` endpoint to
+/// easily parse the data into our struct
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
@@ -17,6 +21,8 @@ pub struct RatingHistory {
     pub timestamp: i64,
 }
 
+/// Convenient `Player` datastructure for aoe2net part of the `last_match`
+/// endpoint Used to easily deal with the assembly of the player vectors
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Player {
     pub civ: i64,
@@ -45,6 +51,8 @@ pub struct Player {
     pub won: bool,
 }
 
+/// Helper datastructure to easily parse parts of array
+/// from aoe2net
 #[derive(
     Default,
     Clone,

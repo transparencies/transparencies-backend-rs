@@ -1,12 +1,10 @@
-//! Our API endpoints
+//! API endpoints of the backend
 
 use std::sync::Arc;
 
 use crate::{
     domain::types::{
-        aoc_ref::RefDataLists,
         api::MatchInfoRequest,
-        requests::ApiClient,
         InMemoryDb,
     },
     server::handlers::{

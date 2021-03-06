@@ -1,30 +1,28 @@
+//! Teams datastructures to be used with `aoc-reference-data` repository
+
 use serde::{
     Deserialize,
     Serialize,
 };
 
+/// A Team from `aoc-ref-data`
 #[derive(
     Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
 )]
-pub struct TeamsList {
-    #[serde(rename = "Teams")]
-    pub list: Vec<Teams>,
-}
-
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
-pub struct Teams {
+pub struct Team {
+    /// (Optional) short form of the name
     pub abbreviation: Option<String>,
+    /// Long form of the name
     pub name: String,
+    /// A list of Players in a Team
     pub players: Vec<String>,
 }
 
 #[test]
 fn ensure_teams_roundtrips() {
-    let t = <Vec<Teams>>::default();
+    let t = <Vec<Team>>::default();
     let j = serde_json::to_string(&t).unwrap();
-    let r: Vec<Teams> = serde_json::from_str(&j).unwrap();
+    let r: Vec<Team> = serde_json::from_str(&j).unwrap();
     assert_eq!(t, r);
 }
 
@@ -219,5 +217,5 @@ fn ensure_teams_from_sample() {
 
     "#;
 
-    let _: Vec<Teams> = serde_json::from_str(&sample).unwrap();
+    let _: Vec<Team> = serde_json::from_str(&sample).unwrap();
 }

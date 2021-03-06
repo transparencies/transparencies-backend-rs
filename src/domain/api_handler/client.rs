@@ -1,47 +1,15 @@
-//! Core client logic of the application
+//! Implementation side of the core http
+//! client logic of the application
 
-use log::{
-    debug,
-    error,
-    info,
-    trace,
-    warn,
-};
-use reqwest::Request;
-use stable_eyre::eyre::{
-    eyre,
-    Report,
-    Result,
-    WrapErr,
-};
+use std::time::Duration;
 
-use ::serde::{
-    de::DeserializeOwned,
-    Deserialize,
-    Serialize,
+use crate::domain::types::requests::{
+    ApiClient,
+    ApiRequest,
+    File,
+    FileFormat,
+    GithubFileRequest,
 };
-use std::{
-    collections::HashMap,
-    time::Duration,
-};
-
-use crate::domain::types::{
-    aoc_ref::{
-        platforms,
-        players,
-        teams,
-    },
-    requests::{
-        ApiClient,
-        ApiRequest,
-        File,
-        FileFormat,
-        GithubFileRequest,
-    },
-};
-use std::fmt;
-
-use strum::AsRefStr;
 
 /// Our app name as USERAGENT for the clients
 pub(crate) static APP_USER_AGENT: &str =
@@ -122,6 +90,11 @@ impl Default for GithubFileRequest {
 }
 
 impl GithubFileRequest {
+    /// Executes the Request
+    ///
+    /// # Errors
+    ///
+    /// see [`reqwest::Error`]
     pub async fn execute(&self) -> Result<reqwest::Response, reqwest::Error> {
         Ok(self
             .client()
@@ -150,6 +123,11 @@ impl Default for ApiRequest {
 }
 
 impl ApiRequest {
+    /// Executes the Request
+    ///
+    /// # Errors
+    ///
+    /// see [`reqwest::Error`]
     pub async fn execute<R>(&self) -> Result<R, reqwest::Error>
     where R: for<'de> serde::Deserialize<'de> {
         Ok(self
