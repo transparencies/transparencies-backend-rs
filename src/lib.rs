@@ -4,6 +4,8 @@
 #![allow(clippy::module_name_repetitions)]
 // TODO: Deny again, when more doc content is in
 #![allow(missing_docs)]
+// Allowed until https://github.com/rust-lang/rust-clippy/issues/6858 is fixed
+#![allow(clippy::default_trait_access)]
 
 use std::collections::HashMap;
 

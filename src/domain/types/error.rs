@@ -9,7 +9,7 @@ use crate::domain::types::{
     GithubFileRequest,
 };
 
-/// Error type for the MatchInfoProcessor
+/// Error type for the [`MatchInfoProcessor`]
 #[derive(Error, Display, Debug)]
 pub enum ProcessingError {
     /// No candidate for civilisation found.
@@ -32,7 +32,7 @@ pub enum ProcessingError {
     TranslationError(String, usize),
 }
 
-/// Error type for the MatchInfoResponder
+/// Error type for the [`MatchInfoResponder`]
 #[derive(Error, Display, Debug)]
 pub enum ResponderError {
     /// Request {req:?} with {name:?} is not matching any response name.
@@ -60,7 +60,7 @@ pub enum ResponderError {
     TranslationHasBeenMovedError,
 }
 
-/// Error type for a FileRequest
+/// Error type for a `FileRequest`
 #[derive(Error, Display, Debug)]
 pub enum FileRequestError {
     /// Request {req:?} with {name:?} is not matching any response name.
@@ -74,7 +74,7 @@ pub enum FileRequestError {
     HttpClientError(#[from] reqwest::Error),
 }
 
-/// Error type for an ApiRequest
+/// Error type for an [`ApiRequest`]
 #[derive(Error, Display, Debug)]
 pub enum ApiRequestError {
     /// Request {req:?} with {name:?} is not matching any response name.

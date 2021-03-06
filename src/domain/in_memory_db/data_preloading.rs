@@ -39,10 +39,12 @@ pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
 
 /// `Game strings` used for preloading and other request towards the AoE2.net
 /// API.
-/// Can be used later also for adding AoE3DE and/or AoE4 support
+/// Can be used later also for adding `AoE3DE` and/or `AoE4` support
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
 /// Preload data from `aoe2net` and `Github`
+///
+/// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
 // doesn't work or get parsed correctly?
 pub async fn preload_data(
@@ -64,8 +66,8 @@ pub async fn preload_data(
 }
 
 /// Index the `player_ids` of Players in the `players.yaml` file of
-/// aoc-reference-data repository in a HashMap to make them be easily looked-up
-/// during the processing stage
+/// aoc-reference-data repository in a [`HashMap`] to make them be easily
+/// looked-up during the processing stage
 // TODO: Handle Result better for indexing errors
 #[allow(unused_must_use)]
 async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
@@ -80,6 +82,9 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 }
 
 /// Preload data from `aoe2net`
+///
+/// # Errors
+// TODO
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
@@ -97,8 +102,11 @@ pub async fn preload_aoe2_net_data(
     Ok(())
 }
 
-/// Pull responses for `language strings` into a HashMap for being easily
+/// Pull responses for `language strings` into a [`HashMap`] for being easily
 /// looked-up later on
+///
+/// # Errors
+// TODO
 async fn load_language_responses_into_hashmap(
     language_requests: Vec<(&str, ApiRequest)>
 ) -> Result<HashMap<&str, serde_json::Value>, ApiRequestError> {
@@ -141,6 +149,9 @@ fn assemble_language_requests(
 }
 
 /// Preload data from `aoc-reference-data` Github repository
+///
+/// # Errors
+// TODO
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
@@ -221,20 +232,18 @@ async fn update_data_in_db(
 
 /// Create a list of files that need to be downloaded from github repository
 fn create_github_file_list() -> Vec<File> {
-    let mut files: Vec<File> = Vec::with_capacity(3);
-
-    files.push(File {
-        name: "players".to_string(),
-        ext: FileFormat::Yaml,
-    });
-    files.push(File {
-        name: "platforms".to_string(),
-        ext: FileFormat::Json,
-    });
-    files.push(File {
-        name: "teams".to_string(),
-        ext: FileFormat::Json,
-    });
-
-    files
+    vec![
+        File {
+            name: "players".to_string(),
+            ext: FileFormat::Yaml,
+        },
+        File {
+            name: "platforms".to_string(),
+            ext: FileFormat::Json,
+        },
+        File {
+            name: "teams".to_string(),
+            ext: FileFormat::Json,
+        },
+    ]
 }

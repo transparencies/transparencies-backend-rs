@@ -1,5 +1,5 @@
-//! Everything around [MatchInfoProcessor] resembles in here
-//! Beware, there is a close connection to the [MatchDataResponses]
+//! Everything around [`MatchInfoProcessor`] resembles in here
+//! Beware, there is a close connection to the [`MatchDataResponses`]
 //! in many places
 
 use tracing::trace;
@@ -55,7 +55,7 @@ impl Rating {
     }
 }
 
-/// Contains everything needed to assemble a [MatchInfoResult]
+/// Contains everything needed to assemble a [`MatchInfoResult`]
 #[derive(Clone, Debug, Serialize)]
 pub struct MatchInfoProcessor {
     /// Responses from all around the place for easier handling of each request
@@ -71,7 +71,7 @@ impl MatchInfoProcessor {
     /// Create a new `MatchInfoProcessor` from `MatchDataResponses`
     ///
     /// # Arguments
-    /// * `responses` - takes a [MatchDataResponses] struct to initialize
+    /// * `responses` - takes a [`MatchDataResponses`] struct to initialize
     ///   `self.responses`
     #[must_use]
     pub fn new_with_response(responses: MatchDataResponses) -> Self {
@@ -86,7 +86,7 @@ impl MatchInfoProcessor {
     }
 
     /// Process all given information and set up this datastructure to be
-    /// finally assembled to a [MatchInfoResult]. Modifies its data in-place
+    /// finally assembled to a [`MatchInfoResult`]. Modifies its data in-place
     ///
     /// # Errors
     // TODO: Many errors can come up here, that need to be collected and named
@@ -198,15 +198,16 @@ impl MatchInfoProcessor {
     /// Process all the players given in a `Last_Match` response
     ///
     /// # Arguments
-    /// * `players_vec` - a slice of a vector of [aoe2net::Player]s that holds
+    /// * `players_vec` - a slice of a vector of [`aoe2net::Player`]s that holds
     ///   all the players that are in that corresponding game
     /// * `players_raw` - a mutable reference to a vector of raw Players to push
-    ///   each processed [PlayerRaw] to
+    ///   each processed [`PlayerRaw`] to
     /// * `diff_team` - a mutable reference to a vector if integers with the
     ///   unique team numbers of the match to iterate over
     ///
     /// # Errors
-    /// Errors are bubbled up into the processing stage of [MatchInfoProcessor]
+    /// Errors are bubbled up into the processing stage of
+    /// [`MatchInfoProcessor`]
     fn process_all_players(
         &mut self,
         players_vec: &[aoe2net::Player],
@@ -227,17 +228,18 @@ impl MatchInfoProcessor {
     }
 
     /// Uses different funtions to lookup player information and builds a
-    /// player. Afterwards pushes it into a vector of [PlayerRaw].
+    /// player. Afterwards pushes it into a vector of [`PlayerRaw`].
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [aoe2net::Player] that contains
-    ///   all information we got from the `last_match` response
-    /// * `players_processing` - a mutable reference to a vector of [PlayerRaw]
-    ///   containing the succesfully built players with all information
-    ///   belonging to them
+    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
+    ///   contains all information we got from the `last_match` response
+    /// * `players_processing` - a mutable reference to a vector of
+    ///   [`PlayerRaw`] containing the succesfully built players with all
+    ///   information belonging to them
     ///
     /// # Errors
-    /// Errors are bubbled up into the processing stage of [MatchInfoProcessor]
+    /// Errors are bubbled up into the processing stage of
+    /// [`MatchInfoProcessor`]
     fn assemble_player_to_vec(
         &mut self,
         req_player: &aoe2net::Player,
@@ -310,8 +312,8 @@ impl MatchInfoProcessor {
     /// was made for on our `matchinfo` endpoint and returns this as Boolean
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [aoe2net::Player] that contains
-    ///   all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
+    ///   contains all information we got from the `last_match` response
     fn get_requested_player(
         &self,
         req_player: &aoe2net::Player,
@@ -327,11 +329,11 @@ impl MatchInfoProcessor {
     /// Lookup a corresponding player in the `leaderboard` response
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [aoe2net::Player] that contains
-    ///   all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
+    ///   contains all information we got from the `last_match` response
     ///
     /// # Errors
-    /// This function will error out if the Leaderboard [serde_json::Value]
+    /// This function will error out if the Leaderboard [`serde_json::Value`]
     /// could not be found
     fn lookup_leaderboard(
         &mut self,
@@ -355,11 +357,11 @@ impl MatchInfoProcessor {
     /// Lookup a corresponding player's `rating`
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [aoe2net::Player] that contains
-    ///   all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
+    ///   contains all information we got from the `last_match` response
     ///
     /// # Errors
-    /// This function will error out if the rating [serde_json::Value]
+    /// This function will error out if the rating [`serde_json::Value`]
     /// could not be found
     fn lookup_rating(
         &mut self,
@@ -381,12 +383,13 @@ impl MatchInfoProcessor {
     }
 
     /// Lookup a corresponding player's `alias` in the `index` of the
-    /// `aoc-reference-data` and return an Option of [aoc_ref::players::Player]
-    /// with all the information from the `players.yaml` for that player
+    /// `aoc-reference-data` and return an Option of
+    /// [`aoc_ref::players::Player`] with all the information from the
+    /// `players.yaml` for that player
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [aoe2net::Player] that contains
-    ///   all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
+    ///   contains all information we got from the `last_match` response
     fn lookup_alias(
         &mut self,
         req_player: &aoe2net::Player,
@@ -400,12 +403,12 @@ impl MatchInfoProcessor {
             )
     }
 
-    /// Create a [MatchInfoResult]
+    /// Creates a [`MatchInfoResult`]
     ///
     /// # Errors
     /// This function will error if the result of the processing stage could not
     /// be found.
-    // TODO: A validation of that [MatchInfoResult] still has to be made
+    // TODO: A validation of that [`MatchInfoResult`] still has to be made
     pub fn assemble(&self) -> Result<MatchInfoResult> {
         trace!("Assembling MatchInfoResult to frontend ...");
         self.result
@@ -421,12 +424,12 @@ impl MatchInfoProcessor {
 /// # Arguments
 /// * `diff_team` - a mutable vector if integers with the unique team numbers of
 ///   the match to iterate over
-/// * `players_raw` - a vector slice of [PlayerRaw]
-/// * `teams_raw` - a reference to a mutable vector of [TeamRaw] to push the
+/// * `players_raw` - a vector slice of [`PlayerRaw`]
+/// * `teams_raw` - a reference to a mutable vector of [`TeamRaw`] to push the
 ///   `Teams` to
 ///
 /// # Errors
-/// Errors are bubbled up into the processing stage of [MatchInfoProcessor]
+/// Errors are bubbled up into the processing stage of [`MatchInfoProcessor`]
 fn assemble_teams_to_vec(
     mut diff_team: Vec<i64>,
     players_raw: &[PlayerRaw],
@@ -471,14 +474,15 @@ fn assemble_teams_to_vec(
 /// Build a player with the builder pattern
 ///
 /// # Arguments
-/// * `player_rating` - the [Rating] information for that corresponding player
+/// * `player_rating` - the [`Rating`] information for that corresponding player
 /// * `player_country` - a String wrapped in an Option that is `None` if the
 ///   country was `not set` resulting in a `Standard Value` for our API of
 ///   `null`
-/// * `req_player` - a reference to [aoe2net::Player] information for that
+/// * `req_player` - a reference to [`aoe2net::Player`] information for that
 ///   corresponding player
-/// * `looked_up_alias` - a reference to an Option of [aoc_ref::players::Player]
-///   with all player information coming from `aoc-reference-data`
+/// * `looked_up_alias` - a reference to an Option of
+///   [`aoc_ref::players::Player`] with all player information coming from
+///   `aoc-reference-data`
 /// * `translated_civilisation_string` - a language-dependent String for the
 ///   players civilisation
 /// * `requested` - a Boolean that show if the player we are currently building
@@ -500,7 +504,7 @@ fn build_player(
             |lookup_player| lookup_player.name.clone(),
         ))
         .country(looked_up_alias.as_ref().map_or_else(
-            || player_country.unwrap_or("null".to_string()),
+            || player_country.unwrap_or_else(|| "null".to_string()),
             |lookup_player| lookup_player.country.clone(),
         ))
         .civilisation(translated_civilisation_string)

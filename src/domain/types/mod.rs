@@ -29,7 +29,10 @@ pub struct InMemoryDb {
 }
 
 impl InMemoryDb {
-    /// Return the `InMemoryDb` only with the language needed
+    /// Return the [`InMemoryDb`] with only the language needed
+    ///
+    /// # Panics
+    /// Could panic if the [`HashMap`] in [`STANDARD`] is returning None
     pub fn retain_language(
         &mut self,
         language: &str,

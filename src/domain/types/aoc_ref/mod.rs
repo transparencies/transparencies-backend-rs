@@ -40,8 +40,11 @@ impl RefDataLists {
         RefDataLists::default()
     }
 
-    /// Index `players` into `players_index` `HashMap`
-    pub fn index(&mut self) -> std::result::Result<(), Vec<IndexingError>> {
+    /// Index `players` into `players_index` [`HashMap`]
+    ///
+    /// # Errors
+    // TODO
+    pub fn index(&mut self) -> Result<(), Vec<IndexingError>> {
         let mut index: HashMap<String, PositionInAoePlayers> = HashMap::new();
 
         let mut indexing_errors: Vec<IndexingError> = Vec::new();
@@ -77,7 +80,7 @@ impl RefDataLists {
         self.players_index_aoe2de = index;
 
         // Return `indexing_errors`
-        if indexing_errors.len() > 0 {
+        if !indexing_errors.is_empty() {
             return Err(indexing_errors);
         }
 
@@ -90,10 +93,9 @@ impl RefDataLists {
         &self,
         profile_id: &str,
     ) -> Option<players::Player> {
-        match self.players_index_aoe2de.get(profile_id) {
-            Some(alias_position) => Some(self.players[*alias_position].clone()),
-            None => None,
-        }
+        self.players_index_aoe2de
+            .get(profile_id)
+            .map(|alias_position| self.players[*alias_position].clone())
     }
 }
 

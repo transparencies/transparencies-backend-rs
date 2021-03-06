@@ -21,6 +21,9 @@ use stable_eyre::eyre::{
 };
 
 /// Set up the logging infrastructure
+///
+/// # Errors
+// TODO
 pub fn set_up_logging(cli_args: &CommandLineSettings) -> Result<(), Report> {
     // Webserver logging
     if env::var_os("RUST_LOG").is_none() {

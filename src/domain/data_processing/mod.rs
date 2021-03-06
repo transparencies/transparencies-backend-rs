@@ -36,6 +36,9 @@ use super::types::error::ApiRequestError;
 
 /// Download static files (Github files, language strings) continously every 10
 /// minutes inside a thread
+///
+/// # Errors
+/// Errors get bubble up to the caller
 pub async fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
     api_client_clone: reqwest::Client,
@@ -50,6 +53,9 @@ pub async fn get_static_data_inside_thread(
 }
 
 /// Entry point for processing part of `matchinfo` endpoint
+///
+/// # Errors
+/// Results get bubbled up and are handled by the caller
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,

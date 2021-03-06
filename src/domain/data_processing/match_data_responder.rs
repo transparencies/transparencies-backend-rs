@@ -1,5 +1,5 @@
-//! Everything around [MatchDataResponses] resembles in here
-//! Beware, there is a close connection to the [super::MatchInfoProcessor]
+//! Everything around [`MatchDataResponses`] resembles in here
+//! Beware, there is a close connection to the [`super::MatchInfoProcessor`]
 //! in many places
 
 use crate::domain::types::{
@@ -118,26 +118,24 @@ impl MatchDataResponses {
     /// Won't throw an error, but `Option` is set to `None` resulting in an
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
+    #[must_use]
     pub fn get_country(looked_up_leaderboard: &Value) -> Option<String> {
-        if let Some(mut country) =
-            Some(looked_up_leaderboard["country"].to_string().to_lowercase())
-        {
-            country.retain(|s| s != '\\');
-            country.retain(|s| s != '\"');
-            Some(country)
-        }
-        else {
-            None
-        }
+        Some(looked_up_leaderboard["country"].to_string().to_lowercase()).map(
+            |mut country| {
+                country.retain(|s| s != '\\');
+                country.retain(|s| s != '\"');
+                country
+            },
+        )
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
     ///
     /// # Arguments
-    /// * `looked_up_rating` - a [serde_json::Value] type that holds the
-    ///   [aoe2net::RatingHistory] of an [aoe2net::Player]
-    /// * `looked_up_leaderboard` - a [serde_json::Value] type that holds
-    ///   Leaderboard data of an [aoe2net::Player]
+    /// * `looked_up_rating` - a [`serde_json::Value`] type that holds the
+    ///   [`aoe2net::RatingHistory`] of an [`aoe2net::Player`]
+    /// * `looked_up_leaderboard` - a [`serde_json::Value`] type that holds
+    ///   Leaderboard data of an [`aoe2net::Player`]
     ///
     /// # Errors
     /// Function will throw errors in cases the deserialisation and conversion
@@ -201,7 +199,7 @@ impl MatchDataResponses {
     }
 
     /// Returns the corresponding `String` for our convenience
-    /// by searching through [Aoe2netStringObj]'s field `id`
+    /// by searching through [`Aoe2netStringObj`]'s field `id`
     ///
     /// # Arguments
     /// * `first` - A string slice that holds the element name to be used to
@@ -212,7 +210,11 @@ impl MatchDataResponses {
     /// # Errors
     /// This will error if the `translation data` cannot be found. Most likely
     /// due to being moved/consumed. See also
-    /// [Self::get_translation_for_language()].
+    /// [`Self::get_translation_for_language()`].
+    ///
+    /// # Panics
+    /// Panics if the conversion to a string failed
+    // TODO: Get rid of panic and handle gracefully
     pub fn get_translated_string_from_id(
         &self,
         first: &str,
@@ -231,10 +233,10 @@ impl MatchDataResponses {
 
         let translated_vec = serde_json::from_str::<Vec<Aoe2netStringObj>>(
             &serde_json::to_string(&language[first]).unwrap_or_else(|_| {
-                panic!(format!(
+                panic!(
                     "Conversion of language [{:?}] to string failed.",
                     first.to_string(),
-                ))
+                )
             }),
         )
         .expect("Conversion from translated string failed.");
@@ -320,7 +322,7 @@ impl MatchDataResponses {
         )
     }
 
-    /// Looks up a player rating list in a [std::collections::HashMap] for
+    /// Looks up a player rating list in a [`std::collections::HashMap`] for
     /// `player_id` and returns a `serde_json::Value` with the `rating
     /// history` for that corresponding player
     ///
@@ -336,15 +338,12 @@ impl MatchDataResponses {
         &self,
         profile_id: &str,
     ) -> Option<serde_json::Value> {
-        match self.aoe2net.rating_history.get(profile_id) {
-            Some(rating_history) => Some(rating_history.clone()),
-            None => None,
-        }
+        self.aoe2net.rating_history.get(profile_id).cloned()
     }
 
-    /// Looks up a leaderboard entry in a [std::collections::HashMap] for
-    /// `player_id` and returns a `serde_json::Value` with the `leaderboard` for
-    /// that corresponding player
+    /// Looks up a leaderboard entry in a [`std::collections::HashMap`] for
+    /// `player_id` and returns a [`serde_json::Value`] with the `leaderboard`
+    /// for that corresponding player
     ///
     /// # Arguments
     /// * `profile_id` - A string slice that contains the Aoe2.net profile ID of
@@ -358,10 +357,7 @@ impl MatchDataResponses {
         &self,
         profile_id: &str,
     ) -> Option<serde_json::Value> {
-        match self.aoe2net.leaderboard.get(profile_id) {
-            Some(leaderboard) => Some(leaderboard.clone()),
-            None => None,
-        }
+        self.aoe2net.leaderboard.get(profile_id).cloned()
     }
 
     /// Print debug information of this data structure
@@ -370,6 +366,10 @@ impl MatchDataResponses {
     }
 
     /// Write the data in RON format to a file for debugging purposes
+    ///
+    /// # Panics
+    /// Will panic if data cannot be written or file can not be created in
+    /// Filesystem
     pub fn export_data_to_file(&self) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
@@ -387,27 +387,31 @@ impl MatchDataResponses {
     }
 
     /// Creates a new [`MatchDataResponses`] struct by executing requests for
-    /// match data and putting them into a HashMap
+    /// match data and putting them into a [`HashMap`]
     ///
     /// # Arguments
-    /// * `par` - holds a [MatchInfoRequest] that contains all the request
+    /// * `par` - holds a [`MatchInfoRequest`] that contains all the request
     ///   parameters to our backend
-    /// * `client` - holds a clone of a [reqwest::Client] for connection pooling
-    ///   purposes
-    /// * `in_memory_db` - holds [InMemoryDb] wrapped inside an [Arc] with a
-    ///   [Mutex] due to threading
+    /// * `client` - holds a clone of a [`reqwest::Client`] for connection
+    ///   pooling purposes
+    /// * `in_memory_db` - holds [`InMemoryDb`] wrapped inside an [`Arc`] with a
+    ///   [`Mutex`] due to threading
     ///
     /// # Errors
-    /// This function may throw errors in the form of [reqwest::Error] when
+    /// This function may throw errors in the form of [`reqwest::Error`] when
     /// requests fail
+    ///
+    /// # Panics
+    /// Function could panic if the [`HashMap`] of static global variable
+    /// [`STANDARD`] delivers `None`
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
-            STANDARD.get(&"language").unwrap().to_string();
-        let mut game: String = STANDARD.get(&"game").unwrap().to_string();
+            (*STANDARD.get(&"language").unwrap()).to_string();
+        let mut game: String = (*STANDARD.get(&"game").unwrap()).to_string();
 
         // API root for aoe2net
         let root = "https://aoe2.net/api";
@@ -430,7 +434,7 @@ impl MatchDataResponses {
         // Include github response
         let mut responses = MatchDataResponses {
             db: db_cloned.retain_language(&language),
-            ..Default::default()
+            ..MatchDataResponses::default()
         };
 
         // GET `PlayerLastMatch` data

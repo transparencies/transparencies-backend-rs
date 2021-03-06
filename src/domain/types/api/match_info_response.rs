@@ -104,58 +104,54 @@ impl Default for MatchInfoResult {
                 map_name: "Arabia".to_string(),
                 server: Server::India,
                 teams: Teams({
-                    let mut m = Vec::new();
-                    m.push(TeamRaw {
-                        players: Players({
-                            let mut n = Vec::new();
-                            n.push(PlayerRaw {
-                                rating: Rating {
-                                    mmr: 2399,
-                                    rank: 24,
-                                    wins: 437,
-                                    losses: 325,
-                                    streak: 7,
-                                    win_rate: Some(57.34908),
-                                    highest_mmr: Some(2400),
-                                },
-                                player_number: 3,
-                                team_number: 2,
-                                name: "Valas".to_string(),
-                                country: "fi".to_string(),
-                                civilisation: "Spanish".to_string(),
-                                requested: false,
-                            });
-                            n
-                        }),
-                        team_number: 2,
-                        team_name: None,
-                    });
-                    m.push(TeamRaw {
-                        players: Players({
-                            let mut n = Vec::new();
-                            n.push(PlayerRaw {
-                                rating: Rating {
-                                    mmr: 2223,
-                                    rank: 70,
-                                    wins: 1905,
-                                    losses: 1432,
-                                    streak: -1,
-                                    win_rate: Some(57.087_208),
-                                    highest_mmr: Some(2345),
-                                },
-                                player_number: 2,
-                                team_number: 1,
-                                name: "Hoang".to_string(),
-                                country: "vn".to_string(),
-                                civilisation: "Celts".to_string(),
-                                requested: true,
-                            });
-                            n
-                        }),
-                        team_number: 1,
-                        team_name: None,
-                    });
-                    m
+                    vec![
+                        TeamRaw {
+                            players: Players({
+                                vec![PlayerRaw {
+                                    rating: Rating {
+                                        mmr: 2399,
+                                        rank: 24,
+                                        wins: 437,
+                                        losses: 325,
+                                        streak: 7,
+                                        win_rate: Some(57.34908),
+                                        highest_mmr: Some(2400),
+                                    },
+                                    player_number: 3,
+                                    team_number: 2,
+                                    name: "Valas".to_string(),
+                                    country: "fi".to_string(),
+                                    civilisation: "Spanish".to_string(),
+                                    requested: false,
+                                }]
+                            }),
+                            team_number: 2,
+                            team_name: None,
+                        },
+                        TeamRaw {
+                            players: Players({
+                                vec![PlayerRaw {
+                                    rating: Rating {
+                                        mmr: 2223,
+                                        rank: 70,
+                                        wins: 1905,
+                                        losses: 1432,
+                                        streak: -1,
+                                        win_rate: Some(57.087_208),
+                                        highest_mmr: Some(2345),
+                                    },
+                                    player_number: 2,
+                                    team_number: 1,
+                                    name: "Hoang".to_string(),
+                                    country: "vn".to_string(),
+                                    civilisation: "Celts".to_string(),
+                                    requested: true,
+                                }]
+                            }),
+                            team_number: 1,
+                            team_name: None,
+                        },
+                    ]
                 }),
             },
             error_message: None,
@@ -164,8 +160,12 @@ impl Default for MatchInfoResult {
 }
 
 impl MatchInfoResult {
-    /// Write a RON file of MatchInfoResult to `logs/match_info_result.ron` for
-    /// debugging purposes
+    /// Write a RON file of [`MatchInfoResult`] to `logs/match_info_result.ron`
+    /// for debugging purposes
+    ///
+    /// # Panics
+    /// Panics when the file can not be created or data cannot be written to the
+    /// file
     pub fn export_data_to_file(&self) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
@@ -207,18 +207,11 @@ pub struct MatchInfo {
 }
 
 /// Wrapper struct around `PlayerRaw` for `Players`
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Players(pub Vec<PlayerRaw>);
 
 #[derive(
-    Clone,
-    Default,
-    TypedBuilder,
-    Getters,
-    Debug,
-    PartialEq,
-    Serialize,
-    Deserialize,
+    Clone, TypedBuilder, Getters, Debug, PartialEq, Serialize, Deserialize,
 )]
 pub struct PlayerRaw {
     rating: Rating,
@@ -231,14 +224,12 @@ pub struct PlayerRaw {
 }
 
 /// Wrapper around `TeamRaw` for `Teams`
-#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Teams(pub Vec<TeamRaw>);
 
 /// A single Team used for Builder pattern and later
 /// for assemblance of the Teams(T) wrapper
-#[derive(
-    Clone, Default, Debug, TypedBuilder, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
 pub struct TeamRaw {
     players: Players,
     team_number: i64,
@@ -247,9 +238,7 @@ pub struct TeamRaw {
 }
 
 /// Rating part of the our `matchinfo` endpoint
-#[derive(
-    Clone, Default, Debug, TypedBuilder, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,
