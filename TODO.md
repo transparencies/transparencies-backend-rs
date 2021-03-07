@@ -6,11 +6,11 @@
 - [X] Call from `handler` into `data_processing` with `MatchInfoRequest` data
 - [X] GET API data from aoe2net
     - [X] make all requests that are needed for getting all valuable information
-          for matchinfo
+        for matchinfo
     - [X] Add a language parameter to call from the frontend to use translations
 - [X] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations
-      (ENG, ESP, GER, ITA, FRA, POR) at system startup and 
-      let them be updated every now and then
+    (ENG, ESP, GER, ITA, FRA, POR) at system startup and let them be updated every
+    now and then
       - spawn another thread for this task and don't use the github one (client
         encapsulation, easier debugging)
       - don't use static types for this, to be less error prone if AoE2net updates
