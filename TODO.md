@@ -12,11 +12,11 @@
 - [X] GET and CACHE (in-memory DB, `Arc<Mutex<T>>`) commonly used translations
     (ENG, ESP, GER, ITA, FRA, POR) at system startup and let them be updated every
     now and then
-      - spawn another thread for this task and don't use the github one (client
-        encapsulation, easier debugging)
-      - don't use static types for this, to be less error prone if AoE2net updates
-        something at these endpoints, we don't want to have
-        errors every ten minutes if something breaks
+  - spawn another thread for this task and don't use the github one (client
+    encapsulation, easier debugging)
+  - don't use static types for this, to be less error prone if AoE2net updates
+    something at these endpoints, we don't want to have
+    errors every ten minutes if something breaks
 - [x] GET json/yaml file(s) from github (periodically?) [teams, platforms, players]
   - Sources:
     - [X] <https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/players.yaml>
@@ -28,7 +28,7 @@
 - [X] Merge various data sources into a `MatchInfo` datastructure for giving back
     to client
   - [x] await json from polska for new matchinfo DS for merging/exposing to our
-        frontend
+    frontend
   - [x] Q: What's the best way in Rust to automatically map Datastructures
 - [ ] Sort the player vector for each team first for the requested player on `vec[0]`,
     then the remaining players either by name or by rating. highest rating after
