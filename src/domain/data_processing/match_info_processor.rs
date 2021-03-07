@@ -367,10 +367,12 @@ impl MatchInfoProcessor {
         &mut self,
         req_player: &aoe2net::Player,
     ) -> Result<Value> {
+        trace!("Looking up rating for player: {:?}", req_player.profile_id);
         let looked_up_rating = if let Some(looked_up_rating) =
             self.responses.lookup_player_rating_for_profile_id(
                 &(req_player.profile_id.to_string()),
             ) {
+            trace!("Looked-up rating is: {:#?}", looked_up_rating);
             looked_up_rating
         }
         else {

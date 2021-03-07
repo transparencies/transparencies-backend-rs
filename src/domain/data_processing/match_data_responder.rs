@@ -525,6 +525,16 @@ impl MatchDataResponses {
                     &PathBuf::from_str(export_path).unwrap(),
                     &req_lead.execute().await?,
                 );
+
+                responses.aoe2net.rating_history.insert(
+                    player.profile_id.to_string(),
+                    req_rating.execute().await?,
+                );
+
+                responses.aoe2net.leaderboard.insert(
+                    player.profile_id.to_string(),
+                    req_lead.execute().await?,
+                );
             }
             else {
                 responses.aoe2net.rating_history.insert(
