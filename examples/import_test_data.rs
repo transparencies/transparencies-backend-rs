@@ -1,5 +1,4 @@
-//! Example executable that pulls in test data and saves them for our
-//! integration tests
+//! Example executable that parses test data and assembles a [`MatchInfoResult`]
 
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
@@ -36,10 +35,6 @@ use stable_eyre::eyre::{
 #[cfg(not(debug_assertions))]
 use human_panic::setup_panic;
 
-use std::{
-    path::PathBuf,
-    str::FromStr,
-};
 use tokio::sync::Mutex;
 use transparencies_backend_rs::domain::{
     data_processing::process_match_info_request,
@@ -71,7 +66,7 @@ async fn main() -> Result<(), Report> {
         set_up_logging(&cli_args)?;
     }
 
-    let export_path = "tests/integration/resources";
+    let import_path = "tests/integration/resources";
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
@@ -87,23 +82,30 @@ async fn main() -> Result<(), Report> {
         Some(api_clients.github.clone()),
         Some(api_clients.aoe2net.clone()),
         in_memory_db_clone.clone(),
-        export_path,
+        import_path,
     )
     .await
     .expect("Preloading data failed.");
 
-    let result = process_match_info_request(
+    let _test_result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
         in_memory_db_clone.clone(),
-        export_path,
+        import_path,
     )
     .await
     .expect("Matchinfo processing failed.");
 
-    result.export_data_to_file(
-        PathBuf::from_str("tests/integration/resources").unwrap(),
-    );
+    // TODO: We have the result from our offline responses here
+    // Now we need to parse the `match_info_result.ron` into
+    // [`MatchInfoResult`] type (`parsed_result`) and compare the
+    // content with `test_result`.
+    // The result of `test_result == parsed_result` is our test return
+    // value.
+
+    // result.export_data_to_file(
+    //     PathBuf::from_str("tests/integration/resources").unwrap(),
+    // );
 
     Ok(())
 }

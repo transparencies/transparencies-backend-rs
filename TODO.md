@@ -69,7 +69,7 @@
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
     - [ ] use `claim` for tests
-- [ ] Write functionality to save a set of JSON responses (also our own) to a file
+- [X] Write functionality to save a set of JSON responses (also our own) to a file
 to use them inside the integration tests and be able to update frequently
     - [ ] Parse requests into `MatchDataResponses` and shove them up through the
     `MatchInfoProcessor` to test offline as well
