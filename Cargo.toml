@@ -116,6 +116,7 @@ predicates = "1.0.7"
 pretty_assertions = "0.6.1"
 claim = "0.5.0"
 rstest = "0.6.4"
+wiremock = "0.5.1"
 
 [profile.dev]
 opt-level=0

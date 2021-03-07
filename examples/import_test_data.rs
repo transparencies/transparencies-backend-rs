@@ -66,7 +66,7 @@ async fn main() -> Result<(), Report> {
         set_up_logging(&cli_args)?;
     }
 
-    let import_path = "tests/integration/resources";
+    let import_path = "tests/matchinfo-integration/resources";
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();

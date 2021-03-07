@@ -509,6 +509,7 @@ impl MatchDataResponses {
             );
 
             if !export_path.is_empty() {
+                // TODO: Do requests just one time in export path
                 util::export_to_json(
                     &File {
                         name: format!("rating_history_{:?}", player.profile_id),

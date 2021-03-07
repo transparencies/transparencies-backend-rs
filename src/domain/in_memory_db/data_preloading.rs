@@ -121,10 +121,10 @@ pub async fn get_static_data_inside_thread(
 ///     let api_clients = ApiClient::default();
 ///
 ///     preload_data(
-///         api_clients.github.clone(),
-///         api_clients.aoe2net.clone(),
+///         Some(api_clients.github.clone()),
+///         Some(api_clients.aoe2net.clone()),
 ///         in_memory_db.clone(),
-///         false,
+///         "",
 ///     )
 ///     .await
 ///     .unwrap()
@@ -244,7 +244,7 @@ async fn load_language_responses_into_hashmap(
         if !export_path.is_empty() {
             util::export_to_json(
                 &File {
-                    name: req_name,
+                    name: format!("language_{}", req_name),
                     ext: FileFormat::Json,
                 },
                 &PathBuf::from_str(export_path).unwrap(),
