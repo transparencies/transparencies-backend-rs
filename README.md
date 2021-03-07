@@ -12,7 +12,8 @@ for running `cargo test` to check the processing pipeline.
 
 ## Documentation
 
-Documentation can be easily build and opened with `cargo doc --no-deps --document-private-items --open`.
+Documentation can be easily build and opened with `cargo doc --no-deps
+--document-private-items --open`.
 
 ## License
 

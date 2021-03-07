@@ -20,3 +20,6 @@ logs/
 
 # Random
 .DS_Store
+
+# Test data
+tests/integration/resources
