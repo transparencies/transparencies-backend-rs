@@ -1,24 +1,22 @@
+use std::{
+    path::PathBuf,
+    str::FromStr,
+    sync::Arc,
+};
+use tokio::sync::Mutex;
+use transparencies_backend_rs::domain::{
+    data_processing::process_match_info_request,
+    in_memory_db::data_preloading::preload_data,
+    types::{
+        api::MatchInfoRequest,
+        requests::ApiClient,
+        InMemoryDb,
+    },
+};
+
+
 #[tokio::main]
 async fn main() {
-    get_resources_for_tests().await;
-}
-
-async fn get_resources_for_tests() {
-    use std::{
-        path::PathBuf,
-        str::FromStr,
-        sync::Arc,
-    };
-    use tokio::sync::Mutex;
-    use transparencies_backend_rs::domain::{
-        data_processing::process_match_info_request,
-        in_memory_db::data_preloading::preload_data,
-        types::{
-            api::MatchInfoRequest,
-            requests::ApiClient,
-            InMemoryDb,
-        },
-    };
 
     let export_flag = true;
 
@@ -49,9 +47,8 @@ async fn get_resources_for_tests() {
     .await
     .expect("Matchinfo processing failed.");
 
-    if export_flag {
-        result.export_data_to_file(
+
+     result.export_data_to_file(
             PathBuf::from_str("tests/integration/resources").unwrap(),
         );
-    }
 }
