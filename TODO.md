@@ -46,6 +46,7 @@
         errors to the client
         - [ ] Send `log entry` to Client for better error handling on client-side
         - [ ] On `hard error`, no match_info but instead error status code (HTTP)
+    - [ ] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
 - [x] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
@@ -68,12 +69,12 @@
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
     - [ ] use `claim` for tests
-- [ ] Write functioality to save a set of JSON responses (also our own) to a file
-    to use them inside the integration tests and be able to update frequently
-    - [ ] Parse requests into MatchDataResponses and shove them up through the
-        MatchInfoProcessor to test offline as well
+- [ ] Write functionality to save a set of JSON responses (also our own) to a file
+to use them inside the integration tests and be able to update frequently
+    - [ ] Parse requests into `MatchDataResponses` and shove them up through the
+    `MatchInfoProcessor` to test offline as well
     - [ ] Compare our parsed initial response (manually checked) with the one in
-        memory from the offline data
+    memory from the offline data
 
 ### Refactoring
 
@@ -82,11 +83,11 @@
 objects, etc.)
 - [X] async stuff done right?
 - [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
-    for `base_path` and joining files for DS: `reqwest::Url`
+for `base_path` and joining files for DS: `reqwest::Url`
 - [X] structured logging: use `tracing` crate in addition to `log` and refactor
-    accordingly
+accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
-        structured summaries of tracing
+    structured summaries of tracing
 
 ### Documentation
 
@@ -96,21 +97,21 @@ objects, etc.)
 
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?
     - [ ] what architectural changes need to be made to support many clients
-        on our api
+    on our api
 
 ## Release 1.1.0 - SUBSCRIPTION requests
 
 ### Additions
 
 - [ ] GET `last_match` for `aoc-reference-data` profile ids in another `thread`
-      and save the content to a `HashMap` -> for later subscriptions
+and save the content to a `HashMap` -> for later subscriptions
     - [ ] if a `profile id` from this list asks for a `MatchInfo` we can shorten
-        the path/do less requests
+    the path/do less requests
     - [ ] new subscriptions that are not on `aoc-reference-data` can be made persistent
-        within a `ron` file that gets parsed on startup
+    within a `ron` file that gets parsed on startup
     - [ ] `active subscribed` profile ids get copied from this `HashMap` into an
-        `ActiveSubs`-`HashMap` where requests are made more frequently to check for
-        changes and send out a `delta`
+    `ActiveSubs`-`HashMap` where requests are made more frequently to check for
+    changes and send out a `delta`
 
 ### Intended Procedure
 
