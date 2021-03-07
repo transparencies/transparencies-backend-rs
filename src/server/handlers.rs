@@ -47,7 +47,7 @@ pub async fn return_matchinfo_to_client(
         opts,
         aoe_net_client.clone(),
         in_memory_db.clone(),
-        false,
+        "",
     )
     .await
     .expect("Matchinfo processing failed.");

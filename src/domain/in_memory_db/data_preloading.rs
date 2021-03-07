@@ -75,7 +75,7 @@ pub async fn get_static_data_inside_thread(
                 git_client_clone.clone(),
                 aoe2net_client_clone.clone(),
                 in_memory_db_clone.clone(),
-                false,
+                "",
             )
             .await
             {
@@ -130,17 +130,21 @@ pub async fn preload_data(
     api_client: reqwest::Client,
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export: bool,
+    export_path: &str,
 ) -> Result<(), ApiRequestError> {
-    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone(), export)
+    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone(), export_path)
         .await
         .expect("Unable to preload files from Github");
 
     index_aoc_ref_data(in_memory_db.clone()).await;
 
-    preload_aoe2_net_data(api_client.clone(), in_memory_db.clone(), export)
-        .await
-        .expect("Unable to preload data from AoE2.net");
+    preload_aoe2_net_data(
+        api_client.clone(),
+        in_memory_db.clone(),
+        export_path,
+    )
+    .await
+    .expect("Unable to preload data from AoE2.net");
 
     Ok(())
 }
@@ -168,7 +172,7 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    _export: bool,
+    _export_path: &str,
 ) -> Result<(), ApiRequestError> {
     let language_requests = assemble_language_requests(&api_client);
 
@@ -236,7 +240,7 @@ fn assemble_language_requests(
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export: bool,
+    export_path: &str,
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();
 
@@ -252,8 +256,14 @@ pub async fn preload_aoc_ref_data(
 
         let response = req.execute().await?;
 
-        update_data_in_db(file, in_memory_db.clone(), response, req, export)
-            .await?;
+        update_data_in_db(
+            file,
+            in_memory_db.clone(),
+            response,
+            req,
+            export_path,
+        )
+        .await?;
     }
 
     Ok(())
@@ -266,16 +276,15 @@ async fn update_data_in_db(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     response: reqwest::Response,
     req: GithubFileRequest,
-    export: bool,
+    export_path: &str,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                if export {
+                if !export_path.is_empty() {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str("tests/integration/resources")
-                            .unwrap(),
+                        &PathBuf::from_str(export_path).unwrap(),
                         &response.json().await?,
                     )
                 }
@@ -286,11 +295,10 @@ async fn update_data_in_db(
                 }
             }
             "teams" => {
-                if export {
+                if !export_path.is_empty() {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str("tests/integration/resources")
-                            .unwrap(),
+                        &PathBuf::from_str(export_path).unwrap(),
                         &response.json().await?,
                     )
                 }
@@ -309,11 +317,10 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
-                if export {
+                if !export_path.is_empty() {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str("tests/integration/resources")
-                            .unwrap(),
+                        &PathBuf::from_str(export_path).unwrap(),
                         &serde_yaml::from_slice(&response.bytes().await?)
                             .unwrap(),
                     )

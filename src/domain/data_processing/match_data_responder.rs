@@ -414,7 +414,7 @@ impl MatchDataResponses {
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
-        export: bool,
+        export_path: &str,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();
@@ -459,13 +459,14 @@ impl MatchDataResponses {
             .await?
         };
 
-        if export {
+        if !export_path.is_empty() {
             util::export_to_json(
                 &File {
                     name: "last_match".to_string(),
                     ext: FileFormat::Json,
                 },
-                &PathBuf::from_str("tests/integration/resources").unwrap(),
+                &PathBuf::from_str(export_path)
+                    .expect("Parsing of test resources string failed."),
                 &responses
                     .clone()
                     .aoe2net
@@ -507,13 +508,13 @@ impl MatchDataResponses {
                 ],
             );
 
-            if export {
+            if !export_path.is_empty() {
                 util::export_to_json(
                     &File {
                         name: format!("rating_history_{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str("tests/integration/resources").unwrap(),
+                    &PathBuf::from_str(export_path).unwrap(),
                     &req_rating.execute().await?,
                 );
                 util::export_to_json(
@@ -521,7 +522,7 @@ impl MatchDataResponses {
                         name: format!("leaderboard_{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str("tests/integration/resources").unwrap(),
+                    &PathBuf::from_str(export_path).unwrap(),
                     &req_lead.execute().await?,
                 );
             }
