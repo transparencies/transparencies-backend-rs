@@ -96,6 +96,8 @@ accordingly
 
 ### Performance
 
+[Rust Performance Book](https://nnethercote.github.io/perf-book/)
+
 #### Benchmarking
 
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?
