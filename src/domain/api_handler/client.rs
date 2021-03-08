@@ -68,7 +68,15 @@ impl Default for ApiClient {
 }
 
 impl ApiClient {
+    /// Builds a new [`ApiClient`] with setting HTTPs to enabled/disabled
+    ///
+    /// # Arguments
+    /// * `enabled` - `True` = HTTPs enabled, `False` = HTTPs disabled
+    ///
+    /// # Panics
+    /// This function panics if [`reqwest::Client`] can not be build.
     #[inline]
+    #[must_use]
     pub fn new_with_https(enabled: bool) -> Self {
         Self {
             aoe2net: reqwest::Client::builder()

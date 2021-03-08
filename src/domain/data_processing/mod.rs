@@ -45,12 +45,7 @@ pub async fn process_match_info_request(
         par.game, par.id_type, par.id_number, par.language
     );
 
-    let aoe2net_folder = if let Some(path) = export_path {
-        path
-    }
-    else {
-        ""
-    };
+    let aoe2net_folder = export_path.map_or("", |path| path);
 
     let responses = MatchDataResponses::new_with_match_data(
         par,

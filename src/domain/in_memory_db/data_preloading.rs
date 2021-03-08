@@ -105,6 +105,9 @@ pub async fn get_static_data_inside_thread(
 
 /// Preload data from `aoe2net` and `Github`
 ///
+/// # Arguments
+/// TODO
+///
 /// # Example
 /// ```rust
 /// #[tokio::main]
@@ -126,7 +129,9 @@ pub async fn get_static_data_inside_thread(
 ///         Some(api_clients.github.clone()),
 ///         Some(api_clients.aoe2net.clone()),
 ///         in_memory_db.clone(),
-///         "",
+///         github_root,
+///         &aoc_folder
+///         mocking,
 ///     )
 ///     .await
 ///     .unwrap()
@@ -301,7 +306,7 @@ pub async fn preload_aoc_ref_data(
     for file in files {
         let req = util::build_github_request(
             git_client.clone(),
-            root.clone(),
+            root,
             "SiegeEngineers",
             "aoc-reference-data",
             "master/data",
@@ -419,6 +424,7 @@ async fn update_data_in_db(
 }
 
 /// Create a list of files that need to be downloaded from github repository
+#[must_use]
 pub fn create_github_file_list() -> Vec<File> {
     vec![
         File {
