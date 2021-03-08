@@ -129,8 +129,8 @@ pub async fn get_static_data_inside_thread(
 ///         Some(api_clients.github.clone()),
 ///         Some(api_clients.aoe2net.clone()),
 ///         in_memory_db.clone(),
-///         "github_root",
-///         "aoe2net_root",
+///         "https://raw.githubusercontent.com",
+///         "https://aoe2.net/api",
 ///         None,
 ///         false,
 ///     )

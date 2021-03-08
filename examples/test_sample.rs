@@ -71,19 +71,6 @@ async fn main() {
         &mut github_mock_responses,
     );
 
-    // Mock Requests needed
-    let mock_paths: Vec<&str> = vec![
-        "/api/leaderboard?game=aoe2de&profile_id=459658&leaderboard_id=3",
-        "/api/player/ratinghistory?game=aoe2de&profile_id=459658&leaderboard_id=3&count=1",
-        "/api/leaderboard?game=aoe2de&profile_id=196240&leaderboard_id=3",
-        "/api/player/ratinghistory?game=aoe2de&profile_id=196240&leaderboard_id=3&count=1",
-        "/api/player/lastmatch?game=aoe2de&profile_id=196240",
-        "/api/strings?game=aoe2de&language=en",
-        "/SiegeEngineers/aoc-reference-data/master/data/players.yaml",
-        "/SiegeEngineers/aoc-reference-data/master/data/platforms.json",
-        "/SiegeEngineers/aoc-reference-data/master/data/teams.json",
-    ];
-
     let aoe2net_api_roots: Vec<&str> = vec![
         "/api/strings",
         "/api/player/lastmatch",
@@ -102,25 +89,6 @@ async fn main() {
         github_mock_responses,
     )
     .await;
-
-    // Make sure all our mocking paths are working as expected
-    for mock_path in &mock_paths {
-        let url_string =
-            Url::parse(&format!("{}{}", &mock_server.uri(), *mock_path))
-                .unwrap();
-
-        println!("For {}", url_string);
-
-        let response = get(url_string).await.unwrap();
-        let status = response.status();
-        assert_eq!(status.as_u16(), 200);
-
-        // // DEBUG
-        // println!(
-        //     "Response: {:?}",
-        //     response.json::<serde_json::Value>().await.unwrap()
-        // );
-    }
 
     // URL
     let missing_link_url =
