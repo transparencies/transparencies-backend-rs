@@ -6,9 +6,11 @@
 
 ### Update data for integration tests
 
-Run `cargo run --example export-test-data` to download a set of responses that
+First run `cargo run --example export-test-data` to download a set of responses that
 are serialized into JSON-files in `tests/integration/resources`. They are used
 for running `cargo test` to check the processing pipeline.
+
+Then run `cargo test` to run our test suite.
 
 ## Documentation
 

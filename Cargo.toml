@@ -47,9 +47,9 @@ doc = true
 harness = true                             
 edition = "2018" 
 
-[[example]]
-name = "test_sample"                       
-path = "examples/test_sample.rs"
+[[test]]
+name = "full-integration-test"                       
+path = "tests/matchinfo-integration/main.rs"
 test = true                                 
 bench = true                                
 doc = true                                 
