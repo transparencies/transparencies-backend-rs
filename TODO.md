@@ -105,6 +105,7 @@ accordingly
     on our api
 - [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features on stable
 - [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more sophisticated alternative
+- [ ] Can dig deeper after profiling with [counts](https://github.com/nnethercote/counts/)
 
 #### Flamegraph
 
