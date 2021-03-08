@@ -56,7 +56,7 @@ impl RefDataLists {
                         index.insert(profile_id.to_string(), player_number);
 
                     if let Some(x) = old_value {
-                        // Better error handling, we shouldn't fail to
+                        // TODO Better error handling, we shouldn't fail to
                         // create an index, just because there is an doublet
                         //
                         // Better would be to `.collect()` this error and not

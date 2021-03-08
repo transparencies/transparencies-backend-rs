@@ -1,3 +1,13 @@
+#[cfg(not(debug_assertions))]
+use human_panic::setup_panic;
+use reqwest::{
+    get,
+    Url,
+};
+use stable_eyre::eyre::{
+    Report,
+    Result,
+};
 use std::{
     collections::HashMap,
     fs,
@@ -8,27 +18,31 @@ use std::{
     },
     sync::Arc,
 };
+use structopt::StructOpt;
 
-use reqwest::{
-    get,
-    Url,
-};
+// Internal Configuration
 use tokio::sync::Mutex;
-use transparencies_backend_rs::domain::{
-    data_processing::process_match_info_request,
-    in_memory_db::data_preloading::{
-        create_github_file_list,
-        preload_data,
-    },
-    types::{
-        api::{
-            MatchInfoRequest,
-            MatchInfoResult,
+use transparencies_backend_rs::{
+    domain::{
+        data_processing::process_match_info_request,
+        in_memory_db::data_preloading::{
+            create_github_file_list,
+            preload_data,
         },
-        ApiClient,
-        InMemoryDb,
+        types::{
+            api::{
+                MatchInfoRequest,
+                MatchInfoResult,
+            },
+            requests::ApiClient,
+            InMemoryDb,
+        },
+        util,
     },
-    util,
+    setup::{
+        cli::CommandLineSettings,
+        startup::set_up_logging,
+    },
 };
 use wiremock::{
     matchers::method,
@@ -38,7 +52,29 @@ use wiremock::{
 };
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Report> {
+    // Install the panic and error report handlers
+    stable_eyre::install()?;
+
+    // Human Panic. Only enabled when *not* debugging.
+    #[cfg(not(debug_assertions))]
+    {
+        setup_panic!(Metadata {
+            name: env!("CARGO_PKG_NAME").into(),
+            version: env!("CARGO_PKG_VERSION").into(),
+            authors: "the transparencies authors".into(),
+            homepage: "https://github.com/transparencies/transparencies-backend-rs/issues".into(),
+        });
+    }
+
+    // Calling the command line parsing logic with the argument values
+    let cli_args = CommandLineSettings::from_args();
+
+    // If `debug` flag is set, we use a logfile
+    if cli_args.debug {
+        set_up_logging(&cli_args)?;
+    }
+
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
@@ -117,7 +153,7 @@ async fn main() {
         Some(api_clients.aoe2net.clone()),
         in_memory_db_clone.clone(),
         &format!("{}", &mock_server.uri()),
-        &format!("{}", &mock_server.uri()),
+        &format!("{}/api", &mock_server.uri()),
         None,
         true,
     )
@@ -127,7 +163,7 @@ async fn main() {
     let result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
-        &format!("{}", &mock_server.uri()),
+        &format!("{}/api", &mock_server.uri()),
         in_memory_db_clone.clone(),
         None,
     )
@@ -135,6 +171,8 @@ async fn main() {
     .expect("Matchinfo processing failed.");
 
     assert_eq!(ron_result, result);
+
+    Ok(())
 }
 
 fn load_responses_from_fs(

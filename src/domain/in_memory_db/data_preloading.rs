@@ -199,7 +199,11 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
         let mut guard = in_memory_db.lock().await;
         guard.github_file_content.index().map_err(|errs| {
             errs.into_iter().map(|err| {
-                warn!("Indexing of player aliases threw an error: {:#?}\n", err)
+                warn!(
+                    "Indexing of player aliases threw an error: {:#?}\n",
+                    err
+                );
+                panic!();
             })
         });
     }
@@ -242,9 +246,7 @@ async fn load_language_responses_into_hashmap(
         HashMap::with_capacity(LANGUAGE_STRINGS.len());
 
     for (req_name, req) in language_requests {
-        println!("For Request: {} with {:#?}", req_name, req);
         let response: serde_json::Value = req.execute().await?;
-        println!("Response: {:#?}", response);
         responses.insert(req_name.to_string(), response.clone());
 
         if !export_path.is_empty() {
