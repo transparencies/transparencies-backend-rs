@@ -105,6 +105,8 @@ async fn main() -> Result<(), Report> {
     .await
     .expect("Matchinfo processing failed.");
 
+    // TODO Alias name is not right in export_test_data
+
     result
         .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
 

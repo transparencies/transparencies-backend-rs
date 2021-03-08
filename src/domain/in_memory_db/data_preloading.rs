@@ -203,7 +203,6 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
                     "Indexing of player aliases threw an error: {:#?}\n",
                     err
                 );
-                panic!();
             })
         });
     }
