@@ -127,9 +127,9 @@ async fn main() {
     let result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
+        &format!("{}", &mock_server.uri()),
         in_memory_db_clone.clone(),
         None,
-        &format!("{}", &mock_server.uri()),
     )
     .await
     .expect("Matchinfo processing failed.");

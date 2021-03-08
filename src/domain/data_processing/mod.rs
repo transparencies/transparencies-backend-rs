@@ -36,9 +36,9 @@ use stable_eyre::eyre::Result;
 pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
+    root: &str,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     export_path: Option<&str>,
-    root: &str,
 ) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",

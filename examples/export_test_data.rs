@@ -98,9 +98,9 @@ async fn main() -> Result<(), Report> {
     let result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
+        "https://aoe2.net/api",
         in_memory_db_clone.clone(),
         export_path,
-        "https://aoe2.net/api",
     )
     .await
     .expect("Matchinfo processing failed.");

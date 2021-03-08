@@ -243,9 +243,9 @@ async fn load_language_responses_into_hashmap(
 
     for (req_name, req) in language_requests {
         println!("For Request: {} with {:#?}", req_name, req);
-        let single_response = req.execute::<serde_json::Value>().await?;
-        println!("Response: {:#?}", single_response);
-        responses.insert(req_name.to_string(), single_response.clone());
+        let response: serde_json::Value = req.execute().await?;
+        println!("Response: {:#?}", response);
+        responses.insert(req_name.to_string(), response.clone());
 
         if !export_path.is_empty() {
             util::export_to_json(
@@ -254,7 +254,7 @@ async fn load_language_responses_into_hashmap(
                     ext: FileFormat::Json,
                 },
                 &PathBuf::from_str(export_path).unwrap(),
-                &single_response,
+                &response,
             )
         }
     }

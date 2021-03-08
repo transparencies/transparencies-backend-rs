@@ -49,9 +49,9 @@ pub async fn return_matchinfo_to_client(
     let processed_match_info = process_match_info_request(
         opts,
         aoe_net_client.clone(),
+        root,
         in_memory_db.clone(),
         None,
-        root,
     )
     .await
     .expect("Matchinfo processing failed.");
