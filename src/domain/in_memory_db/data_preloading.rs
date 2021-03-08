@@ -3,7 +3,6 @@
 
 use std::{
     collections::HashMap,
-    io,
     path::PathBuf,
     str::FromStr,
     sync::Arc,
@@ -83,7 +82,10 @@ pub async fn get_static_data_inside_thread(
                 Some(git_client_clone.clone()),
                 Some(aoe2net_client_clone.clone()),
                 in_memory_db_clone.clone(),
-                "",
+                "https://raw.githubusercontent.com",
+                "https://aoe2.net/api",
+                None,
+                false,
             )
             .await
             {
@@ -138,12 +140,31 @@ pub async fn preload_data(
     api_client: Option<reqwest::Client>,
     git_client: Option<reqwest::Client>,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export_path: &str,
+    github_root: &str,
+    aoe2_net_root: &str,
+    export_path: Option<&str>,
+    mocking: bool,
 ) -> Result<(), ApiRequestError> {
+    let aoc_folder = if let Some(path) = export_path {
+        format!("{}{}", path, "/ref-data/")
+    }
+    else {
+        "".to_string()
+    };
+
+    let aoe2net_language_folder = if let Some(path) = export_path {
+        format!("{}{}", path, "/languages/")
+    }
+    else {
+        "".to_string()
+    };
+
     preload_aoc_ref_data(
-        git_client.map_or(reqwest::Client::default(), |client| client.clone()),
+        git_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
-        export_path,
+        github_root,
+        &aoc_folder,
+        mocking,
     )
     .await
     .expect("Unable to preload files from Github");
@@ -151,39 +172,15 @@ pub async fn preload_data(
     index_aoc_ref_data(in_memory_db.clone()).await;
 
     preload_aoe2_net_data(
-        api_client.map_or(reqwest::Client::default(), |client| client.clone()),
+        api_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
-        export_path,
+        aoe2_net_root,
+        &aoe2net_language_folder,
     )
     .await
     .expect("Unable to preload data from AoE2.net");
 
     Ok(())
-}
-
-#[allow(dead_code)]
-async fn parse_aoe2_net_data_from_file(
-    _in_memory_db: Arc<Mutex<InMemoryDb>>,
-    _import_path: &str,
-) -> Result<(), io::Error> {
-    let files = create_offline_file_list();
-
-    for _file in files {
-        // TODO Parse data from offline files into datatypes
-        // let response =
-
-        // update_data_in_db(file, in_memory_db.clone(), response, req, "")
-        //     .await?;
-    }
-
-    Ok(())
-}
-#[allow(dead_code)]
-async fn parse_aoc_ref_data_from_file(
-    _in_memory_db: Arc<Mutex<InMemoryDb>>,
-    _import_path: &str,
-) -> Result<(), io::Error> {
-    todo!()
 }
 
 /// Index the `player_ids` of Players in the `players.yaml` file of
@@ -209,9 +206,10 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    root: &str,
     export_path: &str,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = assemble_language_requests(&api_client);
+    let language_requests = assemble_language_requests(&api_client, root);
 
     let responses =
         load_language_responses_into_hashmap(language_requests, export_path)
@@ -238,13 +236,15 @@ async fn load_language_responses_into_hashmap(
         HashMap::with_capacity(LANGUAGE_STRINGS.len());
 
     for (req_name, req) in language_requests {
-        let single_response: serde_json::Value = req.execute().await?;
+        println!("For Request: {} with {:#?}", req_name, req);
+        let single_response = req.execute::<serde_json::Value>().await?;
+        println!("Response: {:#?}", single_response);
         responses.insert(req_name.to_string(), single_response.clone());
 
         if !export_path.is_empty() {
             util::export_to_json(
                 &File {
-                    name: format!("language_{}", req_name),
+                    name: req_name.to_string(),
                     ext: FileFormat::Json,
                 },
                 &PathBuf::from_str(export_path).unwrap(),
@@ -258,7 +258,8 @@ async fn load_language_responses_into_hashmap(
 
 /// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
-    api_client: &reqwest::Client
+    api_client: &reqwest::Client,
+    root: &str,
 ) -> Vec<(String, ApiRequest)> {
     let mut language_requests: Vec<(String, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
@@ -267,10 +268,10 @@ fn assemble_language_requests(
     for game in &GAME_STRINGS {
         for language in &LANGUAGE_STRINGS {
             language_requests.push((
-                language.to_string(),
+                (*language).to_string(),
                 util::build_api_request(
                     api_client.clone(),
-                    "https://aoe2.net/api",
+                    root,
                     "strings",
                     vec![
                         ("game".to_string(), (*game).to_string()),
@@ -291,14 +292,16 @@ fn assemble_language_requests(
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    root: &str,
     export_path: &str,
+    mocking: bool,
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();
 
     for file in files {
         let req = util::build_github_request(
             git_client.clone(),
-            "https://raw.githubusercontent.com",
+            root.clone(),
             "SiegeEngineers",
             "aoc-reference-data",
             "master/data",
@@ -313,6 +316,7 @@ pub async fn preload_aoc_ref_data(
             response,
             req,
             export_path,
+            mocking,
         )
         .await?;
     }
@@ -328,35 +332,36 @@ async fn update_data_in_db(
     response: reqwest::Response,
     req: GithubFileRequest,
     export_path: &str,
+    mocking: bool,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                if !export_path.is_empty() {
-                    util::export_to_json(
-                        &file,
-                        &PathBuf::from_str(export_path).unwrap(),
-                        &response.json().await?,
-                    )
-                }
-                else {
+                if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.platforms =
                         response.json::<AoePlatforms>().await?
                 }
-            }
-            "teams" => {
-                if !export_path.is_empty() {
+                else {
                     util::export_to_json(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
                         &response.json().await?,
                     )
                 }
-                else {
+            }
+            "teams" => {
+                if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.teams =
                         response.json::<AoeTeams>().await?
+                }
+                else {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str(export_path).unwrap(),
+                        &response.json().await?,
+                    )
                 }
             }
             _ => {
@@ -368,21 +373,30 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
-                if !export_path.is_empty() {
-                    util::export_to_json(
-                        &file,
-                        &PathBuf::from_str(export_path).unwrap(),
-                        &serde_yaml::from_slice(&response.bytes().await?)
-                            .unwrap(),
-                    )
-                }
-                else {
+                if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players =
                         serde_yaml::from_slice::<AoePlayers>(
                             &response.bytes().await?,
                         )
                         .unwrap()
+                }
+                else if mocking {
+                    // ATTENTION! Mocking is enabled, we don't want to use
+                    // `yaml` for the players file but imitate it. This means
+                    // that the mocking server is delivering a `json`-file under
+                    // the same filename `players.yaml` for convenience.
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players =
+                        response.json::<AoePlayers>().await?
+                }
+                else {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str(export_path).unwrap(),
+                        &serde_yaml::from_slice(&response.bytes().await?)
+                            .unwrap(),
+                    )
                 }
             }
             else {
@@ -405,36 +419,19 @@ async fn update_data_in_db(
 }
 
 /// Create a list of files that need to be downloaded from github repository
-fn create_github_file_list() -> Vec<File> {
+pub fn create_github_file_list() -> Vec<File> {
     vec![
+        File {
+            name: "platforms".to_string(),
+            ext: FileFormat::Json,
+        },
+        File {
+            name: "teams".to_string(),
+            ext: FileFormat::Json,
+        },
         File {
             name: "players".to_string(),
             ext: FileFormat::Yaml,
-        },
-        File {
-            name: "platforms".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "teams".to_string(),
-            ext: FileFormat::Json,
-        },
-    ]
-}
-/// Create a list of files that need to be parsed
-fn create_offline_file_list() -> Vec<File> {
-    vec![
-        File {
-            name: "players".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "platforms".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "teams".to_string(),
-            ext: FileFormat::Json,
         },
     ]
 }

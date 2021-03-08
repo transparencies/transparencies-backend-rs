@@ -71,7 +71,7 @@ async fn main() -> Result<(), Report> {
         set_up_logging(&cli_args)?;
     }
 
-    let export_path = "tests/matchinfo-integration/resources";
+    let export_path = Some("tests/matchinfo-integration/resources");
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
@@ -87,7 +87,10 @@ async fn main() -> Result<(), Report> {
         Some(api_clients.github.clone()),
         Some(api_clients.aoe2net.clone()),
         in_memory_db_clone.clone(),
+        "https://raw.githubusercontent.com",
+        "https://aoe2.net/api",
         export_path,
+        false,
     )
     .await
     .expect("Preloading data failed.");
@@ -97,11 +100,13 @@ async fn main() -> Result<(), Report> {
         api_clients.aoe2net.clone(),
         in_memory_db_clone.clone(),
         export_path,
+        "https://aoe2.net/api",
     )
     .await
     .expect("Matchinfo processing failed.");
 
-    result.export_data_to_file(PathBuf::from_str(export_path).unwrap());
+    result
+        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
 
     Ok(())
 }

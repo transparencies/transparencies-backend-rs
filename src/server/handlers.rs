@@ -43,11 +43,15 @@ pub async fn return_matchinfo_to_client(
     aoe_net_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
+    // API root for aoe2net
+    let root = "https://aoe2.net/api";
+
     let processed_match_info = process_match_info_request(
         opts,
         aoe_net_client.clone(),
         in_memory_db.clone(),
-        "",
+        None,
+        root,
     )
     .await
     .expect("Matchinfo processing failed.");

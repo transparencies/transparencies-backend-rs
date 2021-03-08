@@ -105,3 +105,18 @@ pub(crate) fn export_to_json(
     serde_json::to_writer(&mut writer, &data)
         .expect("Wrting data to file experienced an error.");
 }
+
+/// Extracts the filename without extension of a Path
+///
+/// # Arguments
+// TODO
+/// # Errors
+// TODO
+/// # Panics
+// TODO
+#[must_use]
+pub fn extract_filename(path: &Path) -> String {
+    let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
+    let name: Vec<&str> = file_name.split(".json").collect();
+    name[0].to_string()
+}

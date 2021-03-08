@@ -67,6 +67,30 @@ impl Default for ApiClient {
     }
 }
 
+impl ApiClient {
+    #[inline]
+    pub fn new_with_https(enabled: bool) -> Self {
+        Self {
+            aoe2net: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(CLIENT_REQUEST_TIMEOUT)
+                .connect_timeout(Duration::from_secs(60))
+                .use_rustls_tls()
+                .https_only(enabled)
+                .build()
+                .unwrap(),
+            github: reqwest::Client::builder()
+                .user_agent(APP_USER_AGENT)
+                .timeout(CLIENT_REQUEST_TIMEOUT)
+                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
+                .use_rustls_tls()
+                .https_only(enabled)
+                .build()
+                .unwrap(),
+        }
+    }
+}
+
 impl Default for GithubFileRequest {
     fn default() -> Self {
         GithubFileRequest::builder()

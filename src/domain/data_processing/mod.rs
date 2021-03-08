@@ -37,18 +37,27 @@ pub async fn process_match_info_request(
     par: MatchInfoRequest,
     client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export_path: &str,
+    export_path: Option<&str>,
+    root: &str,
 ) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",
         par.game, par.id_type, par.id_number, par.language
     );
 
+    let aoe2net_folder = if let Some(path) = export_path {
+        path
+    }
+    else {
+        ""
+    };
+
     let responses = MatchDataResponses::new_with_match_data(
         par,
         client,
         in_memory_db,
-        export_path,
+        aoe2net_folder,
+        root,
     )
     .await?;
 

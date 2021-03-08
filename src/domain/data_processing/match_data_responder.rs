@@ -410,18 +410,17 @@ impl MatchDataResponses {
     /// # Panics
     /// Function could panic if the [`std::collections::HashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
+    #[allow(clippy::too_many_lines)]
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
         export_path: &str,
+        root: &str,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();
         let mut game: String = (*STANDARD.get(&"game").unwrap()).to_string();
-
-        // API root for aoe2net
-        let root = "https://aoe2.net/api";
 
         let mut db_cloned: InMemoryDb;
         {
@@ -465,7 +464,7 @@ impl MatchDataResponses {
                     name: "last_match".to_string(),
                     ext: FileFormat::Json,
                 },
-                &PathBuf::from_str(export_path)
+                &PathBuf::from_str(&format!("{}{}", export_path, "/aoe2net/"))
                     .expect("Parsing of test resources string failed."),
                 &responses
                     .clone()
@@ -512,43 +511,41 @@ impl MatchDataResponses {
                 // TODO: Do requests just one time in export path
                 util::export_to_json(
                     &File {
-                        name: format!("rating_history_{:?}", player.profile_id),
+                        name: format!("{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str(export_path).unwrap(),
+                    &PathBuf::from_str(&format!(
+                        "{}{}",
+                        export_path, "/aoe2net/rating_history/"
+                    ))
+                    .unwrap(),
                     &req_rating.execute().await?,
                 );
                 util::export_to_json(
                     &File {
-                        name: format!("leaderboard_{:?}", player.profile_id),
+                        name: format!("{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str(export_path).unwrap(),
+                    &PathBuf::from_str(&format!(
+                        "{}{}",
+                        export_path, "/aoe2net/leaderboard/"
+                    ))
+                    .unwrap(),
                     &req_lead.execute().await?,
                 );
-
-                responses.aoe2net.rating_history.insert(
-                    player.profile_id.to_string(),
-                    req_rating.execute().await?,
-                );
-
-                responses.aoe2net.leaderboard.insert(
-                    player.profile_id.to_string(),
-                    req_lead.execute().await?,
-                );
             }
-            else {
-                responses.aoe2net.rating_history.insert(
-                    player.profile_id.to_string(),
-                    req_rating.execute().await?,
-                );
 
-                responses.aoe2net.leaderboard.insert(
-                    player.profile_id.to_string(),
-                    req_lead.execute().await?,
-                );
-            }
+            responses.aoe2net.rating_history.insert(
+                player.profile_id.to_string(),
+                req_rating.execute().await?,
+            );
+
+            responses.aoe2net.leaderboard.insert(
+                player.profile_id.to_string(),
+                req_lead.execute().await?,
+            );
         }
+
         Ok(responses)
     }
 }

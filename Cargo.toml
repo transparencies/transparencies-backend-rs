@@ -20,31 +20,40 @@ pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
 [lib]
 path = "src/lib.rs"
-test = true                                 # Is tested by default.
-doctest = true                              # Documentation examples are tested by default.
-bench = true                                # Is benchmarked by default.
-doc = true                                  # Is documented by default.
-harness = true                              # Use libtest harness.
+test = true                                 
+doctest = true                              
+bench = true                                
+doc = true                                 
+harness = true                             
 edition = "2018"
 
 [[bin]]
-name = "transparencies-backend-rs"          # The name of the target.
-path = "src/bin/transparencies-server.rs"   # The source file of the target.
-test = true                                 # Is tested by default.
-bench = true                                # Is benchmarked by default.
-doc = true                                  # Is documented by default.
-harness = true                              # Use libtest harness.
-edition = "2018"                            # The edition of the target.
+name = "transparencies-backend-rs"          
+path = "src/bin/transparencies-server.rs"   
+test = true                                 
+bench = true                                
+doc = true                                  
+harness = true                              
+edition = "2018"                            
 #required-features = []                     # Features required to build this target (N/A for lib).
 
 
 [[example]]
-name = "export-test-data"                   # The name of the target.
-path = "examples/export_test_data.rs"       # The source file of the target.
-test = true                                 # Is tested by default.
-bench = true                                # Is benchmarked by default.
-doc = true                                  # Is documented by default.
-harness = true                              # Use libtest harness.
+name = "export-test-data"                  
+path = "examples/export_test_data.rs"       
+test = true                                
+bench = true                               
+doc = true                                  
+harness = true                             
+edition = "2018" 
+
+[[example]]
+name = "test_sample"                       
+path = "examples/test_sample.rs"
+test = true                                 
+bench = true                                
+doc = true                                 
+harness = true                             
 edition = "2018" 
 
 # For benchmarks
@@ -144,7 +153,7 @@ codegen-units = 4
 
 [profile.bench]
 opt-level = 3
-debug = false
+debug = true            # true for profiling
 rpath = false
 lto = true
 debug-assertions = false
