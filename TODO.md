@@ -94,11 +94,18 @@ accordingly
 
 - [X] Create good documentation
 
-### Benchmarking
+### Performance
+
+#### Benchmarking
 
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?
     - [ ] what architectural changes need to be made to support many clients
     on our api
+
+#### Flamegraph
+
+- [ ] Use [flamegraph](https://github.com/flamegraph-rs/flamegraph). A very simple and portable tool to understand where the time is spent
+ in the application. For more detailed info, try: `perf record -g --call-graph=dwarf /path/to/your/application`, then [load it into Firefox Profiler](https://profiler.firefox.com/docs/#/./guide-perf-profiling).
 
 ## Release 1.1.0 - SUBSCRIPTION requests
 
