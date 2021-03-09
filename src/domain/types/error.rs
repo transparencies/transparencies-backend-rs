@@ -72,6 +72,10 @@ pub enum FileRequestError {
     },
     /// HTTP-Client experienced an error.
     HttpClientError(#[from] reqwest::Error),
+    /// JSON-Deserialisation failed.
+    JsonDeserializationError(#[from] serde_json::Error),
+    /// YAML-Deserialisation failed.
+    YamlDeserializationError(#[from] serde_yaml::Error),
 }
 
 /// Error type for an [`ApiRequest`]

@@ -4,10 +4,6 @@ use reqwest::{
     get,
     Url,
 };
-use stable_eyre::eyre::{
-    Report,
-    Result,
-};
 use std::{
     collections::HashMap,
     fs,
@@ -18,12 +14,12 @@ use std::{
     },
     sync::Arc,
 };
-use structopt::StructOpt;
 
 // Internal Configuration
 use pretty_assertions::assert_eq;
 use tokio::sync::Mutex;
 use transparencies_backend_rs::{
+    self,
     domain::{
         data_processing::process_match_info_request,
         in_memory_db::data_preloading::{
@@ -40,10 +36,6 @@ use transparencies_backend_rs::{
         },
         util,
     },
-    setup::{
-        cli::CommandLineSettings,
-        startup::set_up_logging,
-    },
 };
 use wiremock::{
     matchers::method,
@@ -52,29 +44,7 @@ use wiremock::{
     ResponseTemplate,
 };
 #[tokio::test]
-async fn main() -> Result<(), Report> {
-    // Install the panic and error report handlers
-    stable_eyre::install()?;
-
-    // Human Panic. Only enabled when *not* debugging.
-    #[cfg(not(debug_assertions))]
-    {
-        setup_panic!(Metadata {
-            name: env!("CARGO_PKG_NAME").into(),
-            version: env!("CARGO_PKG_VERSION").into(),
-            authors: "the transparencies authors".into(),
-            homepage: "https://github.com/transparencies/transparencies-backend-rs/issues".into(),
-        });
-    }
-
-    // Calling the command line parsing logic with the argument values
-    let cli_args = CommandLineSettings::from_args();
-
-    // If `debug` flag is set, we use a logfile
-    if cli_args.debug {
-        set_up_logging(&cli_args)?;
-    }
-
+async fn mock_test_match_info_result() {
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
@@ -171,8 +141,6 @@ async fn main() -> Result<(), Report> {
     .expect("Matchinfo processing failed.");
 
     assert_eq!(ron_result, result);
-
-    Ok(())
 }
 
 fn load_responses_from_fs(

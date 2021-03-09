@@ -315,7 +315,7 @@ pub async fn preload_aoc_ref_data(
             &file,
         );
 
-        let response = req.execute().await?;
+        let response: String = req.execute().await?.text().await?;
 
         update_data_in_db(
             file,
@@ -336,7 +336,7 @@ pub async fn preload_aoc_ref_data(
 async fn update_data_in_db(
     file: File,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    response: reqwest::Response,
+    response: String,
     req: GithubFileRequest,
     export_path: &str,
     mocking: bool,
@@ -344,32 +344,30 @@ async fn update_data_in_db(
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                if export_path.is_empty() {
-                    let mut guard = in_memory_db.lock().await;
-                    guard.github_file_content.platforms =
-                        response.json::<AoePlatforms>().await?
-                }
-                else {
+                if !export_path.is_empty() {
                     util::export_to_json(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
-                        &response.json().await?,
+                        &serde_json::from_str::<serde_json::Value>(&response)?,
                     )
-                }
+                };
+
+                let mut guard = in_memory_db.lock().await;
+                guard.github_file_content.platforms =
+                    serde_json::from_str::<AoePlatforms>(&response)?;
             }
             "teams" => {
                 if export_path.is_empty() {
-                    let mut guard = in_memory_db.lock().await;
-                    guard.github_file_content.teams =
-                        response.json::<AoeTeams>().await?
-                }
-                else {
                     util::export_to_json(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
-                        &response.json().await?,
+                        &serde_json::from_str::<serde_json::Value>(&response)?,
                     )
-                }
+                };
+
+                let mut guard = in_memory_db.lock().await;
+                guard.github_file_content.teams =
+                    serde_json::from_str::<AoeTeams>(&response)?;
             }
             _ => {
                 return Err(FileRequestError::RequestNotMatching {
@@ -380,13 +378,17 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
+                let deserialized =
+                    serde_yaml::from_str::<AoePlayers>(&response)?;
+
                 if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
-                    guard.github_file_content.players =
-                        serde_yaml::from_slice::<AoePlayers>(
-                            &response.bytes().await?,
-                        )
-                        .unwrap()
+                    guard.github_file_content.players = deserialized.clone();
+
+                    // serde_yaml::from_slice::<AoePlayers>(
+                    //     &response.inner().bytes().await?,
+                    // )
+                    // .unwrap()
                 }
                 else if mocking {
                     // ATTENTION! Mocking is enabled, we don't want to use
@@ -395,15 +397,25 @@ async fn update_data_in_db(
                     // the same filename `players.yaml` for convenience.
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players =
-                        response.json::<AoePlayers>().await?
+                        serde_json::from_str::<AoePlayers>(&response)?;
                 }
                 else {
                     util::export_to_json(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
-                        &serde_yaml::from_slice(&response.bytes().await?)
-                            .unwrap(),
-                    )
+                        &serde_yaml::from_str(&response)?,
+                        /* &serde_yaml::from_slice(
+                         *     &response.inner().bytes().await?,
+                         * )
+                         * .unwrap(), */
+                    );
+
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players = deserialized.clone();
+                    // serde_yaml::from_slice::<AoePlayers>(
+                    //     &response.inner().bytes().await?,
+                    // )
+                    // .unwrap();
                 }
             }
             else {

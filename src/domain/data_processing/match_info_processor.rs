@@ -397,6 +397,12 @@ impl MatchInfoProcessor {
         req_player: &aoe2net::Player,
     ) -> Option<aoc_ref::players::Player> {
         // Lookup profile id in alias list
+        trace!(
+            "Looking up alias for Player ID: {:?} in {:?}",
+            req_player.profile_id,
+            self.responses.db.github_file_content
+        );
+
         self.responses
             .db
             .github_file_content

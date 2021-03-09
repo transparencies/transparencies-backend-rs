@@ -22,4 +22,4 @@ logs/
 .DS_Store
 
 # Test data
-tests/matchinfo-integration/resources
+# tests/matchinfo-integration/resources

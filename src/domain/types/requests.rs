@@ -3,10 +3,7 @@
 //! Datatypes used to create and execute requests
 
 use derive_getters::Getters;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+
 use strum::AsRefStr;
 use typed_builder::TypedBuilder;
 
@@ -51,12 +48,26 @@ impl FileFormat {
     }
 }
 
-/// A generic response implementation
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct Response<T> {
-    /// Contains the responses of requests
-    pub response: T,
-}
+// A generic response implementation
+// #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+// pub struct Response {
+//     /// Contains the responses of reqwest
+//     inner: reqwest::Response,
+// }
+
+// impl Response {
+//     #[inline]
+//     pub fn to_inner<R>(inner: R) -> Self
+//     where R: DeserializeOwned {
+//         Self { inner }
+//     }
+
+//     #[inline]
+//     pub fn inner(self) -> reqwest::Response {
+//         self.clone().inner
+//     }
+// }
+
 /// Datastructure to deal with `GET` API-Requests
 #[allow(missing_docs)]
 #[derive(Getters, TypedBuilder, Debug, Clone)]
