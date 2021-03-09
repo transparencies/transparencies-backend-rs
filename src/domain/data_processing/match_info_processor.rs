@@ -497,6 +497,7 @@ fn build_player(
     translated_civilisation_string: String,
     requested: bool,
 ) -> PlayerRaw {
+    trace!("Alias for {:?} is {:?}.", req_player, looked_up_alias);
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color)
