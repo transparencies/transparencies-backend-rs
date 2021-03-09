@@ -57,7 +57,7 @@
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] **WIP** use `claim` for tests
-- [ ] Special cases done right? (talk through them together) 
+- [ ] Special cases done right? (talk through them together)
     - [ ] Implement (integration) test cases for these
     - [X] Data structure does not match with data from aoe2net
         - [X] Q: take a look for a `serde` attribute to mark fields in structs that
@@ -73,7 +73,8 @@
     - [ ] FFA with teams set to ’-1’
 - [X] Write functionality to save a set of JSON responses (also our own) to a file
 to use them inside the integration tests and be able to update frequently
-    - [X] Parse requests and use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
+    - [X] Parse requests and use `wiremock` for HTTP-mocking and test requests
+    made by the `api_handler`
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
 
