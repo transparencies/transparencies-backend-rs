@@ -114,6 +114,7 @@ itertools = "0.10.0"
 strum = { version = "0.20.0", features = ["derive"] }
 derive_more = "0.99.11"
 derive-getters = "0.2.0"
+dashmap = "4.0.2"
 
 # Validation
 #validators-derive = "0.22.3"
