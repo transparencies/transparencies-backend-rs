@@ -48,7 +48,7 @@ harness = true
 edition = "2018" 
 
 [[test]]
-name = "full-integration-test"                       
+name = "full-integration"                       
 path = "tests/matchinfo-integration/main.rs"
 test = true                                 
 bench = true                                

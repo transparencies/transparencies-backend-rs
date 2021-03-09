@@ -364,7 +364,7 @@ async fn update_data_in_db(
                     serde_json::from_str::<AoePlatforms>(&response)?;
             }
             "teams" => {
-                if export_path.is_empty() {
+                if !export_path.is_empty() {
                     util::export_to_json(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
