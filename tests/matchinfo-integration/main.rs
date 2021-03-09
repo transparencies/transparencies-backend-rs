@@ -4,8 +4,10 @@ use reqwest::{
     get,
     Url,
 };
+
+use dashmap::DashMap;
+
 use std::{
-    collections::HashMap,
     fs,
     io::BufReader,
     path::{
@@ -53,14 +55,14 @@ async fn mock_test_match_info_result() {
 
     let mut profile_ids: Vec<String> = Vec::with_capacity(8);
 
-    let mut language_mock_responses: HashMap<String, serde_json::Value> =
-        HashMap::with_capacity(18);
+    let mut language_mock_responses: DashMap<String, serde_json::Value> =
+        DashMap::with_capacity(18);
 
-    let mut aoe2net_mock_responses: HashMap<String, serde_json::Value> =
-        HashMap::with_capacity(18);
+    let mut aoe2net_mock_responses: DashMap<String, serde_json::Value> =
+        DashMap::with_capacity(18);
 
-    let mut github_mock_responses: HashMap<String, serde_json::Value> =
-        HashMap::with_capacity(3);
+    let mut github_mock_responses: DashMap<String, serde_json::Value> =
+        DashMap::with_capacity(3);
 
     let mut last_match: serde_json::Value = serde_json::Value::Null;
 
@@ -147,11 +149,11 @@ fn load_responses_from_fs(
     current_dir: PathBuf,
     resources_root_dir: &str,
     profile_ids: &mut Vec<String>,
-    aoe2net_mock_responses: &mut HashMap<String, serde_json::Value>,
+    aoe2net_mock_responses: &mut DashMap<String, serde_json::Value>,
     last_match: &mut serde_json::Value,
-    language_mock_responses: &mut HashMap<String, serde_json::Value>,
+    language_mock_responses: &mut DashMap<String, serde_json::Value>,
     ron_result: &mut MatchInfoResult,
-    github_mock_responses: &mut HashMap<String, serde_json::Value>,
+    github_mock_responses: &mut DashMap<String, serde_json::Value>,
 ) {
     for entry in fs::read_dir(
         Path::new(&format!("{}{}", current_dir.display(), resources_root_dir))
@@ -279,9 +281,9 @@ async fn mount_mocks(
     profile_ids: Vec<String>,
     last_match: serde_json::Value,
     mock_server: &MockServer,
-    aoe2net_mock_responses: HashMap<String, serde_json::Value>,
-    language_mock_responses: HashMap<String, serde_json::Value>,
-    github_mock_responses: HashMap<String, serde_json::Value>,
+    aoe2net_mock_responses: DashMap<String, serde_json::Value>,
+    language_mock_responses: DashMap<String, serde_json::Value>,
+    github_mock_responses: DashMap<String, serde_json::Value>,
 ) {
     for root in aoe2net_api_roots {
         let url_string = &format!("{}", root.clone());
@@ -310,7 +312,9 @@ async fn mount_mocks(
                 for profile_id in &profile_ids {
                     let json = aoe2net_mock_responses
                         .get(&format!("ldb_{}", profile_id))
-                        .map_or(&serde_json::Value::Null, |val| val);
+                        .map_or(serde_json::Value::Null, |val| {
+                            val.value().clone()
+                        });
 
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
@@ -337,8 +341,9 @@ async fn mount_mocks(
                 for profile_id in &profile_ids {
                     let json = aoe2net_mock_responses
                         .get(&format!("rh_{}", profile_id))
-                        .map_or(&serde_json::Value::Null, |val| val);
-
+                        .map_or(serde_json::Value::Null, |val| {
+                            val.value().clone()
+                        });
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
                         .and(wiremock::matchers::query_param("game", "aoe2de"))
@@ -364,7 +369,8 @@ async fn mount_mocks(
             }
             "/api/strings" => {
                 // Language mocking
-                for (lang_short, json) in &language_mock_responses {
+                for multiref in language_mock_responses.iter() {
+                    let (lang_short, json) = (multiref.key(), multiref.value());
                     let url_string = &format!("{}", root.clone());
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
@@ -385,8 +391,9 @@ async fn mount_mocks(
                 for file in create_github_file_list() {
                     let json = github_mock_responses
                         .get(&format!("{}", file.name()))
-                        .map_or(&serde_json::Value::Null, |val| val);
-
+                        .map_or(serde_json::Value::Null, |val| {
+                            val.value().clone()
+                        });
                     let url_string = &format!("{}{}", root.clone(), file);
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))

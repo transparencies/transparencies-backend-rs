@@ -11,21 +11,29 @@ use log::trace;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
 
-use std::collections::HashMap;
-
 use self::aoc_ref::RefDataLists;
 use crate::STANDARD;
+use dashmap::DashMap;
 use serde::Serialize;
 
 /// The "Database" we use, which is in-memory for lookup of
 /// player names and other "more" static content
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct InMemoryDb {
     /// Translations for aoe2net
-    pub aoe2net_languages: HashMap<String, serde_json::Value>,
+    pub aoe2net_languages: DashMap<String, serde_json::Value>,
     /// Containing the Players (Aliases), Platforms and Teams of
     /// aoc-reference-data
     pub github_file_content: RefDataLists,
+}
+
+impl Default for InMemoryDb {
+    fn default() -> Self {
+        Self {
+            aoe2net_languages: DashMap::new(),
+            github_file_content: RefDataLists::default(),
+        }
+    }
 }
 
 impl InMemoryDb {

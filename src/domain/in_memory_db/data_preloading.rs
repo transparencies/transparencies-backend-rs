@@ -1,8 +1,8 @@
 //! Everything around preloading data in another thread for future use within
 //! our in-memory DB implemented by `Arc<Mutex<T>>`
+use dashmap::DashMap;
 
 use std::{
-    collections::HashMap,
     path::PathBuf,
     str::FromStr,
     sync::Arc,
@@ -221,7 +221,7 @@ pub async fn preload_aoe2_net_data(
     let language_requests = assemble_language_requests(&api_client, root);
 
     let responses =
-        load_language_responses_into_hashmap(language_requests, export_path)
+        load_language_responses_into_dashmap(language_requests, export_path)
             .await?;
 
     {
@@ -237,12 +237,12 @@ pub async fn preload_aoe2_net_data(
 ///
 /// # Errors
 // TODO
-async fn load_language_responses_into_hashmap(
+async fn load_language_responses_into_dashmap(
     language_requests: Vec<(String, ApiRequest)>,
     export_path: &str,
-) -> Result<HashMap<String, serde_json::Value>, ApiRequestError> {
-    let mut responses: HashMap<String, serde_json::Value> =
-        HashMap::with_capacity(LANGUAGE_STRINGS.len());
+) -> Result<DashMap<String, serde_json::Value>, ApiRequestError> {
+    let responses: DashMap<String, serde_json::Value> =
+        DashMap::with_capacity(LANGUAGE_STRINGS.len());
 
     for (req_name, req) in language_requests {
         let response: serde_json::Value = req.execute().await?;
