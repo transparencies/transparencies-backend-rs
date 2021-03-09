@@ -1,9 +1,4 @@
-#[cfg(not(debug_assertions))]
-use human_panic::setup_panic;
-use reqwest::{
-    get,
-    Url,
-};
+use reqwest::get;
 
 use dashmap::DashMap;
 
@@ -16,6 +11,8 @@ use std::{
     },
     sync::Arc,
 };
+
+use url::Url;
 
 // Internal Configuration
 use pretty_assertions::assert_eq;
@@ -120,12 +117,16 @@ async fn mock_test_match_info_result() {
         id_number: "196240".to_string(),
     };
 
+    let github_root = Url::parse(&format!("{}", &mock_server.uri())).unwrap();
+    let aoe2_net_root =
+        Url::parse(&format!("{}/api", &mock_server.uri())).unwrap();
+
     preload_data(
         Some(api_clients.github.clone()),
         Some(api_clients.aoe2net.clone()),
         in_memory_db_clone.clone(),
-        &format!("{}", &mock_server.uri()),
-        &format!("{}/api", &mock_server.uri()),
+        github_root,
+        aoe2_net_root.clone(),
         None,
         true,
     )
@@ -135,7 +136,7 @@ async fn mock_test_match_info_result() {
     let result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
-        &format!("{}/api", &mock_server.uri()),
+        aoe2_net_root,
         in_memory_db_clone.clone(),
         None,
     )

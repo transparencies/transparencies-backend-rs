@@ -14,6 +14,8 @@ use std::{
 };
 use tokio::sync::Mutex;
 
+use url::Url;
+
 /// Small `health_check` function to return 200 on `health_check` endpoint
 ///
 /// # Errors
@@ -44,7 +46,7 @@ pub async fn return_matchinfo_to_client(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
     // API root for aoe2net
-    let root = "https://aoe2.net/api";
+    let root = Url::parse("https://aoe2.net/api").unwrap();
 
     let processed_match_info = process_match_info_request(
         opts,

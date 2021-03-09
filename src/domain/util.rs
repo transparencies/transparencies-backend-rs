@@ -17,10 +17,12 @@ use crate::domain::types::{
     GithubFileRequest,
 };
 
+use url::Url;
+
 /// Assembles a request for a file in a Github repository
 pub(crate) fn build_github_request(
     git_client: reqwest::Client,
-    root: &str,
+    root: Url,
     user: &str,
     repo: &str,
     uri: &str,
@@ -40,7 +42,7 @@ pub(crate) fn build_github_request(
 /// Refactoring: Use this function
 pub(crate) fn build_api_request(
     api_client: reqwest::Client,
-    root: &str,
+    root: Url,
     endpoint: &str,
     query: Vec<(String, String)>,
 ) -> ApiRequest {

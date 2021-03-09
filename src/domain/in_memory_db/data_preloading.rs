@@ -12,7 +12,9 @@ use tokio::{
     sync::Mutex,
     time,
 };
+
 use tracing::warn;
+use url::Url;
 
 use crate::domain::{
     types::{
@@ -75,6 +77,8 @@ pub async fn get_static_data_inside_thread(
     git_client_clone: reqwest::Client,
     aoe2net_client_clone: reqwest::Client,
     in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
+    github_root: Url,
+    aoe2_net_root: Url,
 ) {
     tokio::spawn(async move {
         loop {
@@ -82,8 +86,8 @@ pub async fn get_static_data_inside_thread(
                 Some(git_client_clone.clone()),
                 Some(aoe2net_client_clone.clone()),
                 in_memory_db_clone.clone(),
-                "https://raw.githubusercontent.com",
-                "https://aoe2.net/api",
+                github_root.clone(),
+                aoe2_net_root.clone(),
                 None,
                 false,
             )
@@ -146,8 +150,8 @@ pub async fn preload_data(
     api_client: Option<reqwest::Client>,
     git_client: Option<reqwest::Client>,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    github_root: &str,
-    aoe2_net_root: &str,
+    github_root: Url,
+    aoe2_net_root: Url,
     export_path: Option<&str>,
     mocking: bool,
 ) -> Result<(), ApiRequestError> {
@@ -215,7 +219,7 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    root: &str,
+    root: Url,
     export_path: &str,
 ) -> Result<(), ApiRequestError> {
     let language_requests = assemble_language_requests(&api_client, root);
@@ -266,7 +270,7 @@ async fn load_language_responses_into_dashmap(
 /// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
     api_client: &reqwest::Client,
-    root: &str,
+    root: Url,
 ) -> Vec<(String, ApiRequest)> {
     let mut language_requests: Vec<(String, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
@@ -278,7 +282,7 @@ fn assemble_language_requests(
                 (*language).to_string(),
                 util::build_api_request(
                     api_client.clone(),
-                    root,
+                    root.clone(),
                     "strings",
                     vec![
                         ("game".to_string(), (*game).to_string()),
@@ -299,7 +303,7 @@ fn assemble_language_requests(
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    root: &str,
+    root: Url,
     export_path: &str,
     mocking: bool,
 ) -> Result<(), FileRequestError> {
@@ -308,7 +312,7 @@ pub async fn preload_aoc_ref_data(
     for file in files {
         let req = util::build_github_request(
             git_client.clone(),
-            root,
+            root.clone(),
             "SiegeEngineers",
             "aoc-reference-data",
             "master/data",

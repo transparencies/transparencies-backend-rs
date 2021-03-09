@@ -2,24 +2,27 @@
 //! Beware, there is a close connection to the [`super::MatchInfoProcessor`]
 //! in many places
 
-use crate::domain::types::{
-    aoe2net::{
-        self,
-        Aoe2netStringObj,
+use crate::domain::{
+    types::{
+        aoe2net::{
+            self,
+            Aoe2netStringObj,
+        },
+        api::{
+            MatchInfoRequest,
+            Rating,
+            Server,
+        },
+        error::ResponderError,
+        File,
+        FileFormat,
+        InMemoryDb,
+        MatchDataResponses,
     },
-    api::{
-        MatchInfoRequest,
-        Rating,
-        Server,
-    },
-    error::ResponderError,
-    File,
-    FileFormat,
-    InMemoryDb,
-    MatchDataResponses,
+    util,
 };
 
-use crate::domain::util;
+use url::Url;
 
 use ron::ser::{
     to_writer_pretty,
@@ -416,7 +419,7 @@ impl MatchDataResponses {
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
         export_path: &str,
-        root: &str,
+        root: Url,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();
@@ -447,7 +450,7 @@ impl MatchDataResponses {
         responses.aoe2net.player_last_match = {
             util::build_api_request(
                 client.clone(),
-                root,
+                root.clone(),
                 "player/lastmatch",
                 vec![
                     ("game".to_string(), game.clone()),
@@ -485,7 +488,7 @@ impl MatchDataResponses {
             // Get Rating `HistoryData` for each player
             let req_rating = util::build_api_request(
                 client.clone(),
-                root,
+                root.clone(),
                 "player/ratinghistory",
                 vec![
                     ("game".to_string(), game.clone()),
@@ -498,7 +501,7 @@ impl MatchDataResponses {
             // GET `Leaderboard` data
             let req_lead = util::build_api_request(
                 client.clone(),
-                root,
+                root.clone(),
                 "leaderboard",
                 vec![
                     ("game".to_string(), game.clone()),
