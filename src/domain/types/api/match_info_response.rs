@@ -16,6 +16,7 @@ use serde::{
 use std::{
     fs,
     io::BufWriter,
+    path::PathBuf,
 };
 use typed_builder::TypedBuilder;
 
@@ -54,6 +55,7 @@ pub enum MatchStatus {
     /// Game was finished at `Time` (Unix)
     Finished(Time),
 }
+
 /// The servers the games can be played on
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Server {
@@ -166,15 +168,22 @@ impl MatchInfoResult {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn export_data_to_file(&self) {
+    pub fn export_data_to_file(
+        &self,
+        path: PathBuf,
+    ) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
             .with_separate_tuple_members(true)
             .with_enumerate_arrays(true)
             .with_indentor("\t".to_owned());
 
+        let mut assembly_path = PathBuf::new();
+        assembly_path.push(path);
+        assembly_path.push("match_info_result.ron".to_string());
+
         // Open the file in writable mode with buffer.
-        let file = fs::File::create("logs/match_info_result.ron").unwrap();
+        let file = fs::File::create(assembly_path).unwrap();
         let writer = BufWriter::new(file);
 
         // Write data to file

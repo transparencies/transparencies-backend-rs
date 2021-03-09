@@ -27,7 +27,7 @@ pub async fn return_health_check_to_client(
 /// as JSON to `/matchinfo` endpoint
 ///
 /// GET Endpoint
-/// Possible test url: <http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=459658&game=aoe2de>
+/// Possible test url: <http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=196240&game=aoe2de>
 ///
 /// - `opts`: options struct that contains the parameters that the client gave
 ///   us
@@ -43,10 +43,15 @@ pub async fn return_matchinfo_to_client(
     aoe_net_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
+    // API root for aoe2net
+    let root = "https://aoe2.net/api";
+
     let processed_match_info = process_match_info_request(
         opts,
         aoe_net_client.clone(),
+        root,
         in_memory_db.clone(),
+        None,
     )
     .await
     .expect("Matchinfo processing failed.");
