@@ -1,5 +1,6 @@
-//! Backend for dynamic stream overlays
-//! Executable part
+//! Example executable that pulls in test data and saves them for our
+//! integration tests
+
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 
@@ -9,31 +10,20 @@ extern crate log;
 
 extern crate transparencies_backend_rs;
 
-use warp::Filter;
-
 // CLI
 use structopt::StructOpt;
 
 // Threads
 use std::sync::Arc;
 
-use tokio::sync::Mutex;
-
-use std::net::IpAddr;
-
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::{
-        in_memory_db::data_preloading::get_static_data_inside_thread,
-        types::{
-            requests::ApiClient,
-            InMemoryDb,
-        },
+    domain::types::{
+        requests::ApiClient,
+        InMemoryDb,
     },
-    server::filters,
     setup::{
         cli::CommandLineSettings,
-        configuration::get_configuration,
         startup::set_up_logging,
     },
 };
@@ -45,6 +35,17 @@ use stable_eyre::eyre::{
 
 #[cfg(not(debug_assertions))]
 use human_panic::setup_panic;
+
+use std::{
+    path::PathBuf,
+    str::FromStr,
+};
+use tokio::sync::Mutex;
+use transparencies_backend_rs::domain::{
+    data_processing::process_match_info_request,
+    in_memory_db::data_preloading::preload_data,
+    types::api::MatchInfoRequest,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -62,9 +63,6 @@ async fn main() -> Result<(), Report> {
         });
     }
 
-    // Setting up configuration
-    let configuration = get_configuration()?;
-
     // Calling the command line parsing logic with the argument values
     let cli_args = CommandLineSettings::from_args();
 
@@ -73,36 +71,44 @@ async fn main() -> Result<(), Report> {
         set_up_logging(&cli_args)?;
     }
 
+    let export_path = Some("tests/matchinfo-integration/resources");
+
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
-
     let api_clients = ApiClient::default();
-    let git_client_clone = api_clients.github.clone();
-    let aoe2net_client_clone = api_clients.aoe2net.clone();
+    let match_info_request = MatchInfoRequest {
+        language: Some("en".to_string()),
+        game: Some("aoe2de".to_string()),
+        id_type: "profile_id".to_string(),
+        id_number: "196240".to_string(),
+    };
 
-    get_static_data_inside_thread(
-        git_client_clone,
-        aoe2net_client_clone,
-        in_memory_db_clone,
+    preload_data(
+        Some(api_clients.github.clone()),
+        Some(api_clients.aoe2net.clone()),
+        in_memory_db_clone.clone(),
+        "https://raw.githubusercontent.com",
+        "https://aoe2.net/api",
+        export_path,
+        false,
     )
-    .await;
+    .await
+    .expect("Preloading data failed.");
 
-    let api = filters::transparencies(
+    let result = process_match_info_request(
+        match_info_request,
         api_clients.aoe2net.clone(),
-        in_memory_db.clone(),
-    );
+        "https://aoe2.net/api",
+        in_memory_db_clone.clone(),
+        export_path,
+    )
+    .await
+    .expect("Matchinfo processing failed.");
 
-    let routes = api.with(warp::log("transparencies"));
+    // TODO Alias name is not right in export_test_data
 
-    let ip: IpAddr = configuration.application.host.parse().unwrap();
-
-    warp::serve(routes)
-        // TODO: Activate after certificates have been received from Let's Encrypt
-        // .tls()
-        // .cert_path("examples/tls/cert.pem")
-        // .key_path("examples/tls/key.rsa")
-        .run((ip, configuration.application.port))
-        .await;
+    result
+        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
 
     Ok(())
 }

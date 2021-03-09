@@ -3,14 +3,18 @@
 //! in many places
 
 use crate::domain::types::{
-    aoe2net,
-    aoe2net::Aoe2netStringObj,
+    aoe2net::{
+        self,
+        Aoe2netStringObj,
+    },
     api::{
         MatchInfoRequest,
         Rating,
         Server,
     },
     error::ResponderError,
+    File,
+    FileFormat,
     InMemoryDb,
     MatchDataResponses,
 };
@@ -25,7 +29,9 @@ use serde_json::Value;
 use std::{
     fs,
     io::BufWriter,
+    path::PathBuf,
     result,
+    str::FromStr,
     sync::Arc,
 };
 use tokio::sync::Mutex;
@@ -404,17 +410,17 @@ impl MatchDataResponses {
     /// # Panics
     /// Function could panic if the [`std::collections::HashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
+    #[allow(clippy::too_many_lines)]
     pub async fn new_with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
+        export_path: &str,
+        root: &str,
     ) -> Result<MatchDataResponses> {
         let mut language: String =
             (*STANDARD.get(&"language").unwrap()).to_string();
         let mut game: String = (*STANDARD.get(&"game").unwrap()).to_string();
-
-        // API root for aoe2net
-        let root = "https://aoe2.net/api";
 
         let mut db_cloned: InMemoryDb;
         {
@@ -452,8 +458,24 @@ impl MatchDataResponses {
             .await?
         };
 
+        if !export_path.is_empty() {
+            util::export_to_json(
+                &File {
+                    name: "last_match".to_string(),
+                    ext: FileFormat::Json,
+                },
+                &PathBuf::from_str(&format!("{}{}", export_path, "/aoe2net/"))
+                    .expect("Parsing of test resources string failed."),
+                &responses
+                    .clone()
+                    .aoe2net
+                    .player_last_match
+                    .map_or(serde_json::Value::Null, |x| x),
+            )
+        }
+
         // Get `leaderboard_id` for future requests
-        let leaderboard_id = responses.get_leaderboard_id_for_request()?;
+        let leaderboard_id = &responses.get_leaderboard_id_for_request()?;
 
         // Get all players from `LastMatch` response
         responses.aoe2net.players_temp =
@@ -485,6 +507,34 @@ impl MatchDataResponses {
                 ],
             );
 
+            if !export_path.is_empty() {
+                // TODO: Do requests just one time in export path
+                util::export_to_json(
+                    &File {
+                        name: format!("{:?}", player.profile_id),
+                        ext: FileFormat::Json,
+                    },
+                    &PathBuf::from_str(&format!(
+                        "{}{}",
+                        export_path, "/aoe2net/rating_history/"
+                    ))
+                    .unwrap(),
+                    &req_rating.execute().await?,
+                );
+                util::export_to_json(
+                    &File {
+                        name: format!("{:?}", player.profile_id),
+                        ext: FileFormat::Json,
+                    },
+                    &PathBuf::from_str(&format!(
+                        "{}{}",
+                        export_path, "/aoe2net/leaderboard/"
+                    ))
+                    .unwrap(),
+                    &req_lead.execute().await?,
+                );
+            }
+
             responses.aoe2net.rating_history.insert(
                 player.profile_id.to_string(),
                 req_rating.execute().await?,
@@ -495,6 +545,7 @@ impl MatchDataResponses {
                 req_lead.execute().await?,
             );
         }
+
         Ok(responses)
     }
 }

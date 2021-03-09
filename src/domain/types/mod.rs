@@ -22,7 +22,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
     /// Translations for aoe2net
-    pub aoe2net_languages: HashMap<&'static str, serde_json::Value>,
+    pub aoe2net_languages: HashMap<String, serde_json::Value>,
     /// Containing the Players (Aliases), Platforms and Teams of
     /// aoc-reference-data
     pub github_file_content: RefDataLists,
@@ -44,7 +44,7 @@ impl InMemoryDb {
                 "Cleaning HashMap of other languages than language: {:?} ...",
                 language
             );
-            self.aoe2net_languages.retain(|&lang, _| lang == language);
+            self.aoe2net_languages.retain(|lang, _| lang == language);
         }
         else {
             // Set standard language value to `English`
@@ -56,7 +56,7 @@ impl InMemoryDb {
             );
 
             self.aoe2net_languages
-                .retain(|&lang, _| lang == std_language);
+                .retain(|lang, _| lang == std_language);
         }
 
         Self {

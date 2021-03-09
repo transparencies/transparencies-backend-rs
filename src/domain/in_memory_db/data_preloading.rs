@@ -3,9 +3,15 @@
 
 use std::{
     collections::HashMap,
+    path::PathBuf,
+    str::FromStr,
     sync::Arc,
+    time::Duration,
 };
-use tokio::sync::Mutex;
+use tokio::{
+    sync::Mutex,
+    time,
+};
 use tracing::warn;
 
 use crate::domain::{
@@ -42,25 +48,143 @@ pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
 /// Can be used later also for adding `AoE3DE` and/or `AoE4` support
 pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
+/// Gets all of our static data in a separated thread
+///
+/// # Usage
+/// When wanting to `export` data for offline usage set only ONE of
+/// * `export_path` - a string slice holding the path where to write the offline
+///   data to
+///
+/// otherwhise `export_path` should be empty: `""`.
+///
+/// # Arguments
+/// * `git_client_clone` - a [`reqwest::Client`] clone for connection pooling
+///   purposes separated for Github root
+/// * `aoe2net_client_clone` - a [`reqwest::Client`] clone for connection
+///   pooling purposes separated for AoE2.net root
+/// * `in_memory_db_clone` - an [`InMemoryDb`] that is wrapped by [`Arc`] and
+///   guarded by a [`Mutex`]
+///
+/// # Errors
+/// This functions doesn't error out or returns a Result, but it throws a
+/// warning in console if the process experienced an error.
+///
+/// # Panics
+/// This function shouldn't panic.
+pub async fn get_static_data_inside_thread(
+    git_client_clone: reqwest::Client,
+    aoe2net_client_clone: reqwest::Client,
+    in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
+) {
+    tokio::spawn(async move {
+        loop {
+            match preload_data(
+                Some(git_client_clone.clone()),
+                Some(aoe2net_client_clone.clone()),
+                in_memory_db_clone.clone(),
+                "https://raw.githubusercontent.com",
+                "https://aoe2.net/api",
+                None,
+                false,
+            )
+            .await
+            {
+                Ok(_) => {}
+                Err(e) => {
+                    warn!(
+                        "Threaded data pulling experienced an error: {:#?}",
+                        e
+                    );
+                }
+            }
+
+            time::sleep(Duration::from_secs(600)).await;
+        }
+    });
+}
+
 /// Preload data from `aoe2net` and `Github`
+///
+/// # Arguments
+/// TODO
+///
+/// # Example
+/// ```rust
+/// #[tokio::main]
+/// async fn main() {
+///     use std::sync::Arc;
+///     use tokio::sync::Mutex;
+///     use transparencies_backend_rs::domain::{
+///         in_memory_db::data_preloading::preload_data,
+///         types::{
+///             requests::ApiClient,
+///             InMemoryDb,
+///         },
+///     };
+///
+///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
+///     let api_clients = ApiClient::default();
+///
+///     preload_data(
+///         Some(api_clients.github.clone()),
+///         Some(api_clients.aoe2net.clone()),
+///         in_memory_db.clone(),
+///         "https://raw.githubusercontent.com",
+///         "https://aoe2.net/api",
+///         None,
+///         false,
+///     )
+///     .await
+///     .unwrap()
+/// }
+/// ```
 ///
 /// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
 // doesn't work or get parsed correctly?
 pub async fn preload_data(
-    api_client: reqwest::Client,
-    git_client: reqwest::Client,
+    api_client: Option<reqwest::Client>,
+    git_client: Option<reqwest::Client>,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    github_root: &str,
+    aoe2_net_root: &str,
+    export_path: Option<&str>,
+    mocking: bool,
 ) -> Result<(), ApiRequestError> {
-    preload_aoc_ref_data(git_client.clone(), in_memory_db.clone())
-        .await
-        .expect("Unable to preload files from Github");
+    let aoc_folder = if let Some(path) = export_path {
+        format!("{}{}", path, "/ref-data/")
+    }
+    else {
+        "".to_string()
+    };
+
+    let aoe2net_language_folder = if let Some(path) = export_path {
+        format!("{}{}", path, "/languages/")
+    }
+    else {
+        "".to_string()
+    };
+
+    preload_aoc_ref_data(
+        git_client.map_or(reqwest::Client::default(), |client| client),
+        in_memory_db.clone(),
+        github_root,
+        &aoc_folder,
+        mocking,
+    )
+    .await
+    .expect("Unable to preload files from Github");
 
     index_aoc_ref_data(in_memory_db.clone()).await;
 
-    preload_aoe2_net_data(api_client.clone(), in_memory_db.clone())
-        .await
-        .expect("Unable to preload data from AoE2.net");
+    preload_aoe2_net_data(
+        api_client.map_or(reqwest::Client::default(), |client| client),
+        in_memory_db.clone(),
+        aoe2_net_root,
+        &aoe2net_language_folder,
+    )
+    .await
+    .expect("Unable to preload data from AoE2.net");
 
     Ok(())
 }
@@ -75,7 +199,10 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
         let mut guard = in_memory_db.lock().await;
         guard.github_file_content.index().map_err(|errs| {
             errs.into_iter().map(|err| {
-                warn!("Indexing of player aliases threw an error: {:#?}\n", err)
+                warn!(
+                    "Indexing of player aliases threw an error: {:#?}\n",
+                    err
+                );
             })
         });
     }
@@ -88,11 +215,14 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    root: &str,
+    export_path: &str,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = assemble_language_requests(&api_client);
+    let language_requests = assemble_language_requests(&api_client, root);
 
     let responses =
-        load_language_responses_into_hashmap(language_requests).await?;
+        load_language_responses_into_hashmap(language_requests, export_path)
+            .await?;
 
     {
         let mut guard = in_memory_db.lock().await;
@@ -108,13 +238,26 @@ pub async fn preload_aoe2_net_data(
 /// # Errors
 // TODO
 async fn load_language_responses_into_hashmap(
-    language_requests: Vec<(&str, ApiRequest)>
-) -> Result<HashMap<&str, serde_json::Value>, ApiRequestError> {
-    let mut responses: HashMap<&str, serde_json::Value> =
+    language_requests: Vec<(String, ApiRequest)>,
+    export_path: &str,
+) -> Result<HashMap<String, serde_json::Value>, ApiRequestError> {
+    let mut responses: HashMap<String, serde_json::Value> =
         HashMap::with_capacity(LANGUAGE_STRINGS.len());
 
-    for (_req_number, (req_name, req)) in language_requests.iter().enumerate() {
-        responses.insert(req_name, req.execute().await?);
+    for (req_name, req) in language_requests {
+        let response: serde_json::Value = req.execute().await?;
+        responses.insert(req_name.to_string(), response.clone());
+
+        if !export_path.is_empty() {
+            util::export_to_json(
+                &File {
+                    name: req_name.to_string(),
+                    ext: FileFormat::Json,
+                },
+                &PathBuf::from_str(export_path).unwrap(),
+                &response,
+            )
+        }
     }
 
     Ok(responses)
@@ -122,19 +265,20 @@ async fn load_language_responses_into_hashmap(
 
 /// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
-    api_client: &reqwest::Client
-) -> Vec<(&'static str, ApiRequest)> {
-    let mut language_requests: Vec<(&str, ApiRequest)> =
+    api_client: &reqwest::Client,
+    root: &str,
+) -> Vec<(String, ApiRequest)> {
+    let mut language_requests: Vec<(String, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
 
     // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
     for game in &GAME_STRINGS {
         for language in &LANGUAGE_STRINGS {
             language_requests.push((
-                language,
+                (*language).to_string(),
                 util::build_api_request(
                     api_client.clone(),
-                    "https://aoe2.net/api",
+                    root,
                     "strings",
                     vec![
                         ("game".to_string(), (*game).to_string()),
@@ -155,22 +299,33 @@ fn assemble_language_requests(
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
+    root: &str,
+    export_path: &str,
+    mocking: bool,
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();
 
     for file in files {
         let req = util::build_github_request(
             git_client.clone(),
-            "https://raw.githubusercontent.com",
+            root,
             "SiegeEngineers",
             "aoc-reference-data",
             "master/data",
             &file,
         );
 
-        let response = req.execute().await?;
+        let response: String = req.execute().await?.text().await?;
 
-        update_data_in_db(file, in_memory_db.clone(), response, req).await?;
+        update_data_in_db(
+            file,
+            in_memory_db.clone(),
+            response,
+            req,
+            export_path,
+            mocking,
+        )
+        .await?;
     }
 
     Ok(())
@@ -181,20 +336,38 @@ pub async fn preload_aoc_ref_data(
 async fn update_data_in_db(
     file: File,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    response: reqwest::Response,
+    response: String,
     req: GithubFileRequest,
+    export_path: &str,
+    mocking: bool,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
+                if !export_path.is_empty() {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str(export_path).unwrap(),
+                        &serde_json::from_str::<serde_json::Value>(&response)?,
+                    )
+                };
+
                 let mut guard = in_memory_db.lock().await;
                 guard.github_file_content.platforms =
-                    response.json::<AoePlatforms>().await?
+                    serde_json::from_str::<AoePlatforms>(&response)?;
             }
             "teams" => {
+                if export_path.is_empty() {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str(export_path).unwrap(),
+                        &serde_json::from_str::<serde_json::Value>(&response)?,
+                    )
+                };
+
                 let mut guard = in_memory_db.lock().await;
                 guard.github_file_content.teams =
-                    response.json::<AoeTeams>().await?
+                    serde_json::from_str::<AoeTeams>(&response)?;
             }
             _ => {
                 return Err(FileRequestError::RequestNotMatching {
@@ -205,12 +378,45 @@ async fn update_data_in_db(
         },
         FileFormat::Yaml => {
             if let "players" = file.name().as_str() {
-                let mut guard = in_memory_db.lock().await;
-                guard.github_file_content.players =
-                    serde_yaml::from_slice::<AoePlayers>(
-                        &response.bytes().await?,
-                    )
-                    .unwrap()
+                let deserialized =
+                    serde_yaml::from_str::<AoePlayers>(&response)?;
+
+                if export_path.is_empty() {
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players = deserialized.clone();
+
+                    // serde_yaml::from_slice::<AoePlayers>(
+                    //     &response.inner().bytes().await?,
+                    // )
+                    // .unwrap()
+                }
+                else if mocking {
+                    // ATTENTION! Mocking is enabled, we don't want to use
+                    // `yaml` for the players file but imitate it. This means
+                    // that the mocking server is delivering a `json`-file under
+                    // the same filename `players.yaml` for convenience.
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players =
+                        serde_json::from_str::<AoePlayers>(&response)?;
+                }
+                else {
+                    util::export_to_json(
+                        &file,
+                        &PathBuf::from_str(export_path).unwrap(),
+                        &serde_yaml::from_str(&response)?,
+                        /* &serde_yaml::from_slice(
+                         *     &response.inner().bytes().await?,
+                         * )
+                         * .unwrap(), */
+                    );
+
+                    let mut guard = in_memory_db.lock().await;
+                    guard.github_file_content.players = deserialized.clone();
+                    // serde_yaml::from_slice::<AoePlayers>(
+                    //     &response.inner().bytes().await?,
+                    // )
+                    // .unwrap();
+                }
             }
             else {
                 return Err(FileRequestError::RequestNotMatching {
@@ -219,6 +425,7 @@ async fn update_data_in_db(
                 });
             }
         }
+
         _ => {
             return Err(FileRequestError::RequestNotMatching {
                 name: file.name().to_string(),
@@ -231,12 +438,9 @@ async fn update_data_in_db(
 }
 
 /// Create a list of files that need to be downloaded from github repository
-fn create_github_file_list() -> Vec<File> {
+#[must_use]
+pub fn create_github_file_list() -> Vec<File> {
     vec![
-        File {
-            name: "players".to_string(),
-            ext: FileFormat::Yaml,
-        },
         File {
             name: "platforms".to_string(),
             ext: FileFormat::Json,
@@ -244,6 +448,10 @@ fn create_github_file_list() -> Vec<File> {
         File {
             name: "teams".to_string(),
             ext: FileFormat::Json,
+        },
+        File {
+            name: "players".to_string(),
+            ext: FileFormat::Yaml,
         },
     ]
 }

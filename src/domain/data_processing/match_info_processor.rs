@@ -22,6 +22,7 @@ use crate::domain::{
             TeamRaw,
             Teams,
         },
+        error::ProcessingError,
     },
 };
 
@@ -34,7 +35,6 @@ use serde::Serialize;
 
 // Error handling
 type ProcessingErrorStrings = Vec<String>;
-use crate::domain::types::error::ProcessingError;
 
 type Result<T> = result::Result<T, ProcessingError>;
 
@@ -216,7 +216,7 @@ impl MatchInfoProcessor {
     ) -> Result<usize> {
         trace!("Processing all players ...");
         let player_amount = players_vec.len();
-        for (_player_number, req_player) in players_vec.iter().enumerate() {
+        for req_player in players_vec.iter() {
             self.assemble_player_to_vec(req_player, players_raw)?;
             if !diff_team.contains(&req_player.team) {
                 diff_team.push(req_player.team)
@@ -367,10 +367,12 @@ impl MatchInfoProcessor {
         &mut self,
         req_player: &aoe2net::Player,
     ) -> Result<Value> {
+        trace!("Looking up rating for player: {:?}", req_player.profile_id);
         let looked_up_rating = if let Some(looked_up_rating) =
             self.responses.lookup_player_rating_for_profile_id(
                 &(req_player.profile_id.to_string()),
             ) {
+            trace!("Looked-up rating is: {:#?}", looked_up_rating);
             looked_up_rating
         }
         else {
@@ -395,6 +397,12 @@ impl MatchInfoProcessor {
         req_player: &aoe2net::Player,
     ) -> Option<aoc_ref::players::Player> {
         // Lookup profile id in alias list
+        trace!(
+            "Looking up alias for Player ID: {:?} in {:?}",
+            req_player.profile_id,
+            self.responses.db.github_file_content
+        );
+
         self.responses
             .db
             .github_file_content
@@ -495,6 +503,7 @@ fn build_player(
     translated_civilisation_string: String,
     requested: bool,
 ) -> PlayerRaw {
+    trace!("Alias for {:?} is {:?}.", req_player, looked_up_alias);
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color)
