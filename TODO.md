@@ -51,7 +51,6 @@
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
 
-
 ### Testing
 
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
@@ -106,14 +105,18 @@ accordingly
     - [ ] implement benchmark getting all ’MatchInfoResult’s for the To100
     - [ ] what architectural changes need to be made to support many clients
     on our api
-- [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features on stable
-- [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more sophisticated alternative
+- [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features
+on stable
+- [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more
+sophisticated alternative
 - [ ] Can dig deeper after profiling with [counts](https://github.com/nnethercote/counts/)
 
 #### Flamegraph
 
-- [ ] Use [flamegraph](https://github.com/flamegraph-rs/flamegraph). A very simple and portable tool to understand where the time is spent
- in the application. For more detailed info, try: `perf record -g --call-graph=dwarf /path/to/your/application`, then [load it into Firefox Profiler](https://profiler.firefox.com/docs/#/./guide-perf-profiling).
+- [ ] Use [flamegraph](https://github.com/flamegraph-rs/flamegraph). A very simple
+and portable tool to understand where the time is spent in the application. For
+more detailed info, try: `perf record -g --call-graph=dwarf /path/to/your/application`,
+then [load it into Firefox Profiler](https://profiler.firefox.com/docs/#/./guide-perf-profiling).
 
 ## Release 1.1.0 - SUBSCRIPTION requests
 

@@ -1,4 +1,4 @@
-name: CI-tests
+name: CI
 on:
   push:
     branches:
@@ -154,9 +154,10 @@ jobs:
     name: Merge
     needs: [check, test, fmt, clippy, build, coverage]
     runs-on: ubuntu-latest
-  #  steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v2
+    steps:
+      - name: "True"
+        run: |
+          echo "::set-output ${{ true }}"
 
   #     - name: Install nightly toolchain
   #       uses: actions-rs/toolchain@v1.0.6
