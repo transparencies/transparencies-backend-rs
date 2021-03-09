@@ -192,7 +192,7 @@ impl MatchDataResponses {
 
         if self.db.aoe2net_languages.len() == 1 {
             for (language, translation_value) in
-                self.db.aoe2net_languages.clone().drain().take(1)
+                self.db.aoe2net_languages.clone()
             {
                 translation = Some(translation_value);
                 trace!("Translation that was used: {:?}", language);
