@@ -79,6 +79,7 @@ to use them inside the integration tests and be able to update frequently
 
 ### Refactoring
 
+- [ ] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
 - [ ] Q: how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
