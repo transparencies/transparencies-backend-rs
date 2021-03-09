@@ -122,7 +122,7 @@ derive-getters = "0.2.0"
 [dev-dependencies]
 assert_cmd = "1.0.3"
 predicates = "1.0.7"
-pretty_assertions = "0.6.1"
+pretty_assertions = "0.7.1"
 claim = "0.5.0"
 rstest = "0.6.4"
 wiremock = "0.5.1"

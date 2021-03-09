@@ -50,7 +50,15 @@
 - [x] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
-- [ ] Special cases done right? (talk through them together)
+
+
+### Testing
+
+- [ ] implement useful tests/raise test-coverage to a (valuable) maximum
+    - [ ] put unit tests into the same file of the type they refer to
+    - [ ] **WIP** use `claim` for tests
+- [ ] Special cases done right? (talk through them together) 
+    - [ ] Implement (integration) test cases for these
     - [X] Data structure does not match with data from aoe2net
         - [X] Q: take a look for a `serde` attribute to mark fields in structs that
             are not as important for our processing, so we don't throw a parsing
@@ -62,18 +70,11 @@
     - [ ] Deranked players
     - [ ] Coop games
     - [ ] Game Type except RM (0) and DM (2)
-
-### Testing
-
-- [ ] implement useful tests/raise test-coverage to a (valuable) maximum
-    - [ ] put unit tests into the same file of the type they refer to
-    - [ ] use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
-    - [ ] use `claim` for tests
+    - [ ] FFA with teams set to ’-1’
 - [X] Write functionality to save a set of JSON responses (also our own) to a file
 to use them inside the integration tests and be able to update frequently
-    - [ ] Parse requests into `MatchDataResponses` and shove them up through the
-    `MatchInfoProcessor` to test offline as well
-    - [ ] Compare our parsed initial response (manually checked) with the one in
+    - [X] Parse requests and use `wiremock` for HTTP-mocking and test requests made by the `api_handler`
+    - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
 
 ### Refactoring
