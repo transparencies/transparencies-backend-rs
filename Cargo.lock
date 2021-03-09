@@ -2501,6 +2501,7 @@ dependencies = [
  "tracing-subscriber",
  "tracing-tree",
  "typed-builder",
+ "url",
  "warp",
  "wiremock",
 ]

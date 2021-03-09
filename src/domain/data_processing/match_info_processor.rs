@@ -372,7 +372,6 @@ impl MatchInfoProcessor {
             self.responses.lookup_player_rating_for_profile_id(
                 &(req_player.profile_id.to_string()),
             ) {
-            trace!("Looked-up rating is: {:#?}", looked_up_rating);
             looked_up_rating
         }
         else {
@@ -397,12 +396,6 @@ impl MatchInfoProcessor {
         req_player: &aoe2net::Player,
     ) -> Option<aoc_ref::players::Player> {
         // Lookup profile id in alias list
-        trace!(
-            "Looking up alias for Player ID: {:?} in {:?}",
-            req_player.profile_id,
-            self.responses.db.github_file_content
-        );
-
         self.responses
             .db
             .github_file_content
@@ -503,7 +496,6 @@ fn build_player(
     translated_civilisation_string: String,
     requested: bool,
 ) -> PlayerRaw {
-    trace!("Alias for {:?} is {:?}.", req_player, looked_up_alias);
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color)

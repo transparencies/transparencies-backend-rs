@@ -6,6 +6,7 @@ use derive_getters::Getters;
 
 use strum::AsRefStr;
 use typed_builder::TypedBuilder;
+use url::Url;
 
 /// Datastructure storing different our `ApiClients`
 #[derive(Getters, Debug, Clone)]
@@ -48,26 +49,6 @@ impl FileFormat {
     }
 }
 
-// A generic response implementation
-// #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-// pub struct Response {
-//     /// Contains the responses of reqwest
-//     inner: reqwest::Response,
-// }
-
-// impl Response {
-//     #[inline]
-//     pub fn to_inner<R>(inner: R) -> Self
-//     where R: DeserializeOwned {
-//         Self { inner }
-//     }
-
-//     #[inline]
-//     pub fn inner(self) -> reqwest::Response {
-//         self.clone().inner
-//     }
-// }
-
 /// Datastructure to deal with `GET` API-Requests
 #[allow(missing_docs)]
 #[derive(Getters, TypedBuilder, Debug, Clone)]
@@ -76,7 +57,7 @@ pub struct ApiRequest {
     /// A clone of a [reqwest::Client] for connection pooling
     client: reqwest::Client,
     /// The API root
-    root: String,
+    root: Url,
     /// The Endpoint we are connecting to
     endpoint: String,
     /// A Vector of a tuple of query strings
@@ -90,15 +71,6 @@ pub struct ApiRequest {
 pub struct GithubFileRequest {
     /// A clone of a [reqwest::Client] for connection pooling
     client: reqwest::Client,
-    /// The root
-    root: String,
-    /// Username
-    user: String,
-    /// Repository name
-    repo: String,
-    /// The identifier where to find the top-folder of the file in the
-    /// repository
-    uri: String,
-    /// The File itself
-    file: File,
+    /// The URL to execute the request for
+    url: Url,
 }
