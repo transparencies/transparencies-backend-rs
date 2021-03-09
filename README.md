@@ -4,6 +4,8 @@
 
 ## Benchmarking
 
+## Profiling
+
 You can use `flamegraph` for benchmarking with `cargo flamegraph --bin transparencies-backend-rs`.
 The `flamegraph.svg` will be found in the root of the repository.
 
