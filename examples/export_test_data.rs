@@ -47,6 +47,8 @@ use transparencies_backend_rs::domain::{
     types::api::MatchInfoRequest,
 };
 
+use url::Url;
+
 #[tokio::main]
 async fn main() -> Result<(), Report> {
     // Install the panic and error report handlers
@@ -83,12 +85,15 @@ async fn main() -> Result<(), Report> {
         id_number: "196240".to_string(),
     };
 
+    let github_root = Url::parse("https://raw.githubusercontent.com")?;
+    let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
+
     preload_data(
         Some(api_clients.github.clone()),
         Some(api_clients.aoe2net.clone()),
         in_memory_db_clone.clone(),
-        "https://raw.githubusercontent.com",
-        "https://aoe2.net/api",
+        github_root,
+        aoe2_net_root.clone(),
         export_path,
         false,
     )
@@ -98,7 +103,7 @@ async fn main() -> Result<(), Report> {
     let result = process_match_info_request(
         match_info_request,
         api_clients.aoe2net.clone(),
-        "https://aoe2.net/api",
+        aoe2_net_root,
         in_memory_db_clone.clone(),
         export_path,
     )

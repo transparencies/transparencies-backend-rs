@@ -1,15 +1,18 @@
 //! Implementation side of the core http
 //! client logic of the application
 
-use std::time::Duration;
-
-use crate::domain::types::requests::{
-    ApiClient,
-    ApiRequest,
-    File,
-    FileFormat,
-    GithubFileRequest,
+use crate::domain::types::{
+    error::FileRequestError,
+    requests::{
+        ApiClient,
+        ApiRequest,
+        File,
+        FileFormat,
+        GithubFileRequest,
+    },
 };
+use std::time::Duration;
+use url::Url;
 
 /// Our app name as USERAGENT for the clients
 pub(crate) static APP_USER_AGENT: &str =
@@ -41,6 +44,13 @@ impl std::fmt::Display for File {
         f: &mut std::fmt::Formatter<'_>,
     ) -> std::fmt::Result {
         write!(f, "{}.{}", self.name(), self.ext().as_ref().to_lowercase())
+    }
+}
+
+impl File {
+    #[must_use]
+    pub fn display(&self) -> String {
+        format!("{}", self)
     }
 }
 
@@ -112,11 +122,7 @@ impl Default for GithubFileRequest {
                     .build()
                     .unwrap(),
             )
-            .root(String::new())
-            .user(String::new())
-            .repo(String::new())
-            .uri(String::new())
-            .file(File::default())
+            .url(Url::parse("https://raw.githubusercontent.com").unwrap())
             .build()
     }
 }
@@ -127,19 +133,9 @@ impl GithubFileRequest {
     /// # Errors
     ///
     /// see [`reqwest::Error`]
-    pub async fn execute(&self) -> Result<reqwest::Response, reqwest::Error> {
-        Ok(self
-            .client()
-            .get(&format!(
-                "{}/{}/{}/{}/{}",
-                &self.root(),
-                &self.user(),
-                &self.repo(),
-                &self.uri(),
-                &self.file()
-            ))
-            .send()
-            .await?)
+    #[inline]
+    pub async fn execute(&self) -> Result<reqwest::Response, FileRequestError> {
+        Ok(self.client().get(self.url().to_owned()).send().await?)
     }
 }
 
@@ -147,7 +143,7 @@ impl Default for ApiRequest {
     fn default() -> Self {
         ApiRequest::builder()
             .client(reqwest::Client::default())
-            .root(String::new())
+            .root(Url::parse("https://aoe2.net/api").unwrap())
             .endpoint(String::new())
             .query(Vec::new())
             .build()
@@ -164,7 +160,7 @@ impl ApiRequest {
     where R: for<'de> serde::Deserialize<'de> {
         Ok(self
             .client()
-            .get(&format!("{}/{}", &self.root(), &self.endpoint()))
+            .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
             .query(&self.query())
             .send()
             .await?

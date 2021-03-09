@@ -43,6 +43,8 @@ use stable_eyre::eyre::{
     Result,
 };
 
+use url::Url;
+
 #[cfg(not(debug_assertions))]
 use human_panic::setup_panic;
 
@@ -80,10 +82,15 @@ async fn main() -> Result<(), Report> {
     let git_client_clone = api_clients.github.clone();
     let aoe2net_client_clone = api_clients.aoe2net.clone();
 
+    let github_root = Url::parse("https://raw.githubusercontent.com")?;
+    let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
+
     get_static_data_inside_thread(
         git_client_clone,
         aoe2net_client_clone,
         in_memory_db_clone,
+        github_root,
+        aoe2_net_root,
     )
     .await;
 

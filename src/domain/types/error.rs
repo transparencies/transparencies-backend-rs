@@ -76,6 +76,8 @@ pub enum FileRequestError {
     JsonDeserializationError(#[from] serde_json::Error),
     /// YAML-Deserialisation failed.
     YamlDeserializationError(#[from] serde_yaml::Error),
+    /// URL parsing failed.
+    UrlParsingError(#[from] url::ParseError),
 }
 
 /// Error type for an [`ApiRequest`]

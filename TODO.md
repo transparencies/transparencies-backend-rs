@@ -83,7 +83,7 @@ to use them inside the integration tests and be able to update frequently
 - [ ] Q: how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
 - [X] async stuff done right?
-- [ ] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
+- [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
 - [X] structured logging: use `tracing` crate in addition to `log` and refactor
 accordingly
