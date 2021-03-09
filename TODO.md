@@ -89,7 +89,7 @@ for `base_path` and joining files for DS: `reqwest::Url`
 accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing
-- [ ] Use a concurrent hashmap instead of a HashMap: https://crates.io/crates/dashmap
+- [ ] Use a concurrent hashmap instead of a HashMap: <https://crates.io/crates/dashmap>
 
 ### Documentation
 
