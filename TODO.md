@@ -56,6 +56,7 @@
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] **WIP** use `claim` for tests
+- [ ] **Q:** How to implement test cases?
 - [ ] Special cases done right? (talk through them together)
     - [ ] Implement (integration) test cases for these
     - [X] Data structure does not match with data from aoe2net
