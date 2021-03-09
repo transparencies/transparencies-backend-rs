@@ -81,8 +81,12 @@ to use them inside the integration tests and be able to update frequently
 
 - [ ] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] Q: how can we make creating requests easier and less boilerplate? (trait
+- [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
+    - [ ] Also think about the openAPI parsing and request generating logics
+    for the future
+    - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
+    - [ ] `ParsableRequest` trait
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
