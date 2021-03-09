@@ -137,7 +137,7 @@ codegen-units = 4
 
 [profile.release]
 opt-level=3
-debug = false
+debug = true    # true for profiling
 rpath = false
 lto = "fat"
 debug-assertions = false

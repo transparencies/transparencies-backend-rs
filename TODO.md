@@ -102,6 +102,7 @@ accordingly
 #### Benchmarking
 
 - [ ] Q: how is our backend reacting to 100+ concurrent API requests?
+    - [ ] implement benchmark getting all ’MatchInfoResult’s for the To100
     - [ ] what architectural changes need to be made to support many clients
     on our api
 - [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features on stable
