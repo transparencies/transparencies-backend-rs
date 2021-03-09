@@ -125,16 +125,20 @@ pub async fn get_static_data_inside_thread(
 ///             InMemoryDb,
 ///         },
 ///     };
+///     use url::Url;
 ///
 ///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
 ///     let api_clients = ApiClient::default();
+///     let github_url =
+///         Url::parse("https://raw.githubusercontent.com").unwrap();
+///     let aoe2_net_url = Url::parse("https://aoe2.net/api").unwrap();
 ///
 ///     preload_data(
 ///         Some(api_clients.github.clone()),
 ///         Some(api_clients.aoe2net.clone()),
 ///         in_memory_db.clone(),
-///         "https://raw.githubusercontent.com",
-///         "https://aoe2.net/api",
+///         github_url,
+///         aoe2_net_url,
 ///         None,
 ///         false,
 ///     )
@@ -222,7 +226,7 @@ pub async fn preload_aoe2_net_data(
     root: Url,
     export_path: &str,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = assemble_language_requests(&api_client, root);
+    let language_requests = assemble_language_requests(&api_client, &root);
 
     let responses =
         load_language_responses_into_dashmap(language_requests, export_path)
@@ -270,7 +274,7 @@ async fn load_language_responses_into_dashmap(
 /// Builds all requests for the `LANGUAGE_STRINGS`
 fn assemble_language_requests(
     api_client: &reqwest::Client,
-    root: Url,
+    root: &Url,
 ) -> Vec<(String, ApiRequest)> {
     let mut language_requests: Vec<(String, ApiRequest)> =
         Vec::with_capacity(LANGUAGE_STRINGS.len());
@@ -309,15 +313,14 @@ pub async fn preload_aoc_ref_data(
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();
 
+    let mut ref_data_repository = root.clone();
+    ref_data_repository
+        .set_path("SiegeEngineers/aoc-reference-data/master/data/");
+
     for file in files {
-        let req = util::build_github_request(
-            git_client.clone(),
-            root.clone(),
-            "SiegeEngineers",
-            "aoc-reference-data",
-            "master/data",
-            &file,
-        );
+        let file_path = ref_data_repository.join(&file.display())?;
+
+        let req = util::build_github_request(git_client.clone(), file_path);
 
         let response: String = req.execute().await?.text().await?;
 

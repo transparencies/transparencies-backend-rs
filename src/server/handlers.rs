@@ -39,6 +39,8 @@ pub async fn return_health_check_to_client(
 ///
 /// # Errors
 // TODO
+/// # Panics
+// TODO
 #[allow(clippy::let_unit_value)]
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,

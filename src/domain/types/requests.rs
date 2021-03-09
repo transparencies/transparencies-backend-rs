@@ -71,15 +71,6 @@ pub struct ApiRequest {
 pub struct GithubFileRequest {
     /// A clone of a [reqwest::Client] for connection pooling
     client: reqwest::Client,
-    /// The root
-    root: Url,
-    /// Username
-    user: String,
-    /// Repository name
-    repo: String,
-    /// The identifier where to find the top-folder of the file in the
-    /// repository
-    uri: String,
-    /// The File itself
-    file: File,
+    /// The URL to execute the request for
+    url: Url,
 }

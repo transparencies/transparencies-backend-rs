@@ -22,19 +22,11 @@ use url::Url;
 /// Assembles a request for a file in a Github repository
 pub(crate) fn build_github_request(
     git_client: reqwest::Client,
-    root: Url,
-    user: &str,
-    repo: &str,
-    uri: &str,
-    file: &File,
+    url: Url,
 ) -> GithubFileRequest {
     GithubFileRequest::builder()
         .client(git_client)
-        .root(root)
-        .user(user)
-        .repo(repo)
-        .uri(uri)
-        .file(file.clone())
+        .url(url)
         .build()
 }
 

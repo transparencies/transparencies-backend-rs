@@ -48,6 +48,7 @@ impl std::fmt::Display for File {
 }
 
 impl File {
+    #[must_use]
     pub fn display(&self) -> String {
         format!("{}", self)
     }
@@ -121,11 +122,7 @@ impl Default for GithubFileRequest {
                     .build()
                     .unwrap(),
             )
-            .root(Url::parse("https://raw.githubusercontent.com").unwrap())
-            .user(String::new())
-            .repo(String::new())
-            .uri(String::new())
-            .file(File::default())
+            .url(Url::parse("https://raw.githubusercontent.com").unwrap())
             .build()
     }
 }
@@ -136,28 +133,10 @@ impl GithubFileRequest {
     /// # Errors
     ///
     /// see [`reqwest::Error`]
+    #[inline]
     pub async fn execute(&self) -> Result<reqwest::Response, FileRequestError> {
-        Ok(self
-            .client()
-            .get(
-                self.root()
-                    .join(self.user())?
-                    .join(self.repo())?
-                    .join(self.uri())?
-                    .join(&(self.file().display()))?,
-            )
-            .send()
-            .await?)
+        Ok(self.client().get(self.url().to_owned()).send().await?)
     }
-
-    // &format!(
-    //                 "{}/{}/{}/{}/{}",
-    //                 &self.root(),
-    //                 &self.user(),
-    //                 &self.repo(),
-    //                 &self.uri(),
-    //                 &self.file()
-    //             )
 }
 
 impl Default for ApiRequest {
@@ -181,7 +160,7 @@ impl ApiRequest {
     where R: for<'de> serde::Deserialize<'de> {
         Ok(self
             .client()
-            .get(&format!("{}/{}", &self.root(), &self.endpoint()))
+            .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
             .query(&self.query())
             .send()
             .await?
