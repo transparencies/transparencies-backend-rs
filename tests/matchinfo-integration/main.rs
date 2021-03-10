@@ -21,10 +21,6 @@ use transparencies_backend_rs::{
     self,
     domain::{
         data_processing::process_match_info_request,
-        in_memory_db::data_preloading::{
-            create_github_file_list,
-            preload_data,
-        },
         types::{
             api::{
                 MatchInfoRequest,
@@ -34,6 +30,10 @@ use transparencies_backend_rs::{
             InMemoryDb,
         },
         util,
+    },
+    persistence::in_memory_db::data_preloading::{
+        create_github_file_list,
+        preload_data,
     },
 };
 use wiremock::{

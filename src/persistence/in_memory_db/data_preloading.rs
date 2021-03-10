@@ -118,12 +118,12 @@ pub async fn get_static_data_inside_thread(
 /// async fn main() {
 ///     use std::sync::Arc;
 ///     use tokio::sync::Mutex;
-///     use transparencies_backend_rs::domain::{
-///         in_memory_db::data_preloading::preload_data,
-///         types::{
+///     use transparencies_backend_rs::{
+///         domain::types::{
 ///             requests::ApiClient,
 ///             InMemoryDb,
 ///         },
+///         persistence::in_memory_db::data_preloading::preload_data,
 ///     };
 ///     use url::Url;
 ///

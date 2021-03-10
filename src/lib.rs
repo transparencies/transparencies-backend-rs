@@ -10,6 +10,7 @@
 use std::collections::HashMap;
 
 pub mod domain;
+pub mod persistence;
 pub mod server;
 pub mod setup;
 

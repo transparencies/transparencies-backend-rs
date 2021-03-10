@@ -41,10 +41,12 @@ use std::{
     str::FromStr,
 };
 use tokio::sync::Mutex;
-use transparencies_backend_rs::domain::{
-    data_processing::process_match_info_request,
-    in_memory_db::data_preloading::preload_data,
-    types::api::MatchInfoRequest,
+use transparencies_backend_rs::{
+    domain::{
+        data_processing::process_match_info_request,
+        types::api::MatchInfoRequest,
+    },
+    persistence::in_memory_db::data_preloading::preload_data,
 };
 
 use url::Url;

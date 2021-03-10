@@ -30,9 +30,9 @@
     - [x] await json from polska for new matchinfo DS for merging/exposing to our
     frontend
     - [x] Q: What's the best way in Rust to automatically map Datastructures
-- [ ] Sort the player vector for each team first for the requested player on `vec[0]`,
-    then the remaining players either by name or by rating. highest rating after
-    `vec[0] == requested player`
+- [ ] **WIP** Sort the player vector for each team first for the requested player
+    on `vec[0]`, then the remaining players either by name or by rating. highest
+    rating after `vec[0] == requested player`
 
 ### Error Handling
 
