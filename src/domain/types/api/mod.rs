@@ -22,7 +22,7 @@ use std::{
 };
 /// Datastructure for an incoming `request` on our api
 /// on the `matchinfo` endpoint
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct MatchInfoRequest {
     /// Requested language (Optional), Standard value is "en"
     pub language: Option<String>,

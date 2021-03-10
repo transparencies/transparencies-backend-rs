@@ -80,7 +80,7 @@ to use them inside the integration tests and be able to update frequently
 
 ### Refactoring
 
-- [ ] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
+- [x] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
 from `ron` file for ease of testing/exporting
     - [ ] create struct that contains a `MatchInfoRequest` and a folder-layout and
     for other useful/needed information so we can create different test cases easier

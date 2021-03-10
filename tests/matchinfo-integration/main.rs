@@ -1,14 +1,12 @@
 use reqwest::get;
 
 use dashmap::DashMap;
+use serde_json::Value;
 
 use std::{
+    self,
     fs,
     io::BufReader,
-    path::{
-        Path,
-        PathBuf,
-    },
     sync::Arc,
 };
 
@@ -22,11 +20,12 @@ use transparencies_backend_rs::{
     domain::{
         data_processing::process_match_info_request,
         types::{
-            api::{
-                MatchInfoRequest,
-                MatchInfoResult,
-            },
+            error::TestCaseError,
             requests::ApiClient,
+            testing::{
+                TestCase,
+                TestCases,
+            },
             InMemoryDb,
         },
         util,
@@ -42,43 +41,13 @@ use wiremock::{
     MockServer,
     ResponseTemplate,
 };
+
 #[tokio::test]
 async fn mock_test_match_info_result() {
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
-    let mut match_info_request = MatchInfoRequest::default();
-
     let current_dir = std::env::current_dir().unwrap();
-    let resources_root_dir = "/tests/matchinfo-integration/resources";
-
-    let mut profile_ids: Vec<String> = Vec::with_capacity(8);
-
-    let mut language_mock_responses: DashMap<String, serde_json::Value> =
-        DashMap::with_capacity(18);
-
-    let mut aoe2net_mock_responses: DashMap<String, serde_json::Value> =
-        DashMap::with_capacity(18);
-
-    let mut github_mock_responses: DashMap<String, serde_json::Value> =
-        DashMap::with_capacity(3);
-
-    let mut last_match: serde_json::Value = serde_json::Value::Null;
-
-    let mut ron_result = MatchInfoResult::default();
-
-    load_responses_from_fs(
-        current_dir,
-        resources_root_dir,
-        &mut match_info_request,
-        &mut profile_ids,
-        &mut aoe2net_mock_responses,
-        &mut last_match,
-        &mut language_mock_responses,
-        &mut ron_result,
-        &mut github_mock_responses,
-    );
-
     let aoe2net_api_roots: Vec<&str> = vec![
         "/api/strings",
         "/api/player/lastmatch",
@@ -87,27 +56,28 @@ async fn mock_test_match_info_result() {
         "/SiegeEngineers/aoc-reference-data/master/data/",
     ];
 
-    mount_mocks(
-        aoe2net_api_roots,
-        profile_ids,
-        last_match,
-        &mock_server,
-        aoe2net_mock_responses,
-        language_mock_responses,
-        github_mock_responses,
-    )
-    .await;
+    let test_cases = TestCases::default()
+        .add(&format!(
+            "{}{}",
+            current_dir.display(),
+            "/tests/matchinfo-integration/resources/"
+        ))
+        .unwrap();
 
-    // URL
-    let missing_link_url =
-        Url::parse(&format!("{}/missing", &mock_server.uri())).unwrap();
+    // Preloaded data
+    let language_mock_responses: Arc<
+        Mutex<DashMap<String, serde_json::Value>>,
+    > = Arc::new(Mutex::new(DashMap::with_capacity(18)));
+    let language_mock_responses_clone = language_mock_responses.clone();
 
-    // If the request doesn't match any `Mock` mounted on our `MockServer` a 404
-    // is returned.
-    let status = get(missing_link_url).await.unwrap().status();
-    assert_eq!(status.as_u16(), 404);
+    let github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>> =
+        Arc::new(Mutex::new(DashMap::with_capacity(3)));
+    let github_mock_responses_clone = github_mock_responses.clone();
 
-    // REAL TESTING
+    let aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>> =
+        Arc::new(Mutex::new(DashMap::with_capacity(16)));
+    let aoe2net_mock_responses_clone = aoe2net_mock_responses.clone();
+
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
@@ -129,36 +99,56 @@ async fn mock_test_match_info_result() {
     .await
     .expect("Preloading data failed.");
 
-    let result = process_match_info_request(
-        match_info_request,
-        api_clients.aoe2net.clone(),
-        aoe2_net_root,
-        in_memory_db_clone.clone(),
-        None,
-    )
-    .await
-    .expect("Matchinfo processing failed.");
+    // URL
+    let missing_link_url =
+        Url::parse(&format!("{}/missing", &mock_server.uri())).unwrap();
 
-    assert_eq!(ron_result, result);
+    // If the request doesn't match any `Mock` mounted on our `MockServer` a 404
+    // is returned.
+    let status = get(missing_link_url).await.unwrap().status();
+    assert_eq!(status.as_u16(), 404);
+
+    for mut test_case in test_cases.0 {
+        load_responses_from_fs(
+            &mut test_case,
+            aoe2net_mock_responses_clone.clone(),
+            language_mock_responses_clone.clone(),
+            github_mock_responses_clone.clone(),
+        )
+        .await
+        .unwrap();
+
+        mount_mocks(
+            &aoe2net_api_roots,
+            test_case.profile_ids.clone(),
+            test_case.last_match(),
+            &mock_server,
+            aoe2net_mock_responses_clone.clone(),
+            language_mock_responses_clone.clone(),
+            github_mock_responses_clone.clone(),
+        )
+        .await;
+
+        let result = process_match_info_request(
+            test_case.parsed_request,
+            api_clients.aoe2net.clone(),
+            aoe2_net_root.to_owned(),
+            in_memory_db_clone.clone(),
+            None,
+        )
+        .await
+        .expect("Matchinfo processing failed.");
+
+        assert_eq!(test_case.parsed_result, result);
+    }
 }
-
-fn load_responses_from_fs(
-    current_dir: PathBuf,
-    resources_root_dir: &str,
-    ron_request: &mut MatchInfoRequest,
-    profile_ids: &mut Vec<String>,
-    aoe2net_mock_responses: &mut DashMap<String, serde_json::Value>,
-    last_match: &mut serde_json::Value,
-    language_mock_responses: &mut DashMap<String, serde_json::Value>,
-    ron_result: &mut MatchInfoResult,
-    github_mock_responses: &mut DashMap<String, serde_json::Value>,
-) {
-    for entry in fs::read_dir(
-        Path::new(&format!("{}{}", current_dir.display(), resources_root_dir))
-            .as_os_str(),
-    )
-    .unwrap()
-    {
+async fn load_responses_from_fs(
+    test_case: &mut TestCase,
+    aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    language_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+) -> Result<(), TestCaseError> {
+    for entry in fs::read_dir(test_case.resource_root_dir()).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
 
@@ -183,11 +173,12 @@ fn load_responses_from_fs(
                                 let file_name =
                                     util::extract_filename(&very_new_path);
 
-                                profile_ids.push(file_name.clone());
+                                test_case.profile_ids.push(file_name.clone());
 
-                                let file = fs::File::open(very_new_path)
-                                    .expect("file should open read only");
-                                let reader = BufReader::new(file);
+                                let val: serde_json::Value =
+                                    serde_json::from_reader(BufReader::new(
+                                        fs::File::open(very_new_path)?,
+                                    ))?;
                                 match new_path
                                     .file_name()
                                     .unwrap()
@@ -195,33 +186,24 @@ fn load_responses_from_fs(
                                     .unwrap()
                                 {
                                     "rating_history" => {
-                                        aoe2net_mock_responses.insert(
+                                        let guard =
+                                            aoe2net_mock_responses.lock().await;
+                                        guard.insert(
                                             format!("rh_{}", file_name),
-                                            serde_json::from_reader(reader)
-                                                .expect(
-                                                "file should be proper JSON",
-                                            ),
+                                            val,
                                         );
                                     }
                                     "leaderboard" => {
-                                        aoe2net_mock_responses.insert(
+                                        let guard =
+                                            aoe2net_mock_responses.lock().await;
+                                        guard.insert(
                                             format!("ldb_{}", file_name),
-                                            serde_json::from_reader(reader)
-                                                .expect(
-                                                "file should be proper JSON",
-                                            ),
+                                            val,
                                         );
                                     }
                                     _ => {}
                                 }
                             }
-                        }
-                        "last_match.json" => {
-                            let file = fs::File::open(new_path)
-                                .expect("file should open read only");
-                            let reader = BufReader::new(file);
-                            *last_match = serde_json::from_reader(reader)
-                                .expect("file should be proper JSON");
                         }
                         _ => {}
                     }
@@ -234,21 +216,14 @@ fn load_responses_from_fs(
                     let new_path = new_entry.path();
                     let file_name = util::extract_filename(&new_path);
 
-                    let file = fs::File::open(new_path)
-                        .expect("file should open read only");
-                    let reader = BufReader::new(file);
-                    language_mock_responses.insert(
-                        file_name,
-                        serde_json::from_reader(reader)
-                            .expect("file should be proper JSON"),
-                    );
+                    let val: serde_json::Value = serde_json::from_reader(
+                        BufReader::new(fs::File::open(new_path)?),
+                    )?;
+                    {
+                        let guard = language_mock_responses.lock().await;
+                        guard.insert(file_name, val);
+                    }
                 }
-            }
-            "match_info_result.ron" => {
-                *ron_result = MatchInfoResult::new_from_file(path);
-            }
-            "match_info_request.ron" => {
-                *ron_request = MatchInfoRequest::new_from_file(path);
             }
             "ref-data" => {
                 // println!("Folder: {:?}", file_name);
@@ -259,33 +234,34 @@ fn load_responses_from_fs(
                     let new_path = new_entry.path();
                     let file_name = util::extract_filename(&new_path);
 
-                    let file = fs::File::open(new_path)
-                        .expect("file should open read only");
-                    let reader = BufReader::new(file);
-                    github_mock_responses.insert(
-                        file_name,
-                        serde_json::from_reader(reader)
-                            .expect("file should be proper JSON"),
-                    );
+                    let val: serde_json::Value = serde_json::from_reader(
+                        BufReader::new(fs::File::open(new_path)?),
+                    )?;
+                    {
+                        let guard = github_mock_responses.lock().await;
+                        guard.insert(file_name, val);
+                    }
                 }
             }
             _ => {}
         }
     }
+
+    Ok(())
 }
 
 async fn mount_mocks(
-    aoe2net_api_roots: Vec<&str>,
+    aoe2net_api_roots: &Vec<&str>,
     profile_ids: Vec<String>,
-    last_match: serde_json::Value,
+    last_match: &serde_json::Value,
     mock_server: &MockServer,
-    aoe2net_mock_responses: DashMap<String, serde_json::Value>,
-    language_mock_responses: DashMap<String, serde_json::Value>,
-    github_mock_responses: DashMap<String, serde_json::Value>,
+    aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    language_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
 ) {
-    for root in aoe2net_api_roots {
-        let url_string = &format!("{}", root.clone());
-        match root {
+    for root in aoe2net_api_roots.iter() {
+        let url_string = &format!("{}", *root);
+        match *root {
             "/api/player/lastmatch" => {
                 // "/api/player/lastmatch?game=aoe2de&profile_id=196240"
                 for profile_id in &profile_ids {
@@ -308,12 +284,17 @@ async fn mount_mocks(
                 // "/api/leaderboard?game=aoe2de&profile_id=196240&
                 // leaderboard_id=3"
                 for profile_id in &profile_ids {
-                    let json = aoe2net_mock_responses
-                        .get(&format!("ldb_{}", profile_id))
-                        .map_or(serde_json::Value::Null, |val| {
-                            val.value().clone()
-                        });
+                    #[allow(unused_assignments)]
+                    let mut json = serde_json::Value::default();
+                    {
+                        let guard = aoe2net_mock_responses.lock().await;
 
+                        json = guard
+                            .get(&format!("ldb_{}", profile_id))
+                            .map_or(serde_json::Value::Null, |val| {
+                                val.value().clone()
+                            });
+                    }
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
                         .and(wiremock::matchers::query_param("game", "aoe2de"))
@@ -337,11 +318,18 @@ async fn mount_mocks(
                 // "/api/player/ratinghistory?game=aoe2de&profile_id=196240&
                 // leaderboard_id=3&count=1"
                 for profile_id in &profile_ids {
-                    let json = aoe2net_mock_responses
-                        .get(&format!("rh_{}", profile_id))
-                        .map_or(serde_json::Value::Null, |val| {
-                            val.value().clone()
-                        });
+                    #[allow(unused_assignments)]
+                    let mut json = serde_json::Value::default();
+                    {
+                        let guard = aoe2net_mock_responses.lock().await;
+
+                        json = guard
+                            .get(&format!("rh_{}", profile_id))
+                            .map_or(serde_json::Value::Null, |val| {
+                                val.value().clone()
+                            });
+                    }
+
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
                         .and(wiremock::matchers::query_param("game", "aoe2de"))
@@ -367,7 +355,18 @@ async fn mount_mocks(
             }
             "/api/strings" => {
                 // Language mocking
-                for multiref in language_mock_responses.iter() {
+                #[allow(unused_assignments)]
+                let mut clone_language_mock_responses: DashMap<
+                    std::string::String,
+                    Value,
+                > = DashMap::with_capacity(18);
+
+                {
+                    let guard = language_mock_responses.lock().await;
+                    clone_language_mock_responses = guard.clone();
+                }
+
+                for multiref in clone_language_mock_responses.iter() {
                     let (lang_short, json) = (multiref.key(), multiref.value());
                     let url_string = &format!("{}", root.clone());
                     Mock::given(method("GET"))
@@ -387,11 +386,17 @@ async fn mount_mocks(
                 // Github FileRequest Mock
                 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/
                 for file in create_github_file_list() {
-                    let json = github_mock_responses
-                        .get(&format!("{}", file.name()))
-                        .map_or(serde_json::Value::Null, |val| {
-                            val.value().clone()
-                        });
+                    #[allow(unused_assignments)]
+                    let mut json = serde_json::Value::default();
+                    {
+                        let guard = github_mock_responses.lock().await;
+                        json = guard
+                            .get(&format!("{}", file.name()))
+                            .map_or(serde_json::Value::Null, |val| {
+                                val.value().clone()
+                            });
+                    }
+
                     let url_string = &format!("{}{}", root.clone(), file);
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))

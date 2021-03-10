@@ -6,6 +6,7 @@ pub mod api;
 pub mod error;
 pub mod match_data;
 pub mod requests;
+pub mod testing;
 
 use log::trace;
 pub use match_data::MatchDataResponses;
