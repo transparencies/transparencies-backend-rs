@@ -47,6 +47,8 @@ async fn mock_test_match_info_result() {
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
+    let mut match_info_request = MatchInfoRequest::default();
+
     let current_dir = std::env::current_dir().unwrap();
     let resources_root_dir = "/tests/matchinfo-integration/resources";
 
@@ -68,6 +70,7 @@ async fn mock_test_match_info_result() {
     load_responses_from_fs(
         current_dir,
         resources_root_dir,
+        &mut match_info_request,
         &mut profile_ids,
         &mut aoe2net_mock_responses,
         &mut last_match,
@@ -110,13 +113,6 @@ async fn mock_test_match_info_result() {
 
     let api_clients = ApiClient::new_with_https(false);
 
-    let match_info_request = MatchInfoRequest {
-        language: Some("en".to_string()),
-        game: Some("aoe2de".to_string()),
-        id_type: "profile_id".to_string(),
-        id_number: "196240".to_string(),
-    };
-
     let github_root = Url::parse(&format!("{}", &mock_server.uri())).unwrap();
     let aoe2_net_root =
         Url::parse(&format!("{}/api", &mock_server.uri())).unwrap();
@@ -149,6 +145,7 @@ async fn mock_test_match_info_result() {
 fn load_responses_from_fs(
     current_dir: PathBuf,
     resources_root_dir: &str,
+    ron_request: &mut MatchInfoRequest,
     profile_ids: &mut Vec<String>,
     aoe2net_mock_responses: &mut DashMap<String, serde_json::Value>,
     last_match: &mut serde_json::Value,
@@ -248,10 +245,10 @@ fn load_responses_from_fs(
                 }
             }
             "match_info_result.ron" => {
-                let file =
-                    fs::File::open(path).expect("file should open read only");
-                let reader = BufReader::new(file);
-                *ron_result = ron::de::from_reader(reader).unwrap();
+                *ron_result = MatchInfoResult::new_from_file(path);
+            }
+            "match_info_request.ron" => {
+                *ron_request = MatchInfoRequest::new_from_file(path);
             }
             "ref-data" => {
                 // println!("Folder: {:?}", file_name);
