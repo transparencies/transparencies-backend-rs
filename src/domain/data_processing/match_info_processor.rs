@@ -99,7 +99,7 @@ impl MatchInfoProcessor {
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
         let mut teams_raw: Vec<TeamRaw> = Vec::new();
 
-        let mut diff_team = Vec::with_capacity(8);
+        let mut diff_team: Vec<i64> = Vec::with_capacity(8);
 
         trace!("Creating vector for player information.");
         // Create the vector for the player information
@@ -440,7 +440,9 @@ fn assemble_teams_to_vec(
     diff_team.sort_unstable();
     trace!("Finished sorting amount of teams vector.");
 
-    let team_amount = diff_team.len();
+    // Keep only the non-used teams available
+    let mut available_empty_teams: Vec<i64> = vec![1, 2, 3, 4, 5, 6, 7, 8];
+    available_empty_teams.retain(|t| !diff_team.contains(t));
 
     let mut player_vec_helper: Vec<PlayerRaw> =
         Vec::with_capacity(diff_team.len());
@@ -459,17 +461,37 @@ fn assemble_teams_to_vec(
             }
         }
 
-        trace!("Build team number {:?} ...", team);
-        let team = TeamRaw::builder()
-            .team_number(team)
-            .players(Players(player_vec_helper.clone()))
-            .build();
+        trace!("Sorting members for team {:?} ...", team);
+        // Sort for requested player
+        player_vec_helper.sort_by(|a, b| a.requested().cmp(&b.requested()));
+        trace!("Sorting of team {:?} complete ...", team);
 
-        teams_raw.push(team);
+        trace!("Build team number {:?} ...", team);
+        // Case: team == `-1` then push each player to a different
+        // team
+        if team == -1 {
+            for ffa_player in player_vec_helper.to_owned() {
+                let helper: Vec<PlayerRaw> = vec![ffa_player];
+                let own_team = TeamRaw::builder()
+                    .team_number(
+                        available_empty_teams.pop().map_or(-1, |val| val),
+                    )
+                    .players(Players(helper.clone()))
+                    .build();
+                teams_raw.push(own_team);
+            }
+        }
+        else {
+            let single_team = TeamRaw::builder()
+                .team_number(team)
+                .players(Players(player_vec_helper.clone()))
+                .build();
+            teams_raw.push(single_team);
+        }
     }
     trace!("Finished iterating through teams.");
 
-    team_amount
+    teams_raw.len()
 }
 
 /// Build a player with the builder pattern
