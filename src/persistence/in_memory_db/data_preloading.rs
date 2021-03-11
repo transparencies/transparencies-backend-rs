@@ -118,12 +118,12 @@ pub async fn get_static_data_inside_thread(
 /// async fn main() {
 ///     use std::sync::Arc;
 ///     use tokio::sync::Mutex;
-///     use transparencies_backend_rs::domain::{
-///         in_memory_db::data_preloading::preload_data,
-///         types::{
+///     use transparencies_backend_rs::{
+///         domain::types::{
 ///             requests::ApiClient,
 ///             InMemoryDb,
 ///         },
+///         persistence::in_memory_db::data_preloading::preload_data,
 ///     };
 ///     use url::Url;
 ///
@@ -143,7 +143,7 @@ pub async fn get_static_data_inside_thread(
 ///         false,
 ///     )
 ///     .await
-///     .unwrap()
+///     .unwrap();
 /// }
 /// ```
 ///
@@ -198,8 +198,8 @@ pub async fn preload_data(
 }
 
 /// Index the `player_ids` of Players in the `players.yaml` file of
-/// aoc-reference-data repository in a [`HashMap`] to make them be easily
-/// looked-up during the processing stage
+/// aoc-reference-data repository in a [`dashmap::DashMap`] to make them be
+/// easily looked-up during the processing stage
 // TODO: Handle Result better for indexing errors
 #[allow(unused_must_use)]
 async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
@@ -219,6 +219,8 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 /// Preload data from `aoe2net`
 ///
 /// # Errors
+// TODO
+/// # Panics
 // TODO
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
@@ -240,8 +242,8 @@ pub async fn preload_aoe2_net_data(
     Ok(())
 }
 
-/// Pull responses for `language strings` into a [`HashMap`] for being easily
-/// looked-up later on
+/// Pull responses for `language strings` into a [`dashmap::DashMap`] for being
+/// easily looked-up later on
 ///
 /// # Errors
 // TODO
@@ -303,6 +305,8 @@ fn assemble_language_requests(
 /// Preload data from `aoc-reference-data` Github repository
 ///
 /// # Errors
+// TODO
+/// # Panics
 // TODO
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
@@ -391,11 +395,6 @@ async fn update_data_in_db(
                 if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players = deserialized.clone();
-
-                    // serde_yaml::from_slice::<AoePlayers>(
-                    //     &response.inner().bytes().await?,
-                    // )
-                    // .unwrap()
                 }
                 else if mocking {
                     // ATTENTION! Mocking is enabled, we don't want to use
@@ -411,18 +410,10 @@ async fn update_data_in_db(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
                         &serde_yaml::from_str(&response)?,
-                        /* &serde_yaml::from_slice(
-                         *     &response.inner().bytes().await?,
-                         * )
-                         * .unwrap(), */
                     );
 
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players = deserialized.clone();
-                    // serde_yaml::from_slice::<AoePlayers>(
-                    //     &response.inner().bytes().await?,
-                    // )
-                    // .unwrap();
                 }
             }
             else {

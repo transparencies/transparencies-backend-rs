@@ -30,9 +30,10 @@
     - [x] await json from polska for new matchinfo DS for merging/exposing to our
     frontend
     - [x] Q: What's the best way in Rust to automatically map Datastructures
-- [ ] Sort the player vector for each team first for the requested player on `vec[0]`,
-    then the remaining players either by name or by rating. highest rating after
-    `vec[0] == requested player`
+- [X] Sort the player vector for each team first for the requested player
+    on `vec[0]`
+    - [ ] then the remaining players either by name or by rating. highest
+    rating after `vec[0] == requested player`
 
 ### Error Handling
 
@@ -47,7 +48,7 @@
         - [ ] Send `log entry` to Client for better error handling on client-side
         - [ ] On `hard error`, no match_info but instead error status code (HTTP)
     - [ ] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
-- [x] implement `todo!()`s
+- [X] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
 
@@ -55,8 +56,7 @@
 
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
-    - [ ] **WIP** use `claim` for tests
-- [ ] **Q:** How to implement test cases?
+    - [ ] use `claim` for tests
 - [ ] Special cases done right? (talk through them together)
     - [ ] Implement (integration) test cases for these
     - [X] Data structure does not match with data from aoe2net
@@ -80,12 +80,12 @@ to use them inside the integration tests and be able to update frequently
 
 ### Refactoring
 
-- [ ] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
+- [X] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
 from `ron` file for ease of testing/exporting
-    - [ ] create struct that contains a `MatchInfoRequest` and a folder-layout and
+    - [X] create struct that contains a `MatchInfoRequest` and a folder-layout and
     for other useful/needed information so we can create different test cases easier
     for `integration` testing
-- [ ] Refactor both, parsing and mock binding logic in full integration test
+- [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
 - [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
