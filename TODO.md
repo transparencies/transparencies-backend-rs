@@ -30,8 +30,9 @@
     - [x] await json from polska for new matchinfo DS for merging/exposing to our
     frontend
     - [x] Q: What's the best way in Rust to automatically map Datastructures
-- [ ] **WIP** Sort the player vector for each team first for the requested player
-    on `vec[0]`, then the remaining players either by name or by rating. highest
+- [X] Sort the player vector for each team first for the requested player
+    on `vec[0]`
+    - [ ] then the remaining players either by name or by rating. highest
     rating after `vec[0] == requested player`
 
 ### Error Handling
@@ -55,8 +56,7 @@
 
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
-    - [ ] **WIP** use `claim` for tests
-- [ ] **Q:** How to implement test cases?
+    - [ ] use `claim` for tests
 - [ ] Special cases done right? (talk through them together)
     - [ ] Implement (integration) test cases for these
     - [X] Data structure does not match with data from aoe2net
