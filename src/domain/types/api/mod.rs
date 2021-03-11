@@ -40,6 +40,7 @@ impl MatchInfoRequest {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
+    #[must_use]
     pub fn new_from_file(path: PathBuf) -> Self {
         let file = fs::File::open(path).expect("file should open read only");
         let reader = BufReader::new(file);

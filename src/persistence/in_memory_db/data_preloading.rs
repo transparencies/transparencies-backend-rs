@@ -115,7 +115,7 @@ pub async fn get_static_data_inside_thread(
 /// # Example
 /// ```rust
 /// #[tokio::main]
-/// async fn main() {
+/// async fn main() -> Result<()>{
 ///     use std::sync::Arc;
 ///     use tokio::sync::Mutex;
 ///     use transparencies_backend_rs::{
@@ -129,9 +129,8 @@ pub async fn get_static_data_inside_thread(
 ///
 ///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
 ///     let api_clients = ApiClient::default();
-///     let github_url =
-///         Url::parse("https://raw.githubusercontent.com").unwrap();
-///     let aoe2_net_url = Url::parse("https://aoe2.net/api").unwrap();
+///     let github_url = Url::parse("https://raw.githubusercontent.com")?;
+///     let aoe2_net_url = Url::parse("https://aoe2.net/api")?;
 ///
 ///     preload_data(
 ///         Some(api_clients.github.clone()),
@@ -142,14 +141,15 @@ pub async fn get_static_data_inside_thread(
 ///         None,
 ///         false,
 ///     )
-///     .await
-///     .unwrap()
+///     .await?
+///
+///     Ok(())
 /// }
 /// ```
 ///
 /// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
-// doesn't work or get parsed correctly?
+// doesn't work or get parsed correctly.unwrap()
 pub async fn preload_data(
     api_client: Option<reqwest::Client>,
     git_client: Option<reqwest::Client>,
@@ -219,6 +219,8 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 /// Preload data from `aoe2net`
 ///
 /// # Errors
+// TODO
+/// # Panics
 // TODO
 pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
@@ -303,6 +305,8 @@ fn assemble_language_requests(
 /// Preload data from `aoc-reference-data` Github repository
 ///
 /// # Errors
+// TODO
+/// # Panics
 // TODO
 pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
@@ -391,11 +395,6 @@ async fn update_data_in_db(
                 if export_path.is_empty() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players = deserialized.clone();
-
-                    // serde_yaml::from_slice::<AoePlayers>(
-                    //     &response.inner().bytes().await?,
-                    // )
-                    // .unwrap()
                 }
                 else if mocking {
                     // ATTENTION! Mocking is enabled, we don't want to use
@@ -411,18 +410,10 @@ async fn update_data_in_db(
                         &file,
                         &PathBuf::from_str(export_path).unwrap(),
                         &serde_yaml::from_str(&response)?,
-                        /* &serde_yaml::from_slice(
-                         *     &response.inner().bytes().await?,
-                         * )
-                         * .unwrap(), */
                     );
 
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players = deserialized.clone();
-                    // serde_yaml::from_slice::<AoePlayers>(
-                    //     &response.inner().bytes().await?,
-                    // )
-                    // .unwrap();
                 }
             }
             else {

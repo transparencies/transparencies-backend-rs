@@ -7,6 +7,7 @@ use std::{
     self,
     fs,
     io::BufReader,
+    path::PathBuf,
     sync::Arc,
 };
 
@@ -56,13 +57,16 @@ async fn mock_test_match_info_result() {
         "/SiegeEngineers/aoc-reference-data/master/data/",
     ];
 
-    let test_cases = TestCases::default()
-        .add(&format!(
-            "{}{}",
-            current_dir.display(),
-            "/tests/matchinfo-integration/resources/"
-        ))
-        .unwrap();
+    let res_dir: PathBuf = [
+        &format!("{}", current_dir.display()),
+        "tests",
+        "matchinfo-integration",
+        "resources",
+    ]
+    .iter()
+    .collect();
+
+    let test_cases = TestCases::default().add_case(res_dir).unwrap();
 
     // Preloaded data
     let language_mock_responses: Arc<
@@ -87,18 +91,6 @@ async fn mock_test_match_info_result() {
     let aoe2_net_root =
         Url::parse(&format!("{}/api", &mock_server.uri())).unwrap();
 
-    preload_data(
-        Some(api_clients.github.clone()),
-        Some(api_clients.aoe2net.clone()),
-        in_memory_db_clone.clone(),
-        github_root,
-        aoe2_net_root.clone(),
-        None,
-        true,
-    )
-    .await
-    .expect("Preloading data failed.");
-
     // URL
     let missing_link_url =
         Url::parse(&format!("{}/missing", &mock_server.uri())).unwrap();
@@ -107,6 +99,8 @@ async fn mock_test_match_info_result() {
     // is returned.
     let status = get(missing_link_url).await.unwrap().status();
     assert_eq!(status.as_u16(), 404);
+
+    let mut ran_once: bool = false;
 
     for mut test_case in test_cases.0 {
         load_responses_from_fs(
@@ -129,6 +123,22 @@ async fn mock_test_match_info_result() {
         )
         .await;
 
+        if ran_once == false {
+            preload_data(
+                Some(api_clients.github.clone()),
+                Some(api_clients.aoe2net.clone()),
+                in_memory_db_clone.clone(),
+                github_root.clone(),
+                aoe2_net_root.clone(),
+                None,
+                true,
+            )
+            .await
+            .expect("Preloading data failed.");
+
+            ran_once = true;
+        }
+
         let result = process_match_info_request(
             test_case.parsed_request,
             api_clients.aoe2net.clone(),
@@ -148,7 +158,7 @@ async fn load_responses_from_fs(
     language_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
     github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
 ) -> Result<(), TestCaseError> {
-    for entry in fs::read_dir(test_case.resource_root_dir()).unwrap() {
+    for entry in fs::read_dir(test_case.resource_dir()).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
 
@@ -177,8 +187,9 @@ async fn load_responses_from_fs(
 
                                 let val: serde_json::Value =
                                     serde_json::from_reader(BufReader::new(
-                                        fs::File::open(very_new_path)?,
-                                    ))?;
+                                        fs::File::open(very_new_path).unwrap(),
+                                    ))
+                                    .unwrap();
                                 match new_path
                                     .file_name()
                                     .unwrap()
@@ -217,8 +228,9 @@ async fn load_responses_from_fs(
                     let file_name = util::extract_filename(&new_path);
 
                     let val: serde_json::Value = serde_json::from_reader(
-                        BufReader::new(fs::File::open(new_path)?),
-                    )?;
+                        BufReader::new(fs::File::open(new_path).unwrap()),
+                    )
+                    .unwrap();
                     {
                         let guard = language_mock_responses.lock().await;
                         guard.insert(file_name, val);
@@ -235,8 +247,9 @@ async fn load_responses_from_fs(
                     let file_name = util::extract_filename(&new_path);
 
                     let val: serde_json::Value = serde_json::from_reader(
-                        BufReader::new(fs::File::open(new_path)?),
-                    )?;
+                        BufReader::new(fs::File::open(new_path).unwrap()),
+                    )
+                    .unwrap();
                     {
                         let guard = github_mock_responses.lock().await;
                         guard.insert(file_name, val);
