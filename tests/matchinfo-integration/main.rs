@@ -155,6 +155,7 @@ async fn mock_test_match_info_result() {
         assert_eq!(test_case.parsed_result, result);
     }
 }
+
 async fn load_responses_from_fs(
     test_case: &mut TestCase,
     aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,

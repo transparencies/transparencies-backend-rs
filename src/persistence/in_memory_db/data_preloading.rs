@@ -149,7 +149,7 @@ pub async fn get_static_data_inside_thread(
 ///
 /// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
-// doesn't work or get parsed correctly.unwrap()
+// doesn't work or get parsed correctly?
 pub async fn preload_data(
     api_client: Option<reqwest::Client>,
     git_client: Option<reqwest::Client>,
