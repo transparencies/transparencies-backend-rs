@@ -47,7 +47,7 @@
         - [ ] Send `log entry` to Client for better error handling on client-side
         - [ ] On `hard error`, no match_info but instead error status code (HTTP)
     - [ ] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
-- [x] implement `todo!()`s
+- [X] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
 
@@ -80,12 +80,12 @@ to use them inside the integration tests and be able to update frequently
 
 ### Refactoring
 
-- [x] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
+- [X] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
 from `ron` file for ease of testing/exporting
-    - [ ] create struct that contains a `MatchInfoRequest` and a folder-layout and
+    - [X] create struct that contains a `MatchInfoRequest` and a folder-layout and
     for other useful/needed information so we can create different test cases easier
     for `integration` testing
-- [ ] Refactor both, parsing and mock binding logic in full integration test
+- [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
 - [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)

@@ -103,6 +103,9 @@ async fn mock_test_match_info_result() {
     let mut ran_once: bool = false;
 
     for mut test_case in test_cases.0 {
+        // each test_case could be as well run in
+        // a thread from here on
+
         load_responses_from_fs(
             &mut test_case,
             aoe2net_mock_responses_clone.clone(),

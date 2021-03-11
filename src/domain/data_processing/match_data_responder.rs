@@ -331,7 +331,7 @@ impl MatchDataResponses {
         )
     }
 
-    /// Looks up a player rating list in a [`std::collections::HashMap`] for
+    /// Looks up a player rating list in a [dashmap::DashMap`] for
     /// `player_id` and returns a `serde_json::Value` with the `rating
     /// history` for that corresponding player
     ///
@@ -347,10 +347,13 @@ impl MatchDataResponses {
         &self,
         profile_id: &str,
     ) -> Option<serde_json::Value> {
-        self.aoe2net.rating_history.get(profile_id).cloned()
+        self.aoe2net
+            .rating_history
+            .get(profile_id)
+            .map_or(None, |val| Some(val.value().clone()))
     }
 
-    /// Looks up a leaderboard entry in a [`std::collections::HashMap`] for
+    /// Looks up a leaderboard entry in a [`dashmap::DashMap`] for
     /// `player_id` and returns a [`serde_json::Value`] with the `leaderboard`
     /// for that corresponding player
     ///
@@ -366,7 +369,10 @@ impl MatchDataResponses {
         &self,
         profile_id: &str,
     ) -> Option<serde_json::Value> {
-        self.aoe2net.leaderboard.get(profile_id).cloned()
+        self.aoe2net
+            .leaderboard
+            .get(profile_id)
+            .map_or(None, |val| Some(val.value().clone()))
     }
 
     /// Print debug information of this data structure
@@ -396,7 +402,7 @@ impl MatchDataResponses {
     }
 
     /// Creates a new [`MatchDataResponses`] struct by executing requests for
-    /// match data and putting them into a [`std::collections::HashMap`]
+    /// match data and putting them into a [`dashmap::DashMap`]
     ///
     /// # Arguments
     /// * `par` - holds a [`MatchInfoRequest`] that contains all the request
@@ -411,7 +417,7 @@ impl MatchDataResponses {
     /// requests fail
     ///
     /// # Panics
-    /// Function could panic if the [`std::collections::HashMap`] of static
+    /// Function could panic if the [`dashmap::DashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
     #[allow(clippy::too_many_lines)]
     pub async fn new_with_match_data(

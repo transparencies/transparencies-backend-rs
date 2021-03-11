@@ -115,7 +115,7 @@ pub async fn get_static_data_inside_thread(
 /// # Example
 /// ```rust
 /// #[tokio::main]
-/// async fn main() -> Result<()>{
+/// async fn main() {
 ///     use std::sync::Arc;
 ///     use tokio::sync::Mutex;
 ///     use transparencies_backend_rs::{
@@ -129,8 +129,9 @@ pub async fn get_static_data_inside_thread(
 ///
 ///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
 ///     let api_clients = ApiClient::default();
-///     let github_url = Url::parse("https://raw.githubusercontent.com")?;
-///     let aoe2_net_url = Url::parse("https://aoe2.net/api")?;
+///     let github_url =
+///         Url::parse("https://raw.githubusercontent.com").unwrap();
+///     let aoe2_net_url = Url::parse("https://aoe2.net/api").unwrap();
 ///
 ///     preload_data(
 ///         Some(api_clients.github.clone()),
@@ -141,9 +142,8 @@ pub async fn get_static_data_inside_thread(
 ///         None,
 ///         false,
 ///     )
-///     .await?
-///
-///     Ok(())
+///     .await
+///     .unwrap();
 /// }
 /// ```
 ///
@@ -198,8 +198,8 @@ pub async fn preload_data(
 }
 
 /// Index the `player_ids` of Players in the `players.yaml` file of
-/// aoc-reference-data repository in a [`HashMap`] to make them be easily
-/// looked-up during the processing stage
+/// aoc-reference-data repository in a [`dashmap::DashMap`] to make them be
+/// easily looked-up during the processing stage
 // TODO: Handle Result better for indexing errors
 #[allow(unused_must_use)]
 async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
@@ -242,8 +242,8 @@ pub async fn preload_aoe2_net_data(
     Ok(())
 }
 
-/// Pull responses for `language strings` into a [`HashMap`] for being easily
-/// looked-up later on
+/// Pull responses for `language strings` into a [`dashmap::DashMap`] for being
+/// easily looked-up later on
 ///
 /// # Errors
 // TODO
