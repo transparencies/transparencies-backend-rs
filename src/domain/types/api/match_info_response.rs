@@ -15,7 +15,10 @@ use serde::{
 };
 use std::{
     fs,
-    io::BufWriter,
+    io::{
+        BufReader,
+        BufWriter,
+    },
     path::PathBuf,
 };
 use typed_builder::TypedBuilder;
@@ -162,6 +165,18 @@ impl Default for MatchInfoResult {
 }
 
 impl MatchInfoResult {
+    /// Create a [`MatchInfoResult`]from a parsed `RON` file
+    ///
+    /// # Panics
+    /// Panics when the file can not be created or data cannot be written to the
+    /// file
+    #[must_use]
+    pub fn new_from_file(path: PathBuf) -> Self {
+        let file = fs::File::open(path).expect("file should open read only");
+        let reader = BufReader::new(file);
+        ron::de::from_reader::<_, Self>(reader).unwrap()
+    }
+
     /// Write a RON file of [`MatchInfoResult`] to `logs/match_info_result.ron`
     /// for debugging purposes
     ///

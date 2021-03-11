@@ -6,6 +6,7 @@ pub mod api;
 pub mod error;
 pub mod match_data;
 pub mod requests;
+pub mod testing;
 
 use log::trace;
 pub use match_data::MatchDataResponses;
@@ -40,16 +41,16 @@ impl InMemoryDb {
     /// Return the [`InMemoryDb`] with only the language needed
     ///
     /// # Panics
-    /// Could panic if the [`HashMap`] in [`static@crate::STANDARD`] is
+    /// Could panic if the [`dashmap::DashMap`] in [`static@crate::STANDARD`] is
     /// returning None
     pub fn retain_language(
         &mut self,
         language: &str,
     ) -> Self {
-        trace!("Checking HashMap for language: {:?}", language);
+        trace!("Checking DashMap for language: {:?}", language);
         if self.aoe2net_languages.contains_key(language) {
             trace!(
-                "Cleaning HashMap of other languages than language: {:?} ...",
+                "Cleaning DashMap of other languages than language: {:?} ...",
                 language
             );
             self.aoe2net_languages.retain(|lang, _| lang == language);
@@ -59,7 +60,7 @@ impl InMemoryDb {
             // if wrong language is set in `Query`
             let std_language = *(STANDARD.get(&"language").unwrap());
             trace!(
-                "Cleaning HashMap of other languages than language: {:?} ...",
+                "Cleaning DashMap of other languages than language: {:?} ...",
                 std_language
             );
 

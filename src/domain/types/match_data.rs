@@ -1,7 +1,7 @@
 //! Wrapper structs for usages within the in-memory DB
 
+use dashmap::DashMap;
 use serde::Serialize;
-use std::collections::HashMap;
 
 use crate::domain::types::aoe2net;
 
@@ -16,7 +16,7 @@ pub struct MatchDataResponses {
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct Aoe2NetResponses {
     pub player_last_match: Option<serde_json::Value>,
-    pub leaderboard: HashMap<String, serde_json::Value>,
-    pub rating_history: HashMap<String, serde_json::Value>,
+    pub leaderboard: DashMap<String, serde_json::Value>,
+    pub rating_history: DashMap<String, serde_json::Value>,
     pub players_temp: Vec<aoe2net::Player>,
 }

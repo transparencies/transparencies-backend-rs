@@ -116,6 +116,7 @@ strum = { version = "0.20.0", features = ["derive"] }
 derive_more = "0.99.11"
 derive-getters = "0.2.0"
 dashmap = { version = "4.0.2", features = ["serde", "rayon"] }
+#derive_setters = "0.1.5"
 
 # Validation
 #validators-derive = "0.22.3"

@@ -2,10 +2,9 @@ pub mod platforms;
 pub mod players;
 pub mod teams;
 
-use ::serde::Serialize;
-use std::collections::HashMap;
-
 use crate::domain::types::error::IndexingError;
+use ::serde::Serialize;
+use dashmap::DashMap;
 
 /// A list of Players
 pub type AoePlayers = Vec<players::Player>;
@@ -26,7 +25,7 @@ pub struct RefDataLists {
     /// from `players.yaml`
     pub players: AoePlayers,
     /// Index over `players.yaml` `profile_id` for Aoe2DE
-    pub players_index_aoe2de: HashMap<String, PositionInAoePlayers>,
+    pub players_index_aoe2de: DashMap<String, PositionInAoePlayers>,
     /// from `teams.json`
     pub teams: AoeTeams,
     /// from `platforms.json`
@@ -40,12 +39,12 @@ impl RefDataLists {
         RefDataLists::default()
     }
 
-    /// Index `players` into `players_index` [`HashMap`]
+    /// Index `players` into `players_index` [`dashmap::DashMap`]
     ///
     /// # Errors
     // TODO
     pub fn index(&mut self) -> Result<(), Vec<IndexingError>> {
-        let mut index: HashMap<String, PositionInAoePlayers> = HashMap::new();
+        let index: DashMap<String, PositionInAoePlayers> = DashMap::new();
 
         let mut indexing_errors: Vec<IndexingError> = Vec::new();
 

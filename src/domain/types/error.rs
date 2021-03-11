@@ -94,6 +94,17 @@ pub enum ApiRequestError {
     HttpClientError(#[from] reqwest::Error),
 }
 
+/// Error type for an [`ApiRequest`]
+#[derive(Error, Display, Debug)]
+pub enum TestCaseError {
+    /// RON-Parsing failed.
+    RonParsing(#[from] ron::de::Error),
+    /// JSON-Parsing failed.
+    JsonParsing(#[from] serde_json::Error),
+    /// File failed to open.
+    Io(#[from] std::io::Error),
+}
+
 /// Error type for the Indexing functionality
 #[derive(Error, Display, Debug)]
 pub enum IndexingError {

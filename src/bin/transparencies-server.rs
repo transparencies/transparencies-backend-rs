@@ -23,13 +23,11 @@ use std::net::IpAddr;
 
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::{
-        in_memory_db::data_preloading::get_static_data_inside_thread,
-        types::{
-            requests::ApiClient,
-            InMemoryDb,
-        },
+    domain::types::{
+        requests::ApiClient,
+        InMemoryDb,
     },
+    persistence::in_memory_db::data_preloading::get_static_data_inside_thread,
     server::filters,
     setup::{
         cli::CommandLineSettings,

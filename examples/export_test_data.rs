@@ -41,10 +41,12 @@ use std::{
     str::FromStr,
 };
 use tokio::sync::Mutex;
-use transparencies_backend_rs::domain::{
-    data_processing::process_match_info_request,
-    in_memory_db::data_preloading::preload_data,
-    types::api::MatchInfoRequest,
+use transparencies_backend_rs::{
+    domain::{
+        data_processing::process_match_info_request,
+        types::api::MatchInfoRequest,
+    },
+    persistence::in_memory_db::data_preloading::preload_data,
 };
 
 use url::Url;
@@ -85,6 +87,9 @@ async fn main() -> Result<(), Report> {
         id_number: "196240".to_string(),
     };
 
+    match_info_request
+        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
+
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
 
@@ -109,8 +114,6 @@ async fn main() -> Result<(), Report> {
     )
     .await
     .expect("Matchinfo processing failed.");
-
-    // TODO Alias name is not right in export_test_data
 
     result
         .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
