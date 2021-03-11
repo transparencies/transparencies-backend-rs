@@ -331,7 +331,7 @@ impl MatchDataResponses {
         )
     }
 
-    /// Looks up a player rating list in a [dashmap::DashMap`] for
+    /// Looks up a player rating list in a [`dashmap::DashMap`] for
     /// `player_id` and returns a `serde_json::Value` with the `rating
     /// history` for that corresponding player
     ///
