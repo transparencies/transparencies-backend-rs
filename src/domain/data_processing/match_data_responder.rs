@@ -350,7 +350,7 @@ impl MatchDataResponses {
         self.aoe2net
             .rating_history
             .get(profile_id)
-            .and_then(|val| Some(val.value().clone()))
+            .map(|val| val.value().clone())
     }
 
     /// Looks up a leaderboard entry in a [`dashmap::DashMap`] for
@@ -372,7 +372,7 @@ impl MatchDataResponses {
         self.aoe2net
             .leaderboard
             .get(profile_id)
-            .and_then(|val| Some(val.value().clone()))
+            .map(|val| val.value().clone())
     }
 
     /// Print debug information of this data structure
