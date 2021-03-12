@@ -23,7 +23,7 @@ use transparencies_backend_rs::{
         InMemoryDb,
     },
     setup::{
-        cli::CommandLineSettings,
+        cli::ExportCommandLineSettings,
         startup::set_up_logging,
     },
 };
@@ -68,14 +68,14 @@ async fn main() -> Result<(), Report> {
     }
 
     // Calling the command line parsing logic with the argument values
-    let cli_args = CommandLineSettings::from_args();
+    let cli_args = ExportCommandLineSettings::from_args();
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
         set_up_logging(&cli_args)?;
     }
 
-    let export_path = Some("tests/matchinfo-integration/resources");
+    let export_path = Some(cli_args.test_case_export_path.as_str());
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
