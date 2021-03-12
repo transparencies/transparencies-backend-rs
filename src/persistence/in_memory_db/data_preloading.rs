@@ -4,7 +4,6 @@ use dashmap::DashMap;
 
 use std::{
     path::PathBuf,
-    str::FromStr,
     sync::Arc,
     time::Duration,
 };
@@ -163,12 +162,10 @@ pub async fn preload_data(
         git_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
         github_root,
-        if let Some(path) = export_path {
-            Some(path.push("ref-data"))
-        }
-        else {
-            None
-        },
+        export_path.clone().map(|mut path| {
+            path.push("ref-data");
+            path
+        }),
         mocking,
     )
     .await
@@ -180,7 +177,10 @@ pub async fn preload_data(
         api_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
         aoe2_net_root,
-        export_path.map_or_else(None, |path| Some(path.push("languages"))),
+        export_path.map(|mut path| {
+            path.push("languages");
+            path
+        }),
     )
     .await
     .expect("Unable to preload data from AoE2.net");
@@ -240,7 +240,7 @@ pub async fn preload_aoe2_net_data(
 // TODO
 async fn load_language_responses_into_dashmap(
     language_requests: Vec<(String, ApiRequest)>,
-    export_path: &str,
+    export_path: Option<PathBuf>,
 ) -> Result<DashMap<String, serde_json::Value>, ApiRequestError> {
     let responses: DashMap<String, serde_json::Value> =
         DashMap::with_capacity(LANGUAGE_STRINGS.len());
@@ -249,13 +249,13 @@ async fn load_language_responses_into_dashmap(
         let response: serde_json::Value = req.execute().await?;
         responses.insert(req_name.to_string(), response.clone());
 
-        if !export_path.is_empty() {
+        if export_path.is_some() {
             util::export_to_json(
                 &File {
                     name: req_name.to_string(),
                     ext: FileFormat::Json,
                 },
-                &PathBuf::from_str(export_path).unwrap(),
+                &export_path.clone().unwrap(),
                 &response,
             )
         }
@@ -324,7 +324,7 @@ pub async fn preload_aoc_ref_data(
             in_memory_db.clone(),
             response,
             req,
-            export_path,
+            export_path.clone(),
             mocking,
         )
         .await?;
@@ -340,16 +340,16 @@ async fn update_data_in_db(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     response: String,
     req: GithubFileRequest,
-    export_path: &str,
+    export_path: Option<PathBuf>,
     mocking: bool,
 ) -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
-                if !export_path.is_empty() {
+                if export_path.is_some() {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str(export_path).unwrap(),
+                        &export_path.clone().unwrap(),
                         &serde_json::from_str::<serde_json::Value>(&response)?,
                     )
                 };
@@ -359,10 +359,10 @@ async fn update_data_in_db(
                     serde_json::from_str::<AoePlatforms>(&response)?;
             }
             "teams" => {
-                if !export_path.is_empty() {
+                if export_path.is_some() {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str(export_path).unwrap(),
+                        &export_path.clone().unwrap(),
                         &serde_json::from_str::<serde_json::Value>(&response)?,
                     )
                 };
@@ -383,7 +383,7 @@ async fn update_data_in_db(
                 let deserialized =
                     serde_yaml::from_str::<AoePlayers>(&response)?;
 
-                if export_path.is_empty() {
+                if export_path.is_none() {
                     let mut guard = in_memory_db.lock().await;
                     guard.github_file_content.players = deserialized.clone();
                 }
@@ -399,7 +399,7 @@ async fn update_data_in_db(
                 else {
                     util::export_to_json(
                         &file,
-                        &PathBuf::from_str(export_path).unwrap(),
+                        &export_path.unwrap(),
                         &serde_yaml::from_str(&response)?,
                     );
 

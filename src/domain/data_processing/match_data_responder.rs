@@ -37,7 +37,6 @@ use std::{
     io::BufWriter,
     path::PathBuf,
     result,
-    str::FromStr,
     sync::Arc,
 };
 use tokio::sync::Mutex;
@@ -481,14 +480,14 @@ impl MatchDataResponses {
             Ok(value) => responses.aoe2net.player_last_match = Some(value),
         }
 
-        if !export_path.is_empty() {
+        if let Some(mut path) = export_path.clone() {
+            path.push("aoe2net");
             util::export_to_json(
                 &File {
                     name: "last_match".to_string(),
                     ext: FileFormat::Json,
                 },
-                &PathBuf::from_str(&format!("{}{}", export_path, "/aoe2net/"))
-                    .expect("Parsing of test resources string failed."),
+                &path,
                 &responses
                     .clone()
                     .aoe2net
@@ -530,43 +529,50 @@ impl MatchDataResponses {
                 ],
             );
 
-            if !export_path.is_empty() {
+            let rating_response: serde_json::Value =
+                req_rating.execute().await?;
+            let leaderboard_response: serde_json::Value =
+                req_lead.execute().await?;
+
+            if let Some(mut path) = export_path.clone() {
                 // TODO: Do requests just one time in export path
+                path.push("aoe2net");
+
                 util::export_to_json(
                     &File {
                         name: format!("{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str(&format!(
-                        "{}{}",
-                        export_path, "/aoe2net/rating_history/"
-                    ))
-                    .unwrap(),
-                    &req_rating.execute().await?,
+                    &{
+                        let mut p = path.clone();
+                        p.push("rating_history");
+                        p
+                    },
+                    &rating_response,
                 );
                 util::export_to_json(
                     &File {
                         name: format!("{:?}", player.profile_id),
                         ext: FileFormat::Json,
                     },
-                    &PathBuf::from_str(&format!(
-                        "{}{}",
-                        export_path, "/aoe2net/leaderboard/"
-                    ))
-                    .unwrap(),
-                    &req_lead.execute().await?,
+                    &{
+                        let mut p = path.clone();
+                        p.push("leaderboard");
+                        p
+                    },
+                    &leaderboard_response,
                 );
             }
 
-            responses.aoe2net.rating_history.insert(
-                player.profile_id.to_string(),
-                req_rating.execute().await?,
-            );
+            responses
+                .aoe2net
+                .rating_history
+                .insert(player.profile_id.to_string(), rating_response);
 
-            responses.aoe2net.leaderboard.insert(
-                player.profile_id.to_string(),
-                req_lead.execute().await?,
-            );
+            responses
+                .aoe2net
+                .leaderboard
+                .insert(player.profile_id.to_string(), leaderboard_response);
         }
 
         Ok(responses)
