@@ -189,9 +189,7 @@ impl ApiRequest {
                         }
                     }
                 }
-                else {
-                    return Err(ApiRequestError::HttpClientError(err));
-                }
+                return Err(ApiRequestError::HttpClientError(err));
             }
             Ok(response) => Ok(response.json().await?),
         }
