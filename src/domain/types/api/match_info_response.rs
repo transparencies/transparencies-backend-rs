@@ -46,9 +46,10 @@ pub enum MatchSize {
 /// Convenience type
 type Time = usize;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, PartialEq, Deserialize)]
 pub enum ErrorMessageToFrontend {
-    DerankedPlayerDetected = 01,
+    DerankedPlayerDetected,
+    GenericResponderError(String),
 }
 
 /// Status of a match derived from `Last_match` AoE2.net endpoint

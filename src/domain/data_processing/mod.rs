@@ -60,6 +60,7 @@ pub async fn process_match_info_request(
     )
     .await;
 
+    #[allow(unused_assignments)]
     let mut result = MatchInfoResult::new();
 
     match responses {
@@ -71,7 +72,16 @@ pub async fn process_match_info_request(
                     )
                     .build()
             }
-            _ => {}
+            _ => {
+                result = MatchInfoResult::builder()
+                    .error_message(
+                        ErrorMessageToFrontend::GenericResponderError(format!(
+                            "{}",
+                            err
+                        )),
+                    )
+                    .build()
+            }
         },
         Ok(response) => {
             result = MatchInfoProcessor::new_with_response(response)
@@ -79,8 +89,6 @@ pub async fn process_match_info_request(
                 .assemble()?
         }
     }
-
-    debug!("MatchInfoResult: {:#?}", result);
 
     Ok(result)
 }
