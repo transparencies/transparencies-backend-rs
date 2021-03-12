@@ -96,7 +96,7 @@ pub(crate) fn export_to_json(
     let mut writer = BufWriter::new(file);
 
     // Write data to file
-    serde_json::to_writer(&mut writer, &data)
+    serde_json::to_writer_pretty(&mut writer, &data)
         .expect("Wrting data to file experienced an error.");
 }
 

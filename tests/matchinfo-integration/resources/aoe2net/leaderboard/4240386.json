@@ -1,1 +1,29 @@
-{"count":1,"leaderboard":[{"clan":null,"country":"TR","drops":1,"games":290,"highest_rating":2437,"highest_streak":30,"icon":null,"last_match":1615410209,"last_match_time":1615410209,"losses":102,"lowest_streak":-6,"name":"Mastertug","previous_rating":2430,"profile_id":4240386,"rank":12,"rating":2437,"steam_id":"76561199111691028","streak":5,"wins":188}],"leaderboard_id":3,"start":1,"total":48192}
+{
+  "count": 1,
+  "leaderboard": [
+    {
+      "clan": null,
+      "country": "TR",
+      "drops": 1,
+      "games": 290,
+      "highest_rating": 2437,
+      "highest_streak": 30,
+      "icon": null,
+      "last_match": 1615410209,
+      "last_match_time": 1615410209,
+      "losses": 102,
+      "lowest_streak": -6,
+      "name": "Mastertug",
+      "previous_rating": 2430,
+      "profile_id": 4240386,
+      "rank": 12,
+      "rating": 2437,
+      "steam_id": "76561199111691028",
+      "streak": 5,
+      "wins": 188
+    }
+  ],
+  "leaderboard_id": 3,
+  "start": 1,
+  "total": 48186
+}

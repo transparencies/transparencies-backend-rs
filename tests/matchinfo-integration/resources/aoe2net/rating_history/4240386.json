@@ -1,1 +1,10 @@
-[{"drops":1,"num_losses":102,"num_wins":188,"rating":2437,"streak":5,"timestamp":1615410209}]
+[
+  {
+    "drops": 1,
+    "num_losses": 102,
+    "num_wins": 188,
+    "rating": 2437,
+    "streak": 5,
+    "timestamp": 1615410209
+  }
+]

@@ -68,7 +68,7 @@ pub async fn process_match_info_request(
             ResponderError::DerankedPlayerDetected => {
                 result = MatchInfoResult::builder()
                     .error_message(
-                        ErrorMessageToFrontend::DerankedPlayerDetected,
+                        ErrorMessageToFrontend::UnrecordedPlayerDetected,
                     )
                     .build()
             }

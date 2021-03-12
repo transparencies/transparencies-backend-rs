@@ -1,1 +1,185 @@
-[{"abbreviation":"aM","name":"Aftermath","players":["Hearttt","MbL","Nicov"]},{"abbreviation":"iL","name":"Infinity Legends","players":["BacT","Capoch","Chris","RiuT"]},{"abbreviation":null,"name":"Team Savages","players":["F1Re","Goku","St4rk"]},{"abbreviation":null,"name":"Heresy","players":["dogao","Edie","Feanor","Kasva","LaaaaaN","Melkor","Miguel","Sitaux"]},{"abbreviation":"GL","name":"GamerLegion","players":["DauT","JorDan","Nili","Slam","Tatoh","TheViper"]},{"abbreviation":"SalzZ","name":"SalzZ","players":["classicpro","Dark","Vinch","WaRRioR"]},{"abbreviation":null,"name":"Slavic Supremacy","players":["Barles"]},{"abbreviation":"VNS","name":"Vietnam Legends","players":["ACCM","BadBoy","CooL","Yellow"]},{"abbreviation":null,"name":"AreS","players":["Ming","StrayDog","Whoop","Xiaoxiong"]},{"abbreviation":"Tempo","name":"Tempo Storm","players":["Hera","Liereyy"]},{"abbreviation":null,"name":"Suomi","players":["Jupe","Pike","Rubenstock","TheMax","Villese","Zuppi"]},{"abbreviation":"PGP","name":"PetGunPet","players":["AngelinaJolie","Belgium","Daniel","Shed","Stefan"]},{"abbreviation":"RoR","name":"Rulers of Rome","players":["Ganji","GoldenEnd","JonSlow","Kamigawa","Kellar","Luca","nanimaren","Pete Martell","Rise","Shades","Sobek","Sommos","Vodka"]},{"abbreviation":null,"name":"DS","players":["BL4CK","Carbo","Ralber","TaoPaiPai"]},{"abbreviation":null,"name":"QuEnDi","players":["Clemensor","cortical_","ffavorite_1","l2aGe","L3af","PaladiNz","True","uNLeAsHeD__","_zaryab_"]},{"abbreviation":"bK","name":"Brazookas","players":["BruH"]},{"abbreviation":null,"name":"Fei Mei San Dao","players":["Bad Koala","Jibatong","Tim","Vivi"]}]
+[
+  {
+    "abbreviation": "aM",
+    "name": "Aftermath",
+    "players": [
+      "Hearttt",
+      "MbL",
+      "Nicov"
+    ]
+  },
+  {
+    "abbreviation": "iL",
+    "name": "Infinity Legends",
+    "players": [
+      "BacT",
+      "Capoch",
+      "Chris",
+      "RiuT"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "Team Savages",
+    "players": [
+      "F1Re",
+      "Goku",
+      "St4rk"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "Heresy",
+    "players": [
+      "dogao",
+      "Edie",
+      "Feanor",
+      "Kasva",
+      "LaaaaaN",
+      "Melkor",
+      "Miguel",
+      "Sitaux"
+    ]
+  },
+  {
+    "abbreviation": "GL",
+    "name": "GamerLegion",
+    "players": [
+      "DauT",
+      "JorDan",
+      "Nili",
+      "Slam",
+      "Tatoh",
+      "TheViper"
+    ]
+  },
+  {
+    "abbreviation": "SalzZ",
+    "name": "SalzZ",
+    "players": [
+      "classicpro",
+      "Dark",
+      "Vinch",
+      "WaRRioR"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "Slavic Supremacy",
+    "players": [
+      "Barles"
+    ]
+  },
+  {
+    "abbreviation": "VNS",
+    "name": "Vietnam Legends",
+    "players": [
+      "ACCM",
+      "BadBoy",
+      "CooL",
+      "Yellow"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "AreS",
+    "players": [
+      "Ming",
+      "StrayDog",
+      "Whoop",
+      "Xiaoxiong"
+    ]
+  },
+  {
+    "abbreviation": "Tempo",
+    "name": "Tempo Storm",
+    "players": [
+      "Hera",
+      "Liereyy"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "Suomi",
+    "players": [
+      "Jupe",
+      "Pike",
+      "Rubenstock",
+      "TheMax",
+      "Villese",
+      "Zuppi"
+    ]
+  },
+  {
+    "abbreviation": "PGP",
+    "name": "PetGunPet",
+    "players": [
+      "AngelinaJolie",
+      "Belgium",
+      "Daniel",
+      "Shed",
+      "Stefan"
+    ]
+  },
+  {
+    "abbreviation": "RoR",
+    "name": "Rulers of Rome",
+    "players": [
+      "Ganji",
+      "GoldenEnd",
+      "JonSlow",
+      "Kamigawa",
+      "Kellar",
+      "Luca",
+      "nanimaren",
+      "Pete Martell",
+      "Rise",
+      "Shades",
+      "Sobek",
+      "Sommos",
+      "Vodka"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "DS",
+    "players": [
+      "BL4CK",
+      "Carbo",
+      "Ralber",
+      "TaoPaiPai"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "QuEnDi",
+    "players": [
+      "Clemensor",
+      "cortical_",
+      "ffavorite_1",
+      "l2aGe",
+      "L3af",
+      "PaladiNz",
+      "True",
+      "uNLeAsHeD__",
+      "_zaryab_"
+    ]
+  },
+  {
+    "abbreviation": "bK",
+    "name": "Brazookas",
+    "players": [
+      "BruH"
+    ]
+  },
+  {
+    "abbreviation": null,
+    "name": "Fei Mei San Dao",
+    "players": [
+      "Bad Koala",
+      "Jibatong",
+      "Tim",
+      "Vivi"
+    ]
+  }
+]

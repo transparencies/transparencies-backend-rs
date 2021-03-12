@@ -3,6 +3,7 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
+use displaydoc::Display;
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -46,9 +47,11 @@ pub enum MatchSize {
 /// Convenience type
 type Time = usize;
 
-#[derive(Clone, Debug, Serialize, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Display, Serialize, PartialEq, Deserialize)]
 pub enum ErrorMessageToFrontend {
-    DerankedPlayerDetected,
+    /// Player has no record on AoE2.net
+    UnrecordedPlayerDetected,
+    /// Generic error from the Responder: {0}
     GenericResponderError(String),
 }
 
@@ -63,7 +66,7 @@ pub enum MatchStatus {
 }
 
 /// The servers the games can be played on
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Display, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Server {
     /// Australia
     Australia,

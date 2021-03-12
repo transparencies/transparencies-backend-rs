@@ -1,1 +1,29 @@
-{"count":1,"leaderboard":[{"clan":null,"country":"NO","drops":3,"games":833,"highest_rating":2510,"highest_streak":22,"icon":null,"last_match":1615410209,"last_match_time":1615410209,"losses":277,"lowest_streak":-9,"name":"GL.TheViper","previous_rating":2415,"profile_id":196240,"rank":20,"rating":2408,"steam_id":"76561197984749679","streak":-1,"wins":556}],"leaderboard_id":3,"start":1,"total":48192}
+{
+  "count": 1,
+  "leaderboard": [
+    {
+      "clan": null,
+      "country": "NO",
+      "drops": 3,
+      "games": 833,
+      "highest_rating": 2510,
+      "highest_streak": 22,
+      "icon": null,
+      "last_match": 1615410209,
+      "last_match_time": 1615410209,
+      "losses": 277,
+      "lowest_streak": -9,
+      "name": "GL.TheViper",
+      "previous_rating": 2415,
+      "profile_id": 196240,
+      "rank": 20,
+      "rating": 2408,
+      "steam_id": "76561197984749679",
+      "streak": -1,
+      "wins": 556
+    }
+  ],
+  "leaderboard_id": 3,
+  "start": 1,
+  "total": 48186
+}
