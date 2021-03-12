@@ -169,6 +169,7 @@ impl Default for MatchInfoResult {
 }
 
 impl MatchInfoResult {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             match_info: None,
