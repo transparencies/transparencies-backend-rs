@@ -34,7 +34,7 @@ pub struct Player {
     pub drops: ::serde_json::Value,
     #[serde(skip)]
     pub games: ::serde_json::Value,
-    pub name: String,
+    pub name: ::serde_json::Value,
     pub profile_id: u64,
     pub rating: ::serde_json::Value,
     #[serde(skip)]
@@ -42,7 +42,7 @@ pub struct Player {
     pub slot: ::serde_json::Value,
     pub slot_type: ::serde_json::Value,
     #[serde(skip)]
-    pub steam_id: String,
+    pub steam_id: ::serde_json::Value,
     #[serde(skip)]
     pub streak: ::serde_json::Value,
     pub team: i64,
