@@ -91,9 +91,9 @@ pub struct ExportCommandLineSettings {
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
 
-    /// Test case export path
+    /// Test case export path, relative to executable
     #[structopt(
-        short = "tcf",
+        short = "t",
         long = "test-case-folder",
         default_value = "./tests/matchinfo-integration/test_case_template"
     )]

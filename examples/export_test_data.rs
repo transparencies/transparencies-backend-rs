@@ -74,21 +74,23 @@ async fn main() -> Result<(), Report> {
     if cli_args.debug {
         set_up_logging(&cli_args)?;
     }
+    let current_dir = std::env::current_dir().unwrap();
 
-    let export_path = Some(cli_args.test_case_export_path.as_str());
+    let export_path: PathBuf = [
+        &format!("{}", current_dir.display()),
+        &format!("{}", &cli_args.test_case_export_path),
+    ]
+    .iter()
+    .collect();
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
     let api_clients = ApiClient::default();
-    let match_info_request = MatchInfoRequest {
-        language: Some("en".to_string()),
-        game: Some("aoe2de".to_string()),
-        id_type: "profile_id".to_string(),
-        id_number: "196240".to_string(),
-    };
+    let match_info_request = MatchInfoRequest::new_from_file(export_path);
 
-    match_info_request
-        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
+    // match_info_request
+    //     .export_data_to_file(PathBuf::from_str(export_path.unwrap()).
+    // unwrap());
 
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;

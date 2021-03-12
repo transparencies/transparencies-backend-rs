@@ -427,7 +427,7 @@ impl MatchDataResponses {
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
-        export_path: &str,
+        export_path: Option<PathBuf>,
         root: Url,
     ) -> Result<MatchDataResponses> {
         let mut language: String =

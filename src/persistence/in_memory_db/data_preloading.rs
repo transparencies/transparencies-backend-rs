@@ -156,28 +156,19 @@ pub async fn preload_data(
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     github_root: Url,
     aoe2_net_root: Url,
-    export_path: Option<&str>,
+    export_path: Option<PathBuf>,
     mocking: bool,
 ) -> Result<(), ApiRequestError> {
-    let aoc_folder = if let Some(path) = export_path {
-        format!("{}{}", path, "/ref-data/")
-    }
-    else {
-        "".to_string()
-    };
-
-    let aoe2net_language_folder = if let Some(path) = export_path {
-        format!("{}{}", path, "/languages/")
-    }
-    else {
-        "".to_string()
-    };
-
     preload_aoc_ref_data(
         git_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
         github_root,
-        &aoc_folder,
+        if let Some(path) = export_path {
+            Some(path.push("ref-data"))
+        }
+        else {
+            None
+        },
         mocking,
     )
     .await
@@ -189,7 +180,7 @@ pub async fn preload_data(
         api_client.map_or(reqwest::Client::default(), |client| client),
         in_memory_db.clone(),
         aoe2_net_root,
-        &aoe2net_language_folder,
+        export_path.map_or_else(None, |path| Some(path.push("languages"))),
     )
     .await
     .expect("Unable to preload data from AoE2.net");
@@ -226,7 +217,7 @@ pub async fn preload_aoe2_net_data(
     api_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     root: Url,
-    export_path: &str,
+    export_path: Option<PathBuf>,
 ) -> Result<(), ApiRequestError> {
     let language_requests = assemble_language_requests(&api_client, &root);
 
@@ -312,7 +303,7 @@ pub async fn preload_aoc_ref_data(
     git_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     root: Url,
-    export_path: &str,
+    export_path: Option<PathBuf>,
     mocking: bool,
 ) -> Result<(), FileRequestError> {
     let files = create_github_file_list();

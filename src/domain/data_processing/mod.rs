@@ -18,7 +18,10 @@ use crate::domain::{
 
 use tracing::debug;
 
-use std::sync::Arc;
+use std::{
+    path::PathBuf,
+    sync::Arc,
+};
 use tokio::{
     self,
     sync::Mutex,
@@ -42,7 +45,7 @@ pub async fn process_match_info_request(
     client: reqwest::Client,
     root: Url,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export_path: Option<&str>,
+    export_path: Option<PathBuf>,
 ) -> Result<MatchInfoResult, ProcessingError> {
     debug!(
         "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",

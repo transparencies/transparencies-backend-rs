@@ -11,13 +11,27 @@ The `flamegraph.svg` will be found in the root of the repository.
 
 ## Testing
 
-### Update data for integration tests
+## Creating a new test case
 
-First run `cargo run --example export-test-data` to download a set of responses that
-are serialized into JSON-files in `tests/integration/resources`. They are used
-for running `cargo test` to check the processing pipeline.
+- First create a copy of the `/tests/integration/test_case_template` folder.
+Rename it to something reasonable.
 
-Then run `cargo test` to run our test suite.
+- Then edit the `match_info_request.ron` file in this newly created folder structure
+and let it point to a combination of settings you want to test.
+
+
+
+### Update data for a case of an integration test
+
+First create a copy of the `/tests/integration/test_case_template` folder.
+You can already rename it, if you want to. But the standard export path for
+the files is the standard template folder.
+
+Then run `cargo run --example export-test-data -- --test-case-folder <test-case-export-path>`
+to download a set of responses that are serialized into JSON-files into the corresponding
+folder.
+
+Then run `cargo test`/`just test` to run our test suite.
 
 ## Documentation
 
