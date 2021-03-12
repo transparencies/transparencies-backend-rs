@@ -25,9 +25,9 @@ pub enum ProcessingError {
     /// Dividing by Zero is not allowed.
     DividingByZeroError,
     /// Haven't found a rating for player id: {0}
-    LookupRatingNotFound(i64),
+    LookupRatingNotFound(u64),
     /// Haven't found a leaderboard value for player id: {0}
-    LeaderboardNotFound(i64),
+    LeaderboardNotFound(u64),
     /// Haven't found a translation for {0}: {1}
     TranslationError(String, usize),
 }
