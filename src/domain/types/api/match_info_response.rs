@@ -66,7 +66,7 @@ pub enum MatchStatus {
 }
 
 /// The servers the games can be played on
-#[derive(Clone, Debug, Display, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Server {
     /// Australia
     Australia,
