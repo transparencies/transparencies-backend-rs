@@ -41,13 +41,13 @@
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [X] use `thiserror` in library part
     - [X] use `eyre` consistently for results with reports in binary part
-    - [ ] use `.map_err` and return HTTP status codes
-    - [ ] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
+    - [X] use `.map_err` and return HTTP status codes
+    - [X] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
         and return a maximum of valuable information on the MatchInfo and the
         errors to the client
-        - [ ] Send `log entry` to Client for better error handling on client-side
-        - [ ] On `hard error`, no match_info but instead error status code (HTTP)
-    - [ ] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
+        - [X] Send `log entry` to Client for better error handling on client-side
+        - [X] On `hard error`, no match_info but instead error status code (HTTP)
+    - [X] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
 - [X] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
