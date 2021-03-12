@@ -2476,6 +2476,7 @@ dependencies = [
  "displaydoc",
  "eyre",
  "futures",
+ "http",
  "human-panic",
  "hyper",
  "itertools",

@@ -7,9 +7,11 @@ use crate::domain::{
     data_processing::match_info_processor::MatchInfoProcessor,
     types::{
         api::{
+            ErrorMessageToFrontend,
             MatchInfoRequest,
             MatchInfoResult,
         },
+        error::ResponderError,
         MatchDataResponses,
     },
 };
@@ -56,19 +58,29 @@ pub async fn process_match_info_request(
         aoe2net_folder,
         root,
     )
-    .await?;
+    .await;
 
-    // Debugging responses
-    // responses.export_data_to_file();
+    let mut result = MatchInfoResult::new();
 
-    let result = MatchInfoProcessor::new_with_response(responses)
-        .process()?
-        .assemble()?;
+    match responses {
+        Err(err) => match err {
+            ResponderError::DerankedPlayerDetected => {
+                result = MatchInfoResult::builder()
+                    .error_message(
+                        ErrorMessageToFrontend::DerankedPlayerDetected,
+                    )
+                    .build()
+            }
+            _ => {}
+        },
+        Ok(response) => {
+            result = MatchInfoProcessor::new_with_response(response)
+                .process()?
+                .assemble()?
+        }
+    }
 
     debug!("MatchInfoResult: {:#?}", result);
-
-    // Debugging result
-    // result.export_data_to_file();
 
     Ok(result)
 }

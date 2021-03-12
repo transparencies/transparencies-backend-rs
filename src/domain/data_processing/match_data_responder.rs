@@ -13,7 +13,10 @@ use crate::domain::{
             Rating,
             Server,
         },
-        error::ResponderError,
+        error::{
+            ApiRequestError,
+            ResponderError,
+        },
         File,
         FileFormat,
         InMemoryDb,
@@ -453,19 +456,30 @@ impl MatchDataResponses {
         };
 
         // GET `PlayerLastMatch` data
-        responses.aoe2net.player_last_match = {
-            util::build_api_request(
-                client.clone(),
-                root.clone(),
-                "player/lastmatch",
-                vec![
-                    ("game".to_string(), game.clone()),
-                    (par.id_type.clone(), par.id_number.clone()),
-                ],
-            )
-            .execute()
-            .await?
-        };
+
+        let match_data_response = util::build_api_request(
+            client.clone(),
+            root.clone(),
+            "player/lastmatch",
+            vec![
+                ("game".to_string(), game.clone()),
+                (par.id_type.clone(), par.id_number.clone()),
+            ],
+        )
+        .execute::<serde_json::Value>()
+        .await;
+
+        match match_data_response {
+            Err(err) => match err {
+                ApiRequestError::NotFoundResponse {
+                    root: _,
+                    endpoint: _,
+                    query: _,
+                } => return Err(ResponderError::DerankedPlayerDetected),
+                _ => return Err(ResponderError::OtherApiRequestError(err)),
+            },
+            Ok(value) => responses.aoe2net.player_last_match = Some(value),
+        }
 
         if !export_path.is_empty() {
             util::export_to_json(

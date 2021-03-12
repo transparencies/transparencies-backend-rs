@@ -46,8 +46,10 @@ pub enum MatchSize {
 /// Convenience type
 type Time = usize;
 
-/// Convenience type
-type ErrorMessage = String;
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ErrorMessageToFrontend {
+    DerankedPlayerDetected = 01,
+}
 
 /// Status of a match derived from `Last_match` AoE2.net endpoint
 /// if a game has no finished time, we threat it as running
@@ -89,19 +91,20 @@ pub enum Server {
 #[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
 pub struct MatchInfoResult {
     /// Contains all the data about the players and the match
-    pub match_info: MatchInfo,
+    #[builder(default=None, setter(strip_option))]
+    pub match_info: Option<MatchInfo>,
     /// Error message strings that are important to give to the frontend
     /// e.g. parsing errors to keep that in cache in the frontend,
     /// or also problems with the HTTP client in general, for example if
     /// the aoe2net API is not reachable
     #[builder(default=None, setter(strip_option))]
-    pub error_message: Option<ErrorMessage>,
+    pub error_message: Option<ErrorMessageToFrontend>,
 }
 
 impl Default for MatchInfoResult {
     fn default() -> Self {
         Self {
-            match_info: MatchInfo {
+            match_info: Some(MatchInfo {
                 game_type: "Random Map".to_string(),
                 rating_type: "1v1 Random Map".to_string(),
                 match_size: MatchSize::G1v1,
@@ -158,13 +161,20 @@ impl Default for MatchInfoResult {
                         },
                     ]
                 }),
-            },
+            }),
             error_message: None,
         }
     }
 }
 
 impl MatchInfoResult {
+    pub fn new() -> Self {
+        Self {
+            match_info: None,
+            error_message: None,
+        }
+    }
+
     /// Create a [`MatchInfoResult`]from a parsed `RON` file
     ///
     /// # Panics

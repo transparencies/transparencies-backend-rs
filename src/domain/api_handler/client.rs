@@ -2,7 +2,10 @@
 //! client logic of the application
 
 use crate::domain::types::{
-    error::FileRequestError,
+    error::{
+        ApiRequestError,
+        FileRequestError,
+    },
     requests::{
         ApiClient,
         ApiRequest,
@@ -11,6 +14,7 @@ use crate::domain::types::{
         GithubFileRequest,
     },
 };
+use http::StatusCode;
 use std::time::Duration;
 use url::Url;
 
@@ -156,15 +160,40 @@ impl ApiRequest {
     /// # Errors
     ///
     /// see [`reqwest::Error`]
-    pub async fn execute<R>(&self) -> Result<R, reqwest::Error>
+    pub async fn execute<R>(&self) -> Result<R, ApiRequestError>
     where R: for<'de> serde::Deserialize<'de> {
-        Ok(self
+        let response = self
             .client()
             .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
             .query(&self.query())
             .send()
-            .await?
-            .json()
-            .await?)
+            .await;
+
+        match response {
+            Err(err) => {
+                if let Some(status_code) = err.status() {
+                    match status_code {
+                        StatusCode::NOT_FOUND => {
+                            return Err(ApiRequestError::NotFoundResponse {
+                                root: self.root().as_str().to_string(),
+                                endpoint: self.endpoint().to_string(),
+                                query: self.query().to_vec(),
+                            })
+                        }
+                        _ => {
+                            return Err(
+                                ApiRequestError::HttpClientErrorWithStatusCode(
+                                    status_code,
+                                ),
+                            )
+                        }
+                    }
+                }
+                else {
+                    return Err(ApiRequestError::HttpClientError(err));
+                }
+            }
+            Ok(response) => Ok(response.json().await?),
+        }
     }
 }
