@@ -13,7 +13,7 @@ The `flamegraph.svg` will be found in the root of the repository.
 
 ## Creating a new test case
 
-- First create a copy of the `/tests/integration/test_case_template` folder.
+- First create a copy of the `/tests/matchinfo-integration/test_case_template` folder.
 Rename it to something reasonable.
 
 - Then edit the `match_info_request.ron` file in this newly created folder structure
@@ -23,7 +23,21 @@ and let it point to a combination of settings you want to test.
 to download a set of responses that are serialized into JSON-files into the corresponding
 folder.
 
+- Afterwards open `/tests/matchinfo-integration/main.rs` and depending on what you
+want to achieve either copy one of the functions marked with `#[tokio::test]` and
+adapt them or add another `TestCase` to one of these functions. `TestCases` that
+are added with `test_cases.add(path)` should be only added if they test the same
+functionality/feature. Otherwhise create a new function from. This makes it easier
+to see if a test fails which feature is not working.
+
 ### Update data for a case of an integration test
+
+- Make sure the data that will be exported again will depict the actual test case.
+Because everything is redownloaded it's not that sure.
+
+- Then run `cargo run --example export-test-data -- --test-case-folder <test-case-export-path>`
+to download a set of responses that are serialized into JSON-files into the corresponding
+folder.
 
 Then run `cargo test`/`just test` to run our test suite.
 

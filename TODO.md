@@ -54,6 +54,15 @@
 
 ### Testing
 
+- [ ] implement functionality to download a specific match via `/api/match` for
+usage in test cases
+    - [ ] create a command-line parameter for `export-test-data` example to run
+    it with a specific `matchid`/`match-uuid` (UUID is probably preferable because
+    of validation with `uuid` crate)
+    - [ ] then run all other functions to download the resources need to answer
+    with that specific request
+    - [ ] rebuild and export the MatchInfoRequest for a random player from it
+    for test case usage of our normal functionality
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `claim` for tests

@@ -57,7 +57,7 @@ impl MatchInfoRequest {
         let mut file_path = path.clone();
         file_path.push("match_info_request.ron");
         ron::de::from_reader::<_, Self>(BufReader::new(
-            fs::File::open(path).expect("file should open read only"),
+            fs::File::open(file_path).expect("file should open read only"),
         ))
         .unwrap()
     }
