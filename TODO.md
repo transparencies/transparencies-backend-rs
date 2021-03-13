@@ -41,19 +41,28 @@
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [X] use `thiserror` in library part
     - [X] use `eyre` consistently for results with reports in binary part
-    - [ ] use `.map_err` and return HTTP status codes
-    - [ ] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
+    - [X] use `.map_err` and return HTTP status codes
+    - [X] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
         and return a maximum of valuable information on the MatchInfo and the
         errors to the client
-        - [ ] Send `log entry` to Client for better error handling on client-side
-        - [ ] On `hard error`, no match_info but instead error status code (HTTP)
-    - [ ] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
+        - [X] Send `log entry` to Client for better error handling on client-side
+        - [X] On `hard error`, no match_info but instead error status code (HTTP)
+    - [X] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
 - [X] implement `todo!()`s
 - [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
 
 ### Testing
 
+- [ ] implement functionality to download a specific match via `/api/match` for
+usage in test cases
+    - [ ] create a command-line parameter for `export-test-data` example to run
+    it with a specific `matchid`/`match-uuid` (UUID is probably preferable because
+    of validation with `uuid` crate)
+    - [ ] then run all other functions to download the resources need to answer
+    with that specific request
+    - [ ] rebuild and export the MatchInfoRequest for a random player from it
+    for test case usage of our normal functionality
 - [ ] implement useful tests/raise test-coverage to a (valuable) maximum
     - [ ] put unit tests into the same file of the type they refer to
     - [ ] use `claim` for tests

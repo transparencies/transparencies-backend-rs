@@ -26,10 +26,7 @@ use crate::domain::{
     },
 };
 
-use std::{
-    convert::TryInto,
-    result,
-};
+use std::result;
 
 use serde::Serialize;
 
@@ -281,10 +278,7 @@ impl MatchInfoProcessor {
         let translated_civilisation_string =
             &self.responses.get_translated_string_from_id(
                 "civ",
-                req_player
-                    .civ
-                    .try_into()
-                    .expect("Conversion of civilisation id failed."),
+                req_player.civ.to_string().parse::<usize>()?,
             )?;
         trace!("Successfully translated player civilisation.");
 
@@ -300,7 +294,7 @@ impl MatchInfoProcessor {
             &looked_up_alias,
             translated_civilisation_string.to_string(),
             requested_player_boolean,
-        );
+        )?;
         trace!("Successfully built player struct.");
 
         players_processing.push(player_built);
@@ -517,13 +511,13 @@ fn build_player(
     looked_up_alias: &Option<aoc_ref::players::Player>,
     translated_civilisation_string: String,
     requested: bool,
-) -> PlayerRaw {
+) -> Result<PlayerRaw> {
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
-        .player_number(req_player.color)
+        .player_number(req_player.color.to_string().parse::<i64>()?)
         .team_number(req_player.team)
         .name(looked_up_alias.as_ref().map_or_else(
-            || req_player.name.clone(),
+            || req_player.name.to_string(),
             |lookup_player| lookup_player.name.clone(),
         ))
         .country(looked_up_alias.as_ref().map_or_else(
@@ -534,5 +528,5 @@ fn build_player(
         .requested(requested)
         .build();
 
-    player_raw
+    Ok(player_raw)
 }

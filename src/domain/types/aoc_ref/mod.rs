@@ -5,6 +5,7 @@ pub mod teams;
 use crate::domain::types::error::IndexingError;
 use ::serde::Serialize;
 use dashmap::DashMap;
+use tracing::debug;
 
 /// A list of Players
 pub type AoePlayers = Vec<players::Player>;
@@ -74,6 +75,9 @@ impl RefDataLists {
                 }
             }
         }
+
+        // DEBUG
+        debug!("Alias index: {:#?}", index);
 
         // Fill index field in struct
         self.players_index_aoe2de = index;

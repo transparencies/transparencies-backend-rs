@@ -25,30 +25,30 @@ pub struct RatingHistory {
 /// endpoint Used to easily deal with the assembly of the player vectors
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Player {
-    pub civ: i64,
+    pub civ: ::serde_json::Value,
     #[serde(skip)]
     pub clan: ::serde_json::Value,
-    pub color: i64,
+    pub color: ::serde_json::Value,
     pub country: ::serde_json::Value,
     #[serde(skip)]
     pub drops: ::serde_json::Value,
     #[serde(skip)]
     pub games: ::serde_json::Value,
-    pub name: String,
-    pub profile_id: i64,
-    pub rating: i64,
+    pub name: ::serde_json::Value,
+    pub profile_id: u64,
+    pub rating: ::serde_json::Value,
     #[serde(skip)]
     pub rating_change: ::serde_json::Value,
-    pub slot: i64,
-    pub slot_type: i64,
+    pub slot: ::serde_json::Value,
+    pub slot_type: ::serde_json::Value,
     #[serde(skip)]
-    pub steam_id: String,
+    pub steam_id: ::serde_json::Value,
     #[serde(skip)]
     pub streak: ::serde_json::Value,
     pub team: i64,
     #[serde(skip)]
     pub wins: ::serde_json::Value,
-    pub won: bool,
+    pub won: ::serde_json::Value,
 }
 
 /// Helper datastructure to easily parse parts of array
