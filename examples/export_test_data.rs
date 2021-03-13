@@ -86,7 +86,7 @@ async fn main() -> Result<(), Report> {
     let in_memory_db_clone = in_memory_db.clone();
     let api_clients = ApiClient::default();
     let match_info_request =
-        MatchInfoRequest::new_from_file(export_path.clone().unwrap());
+        MatchInfoRequest::new_from_folder(export_path.clone().unwrap());
 
     // match_info_request
     //     .export_data_to_file(PathBuf::from_str(export_path.unwrap()).
