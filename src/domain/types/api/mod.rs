@@ -47,6 +47,21 @@ impl MatchInfoRequest {
         ron::de::from_reader::<_, Self>(reader).unwrap()
     }
 
+    /// Create a [`MatchInfoRequest`] from a parsed `RON` file
+    ///
+    /// # Panics
+    /// Panics when the file can not be created or data cannot be written to the
+    /// file
+    #[must_use]
+    pub fn new_from_folder(path: PathBuf) -> Self {
+        let mut file_path = path;
+        file_path.push("match_info_request.ron");
+        ron::de::from_reader::<_, Self>(BufReader::new(
+            fs::File::open(file_path).expect("file should open read only"),
+        ))
+        .unwrap()
+    }
+
     /// Write a RON file of [`MatchInfoRequest`] to
     /// `logs/match_info_request.ron` for debugging purposes
     ///

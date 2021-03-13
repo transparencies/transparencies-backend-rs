@@ -25,9 +25,9 @@ pub enum ProcessingError {
     /// Dividing by Zero is not allowed.
     DividingByZeroError,
     /// Haven't found a rating for player id: {0}
-    LookupRatingNotFound(i64),
+    LookupRatingNotFound(u64),
     /// Haven't found a leaderboard value for player id: {0}
-    LeaderboardNotFound(i64),
+    LeaderboardNotFound(u64),
     /// Haven't found a translation for {0}: {1}
     TranslationError(String, usize),
 }
@@ -58,6 +58,10 @@ pub enum ResponderError {
     /// Couldn't get the value of the translation string, because it has
     /// already been moved.
     TranslationHasBeenMovedError,
+    /// Other ApiRequestError.
+    OtherApiRequestError(#[from] ApiRequestError),
+    /// Data for LastMatch not found, possible deranked player detected.
+    DerankedPlayerDetected,
 }
 
 /// Error type for a `FileRequest`
@@ -92,6 +96,14 @@ pub enum ApiRequestError {
     },
     /// HTTP-Client experienced an error.
     HttpClientError(#[from] reqwest::Error),
+    /// HTTP-Client error with status code
+    HttpClientErrorWithStatusCode(http::StatusCode),
+    /// NotFound
+    NotFoundResponse {
+        root: String,
+        endpoint: String,
+        query: Vec<(String, String)>,
+    },
 }
 
 /// Error type for an [`ApiRequest`]

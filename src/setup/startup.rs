@@ -13,7 +13,7 @@ use tracing_subscriber::{
 };
 use tracing_tree::HierarchicalLayer;
 
-use super::cli::CommandLineSettings;
+use crate::setup::cli::CommandLineSetting;
 
 use stable_eyre::eyre::{
     Report,
@@ -24,11 +24,13 @@ use stable_eyre::eyre::{
 ///
 /// # Errors
 // TODO
-pub fn set_up_logging(cli_args: &CommandLineSettings) -> Result<(), Report> {
+pub fn set_up_logging<T: CommandLineSetting>(
+    cli_args: &T
+) -> Result<(), Report> {
     // Webserver logging
     if env::var_os("RUST_LOG").is_none() {
         // Show debug logs only when running with `debug` flags
-        if cli_args.debug {
+        if cli_args.debug() {
             env::set_var("RUST_LOG", "debug");
             env::set_var("RUST_BACKTRACE", "1");
         }
@@ -45,10 +47,10 @@ pub fn set_up_logging(cli_args: &CommandLineSettings) -> Result<(), Report> {
 
     // Setting up logfile
     let log_setup = LogConfigBuilder::builder()
-        .path(&cli_args.log_file_path)
+        .path(&cli_args.log_file_path())
         .size(100)
         .roll_count(10)
-        .level(&cli_args.log_level)
+        .level(&cli_args.log_level())
         .output_file()
         .output_console()
         .build();

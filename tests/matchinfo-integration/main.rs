@@ -7,7 +7,6 @@ use std::{
     self,
     fs,
     io::BufReader,
-    path::PathBuf,
     sync::Arc,
 };
 
@@ -44,11 +43,29 @@ use wiremock::{
 };
 
 #[tokio::test]
-async fn mock_test_match_info_result() {
+async fn standard_mock_test() {
+    let current_dir = std::env::current_dir().unwrap();
+
+    let test_cases = TestCases::default()
+        .add_case(
+            [
+                &format!("{}", current_dir.display()),
+                "tests",
+                "matchinfo-integration",
+                "standard",
+            ]
+            .iter()
+            .collect(),
+        )
+        .unwrap();
+
+    mock_test_match_info_result(test_cases).await
+}
+
+async fn mock_test_match_info_result(test_cases: TestCases) {
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
-    let current_dir = std::env::current_dir().unwrap();
     let aoe2net_api_roots: Vec<&str> = vec![
         "/api/strings",
         "/api/player/lastmatch",
@@ -56,17 +73,6 @@ async fn mock_test_match_info_result() {
         "/api/player/ratinghistory",
         "/SiegeEngineers/aoc-reference-data/master/data/",
     ];
-
-    let res_dir: PathBuf = [
-        &format!("{}", current_dir.display()),
-        "tests",
-        "matchinfo-integration",
-        "resources",
-    ]
-    .iter()
-    .collect();
-
-    let test_cases = TestCases::default().add_case(res_dir).unwrap();
 
     // Preloaded data
     let language_mock_responses: Arc<
@@ -105,7 +111,6 @@ async fn mock_test_match_info_result() {
     for mut test_case in test_cases.0 {
         // each test_case could be as well run in
         // a thread from here on
-
         load_responses_from_fs(
             &mut test_case,
             aoe2net_mock_responses_clone.clone(),

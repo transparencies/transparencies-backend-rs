@@ -23,7 +23,7 @@ use transparencies_backend_rs::{
         InMemoryDb,
     },
     setup::{
-        cli::CommandLineSettings,
+        cli::ExportCommandLineSettings,
         startup::set_up_logging,
     },
 };
@@ -36,10 +36,7 @@ use stable_eyre::eyre::{
 #[cfg(not(debug_assertions))]
 use human_panic::setup_panic;
 
-use std::{
-    path::PathBuf,
-    str::FromStr,
-};
+use std::path::PathBuf;
 use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     domain::{
@@ -68,27 +65,32 @@ async fn main() -> Result<(), Report> {
     }
 
     // Calling the command line parsing logic with the argument values
-    let cli_args = CommandLineSettings::from_args();
+    let cli_args = ExportCommandLineSettings::from_args();
 
     // If `debug` flag is set, we use a logfile
     if cli_args.debug {
         set_up_logging(&cli_args)?;
     }
+    let current_dir = std::env::current_dir().unwrap();
 
-    let export_path = Some("tests/matchinfo-integration/resources");
+    let export_path: Option<PathBuf> = Some(
+        [
+            &format!("{}", current_dir.display()),
+            &format!("{}", &cli_args.test_case_export_path),
+        ]
+        .iter()
+        .collect(),
+    );
 
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
     let api_clients = ApiClient::default();
-    let match_info_request = MatchInfoRequest {
-        language: Some("en".to_string()),
-        game: Some("aoe2de".to_string()),
-        id_type: "profile_id".to_string(),
-        id_number: "196240".to_string(),
-    };
+    let match_info_request =
+        MatchInfoRequest::new_from_folder(export_path.clone().unwrap());
 
-    match_info_request
-        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
+    // match_info_request
+    //     .export_data_to_file(PathBuf::from_str(export_path.unwrap()).
+    // unwrap());
 
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
@@ -99,7 +101,7 @@ async fn main() -> Result<(), Report> {
         in_memory_db_clone.clone(),
         github_root,
         aoe2_net_root.clone(),
-        export_path,
+        export_path.clone(),
         false,
     )
     .await
@@ -110,13 +112,12 @@ async fn main() -> Result<(), Report> {
         api_clients.aoe2net.clone(),
         aoe2_net_root,
         in_memory_db_clone.clone(),
-        export_path,
+        export_path.clone(),
     )
     .await
     .expect("Matchinfo processing failed.");
 
-    result
-        .export_data_to_file(PathBuf::from_str(export_path.unwrap()).unwrap());
+    result.export_data_to_file(export_path.unwrap());
 
     Ok(())
 }
