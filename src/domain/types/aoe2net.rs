@@ -80,7 +80,7 @@ pub enum Aoe2netIdType {
     /// match_id
     Match,
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Display)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Display)]
 #[non_exhaustive]
 pub enum Aoe2netRequestType {
     /// Last_Match
