@@ -66,7 +66,7 @@ pub async fn process_match_info_request(
 
     match responses {
         Err(err) => match err {
-            ResponderError::DerankedPlayerDetected => {
+            ResponderError::UnrecordedPlayerDetected => {
                 result = MatchInfoResult::builder()
                     .error_message(
                         ErrorMessageToFrontend::UnrecordedPlayerDetected,

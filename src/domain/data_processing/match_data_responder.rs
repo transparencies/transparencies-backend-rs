@@ -6,6 +6,7 @@ use crate::domain::{
     types::{
         aoe2net::{
             self,
+            Aoe2netRequestType,
             Aoe2netStringObj,
         },
         api::{
@@ -54,11 +55,32 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `leaderboard_id` could not be found
-    pub fn get_leaderboard_id_for_request(&self) -> Result<String> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("leaderboard_id".to_string())),
-            |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
-        )
+    pub fn get_leaderboard_id_from_request(
+        &mut self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<String> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "leaderboard_id from last_match".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "leaderboard_id from match_id".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["leaderboard_id"].to_string()),
+                )
+            }
+        }
     }
 
     /// Parses all the players into a `type T`
@@ -454,50 +476,85 @@ impl MatchDataResponses {
             ..MatchDataResponses::default()
         };
 
-        // GET `PlayerLastMatch` data
+        match par.id_type.as_str() {
+            "steam_id" | "profile_id" => {
+                // GET `PlayerLastMatch` data
+                let match_data_response = util::build_api_request(
+                    client.clone(),
+                    root.clone(),
+                    "player/lastmatch",
+                    vec![
+                        ("game".to_string(), game.clone()),
+                        (par.id_type.clone(), par.id_number.clone()),
+                    ],
+                )
+                .execute::<serde_json::Value>()
+                .await;
 
-        let match_data_response = util::build_api_request(
-            client.clone(),
-            root.clone(),
-            "player/lastmatch",
-            vec![
-                ("game".to_string(), game.clone()),
-                (par.id_type.clone(), par.id_number.clone()),
-            ],
-        )
-        .execute::<serde_json::Value>()
-        .await;
+                match match_data_response {
+                    Err(err) => match err {
+                        ApiRequestError::NotFoundResponse {
+                            root: _,
+                            endpoint: _,
+                            query: _,
+                        } => {
+                            return Err(
+                                ResponderError::UnrecordedPlayerDetected,
+                            )
+                        }
+                        _ => {
+                            return Err(ResponderError::OtherApiRequestError(
+                                err,
+                            ))
+                        }
+                    },
+                    Ok(value) => {
+                        responses.aoe2net.player_last_match = Some(value);
+                        // Get `leaderboard_id` for future requests
+                        responses.aoe2net.leaderboard_id =
+                            Some(responses.get_leaderboard_id_from_request(
+                                Aoe2netRequestType::LastMatch,
+                            )?);
+                    }
+                }
 
-        match match_data_response {
-            Err(err) => match err {
-                ApiRequestError::NotFoundResponse {
-                    root: _,
-                    endpoint: _,
-                    query: _,
-                } => return Err(ResponderError::DerankedPlayerDetected),
-                _ => return Err(ResponderError::OtherApiRequestError(err)),
-            },
-            Ok(value) => responses.aoe2net.player_last_match = Some(value),
+                if let Some(mut path) = export_path.clone() {
+                    path.push("aoe2net");
+                    util::export_to_json(
+                        &File {
+                            name: "last_match".to_string(),
+                            ext: FileFormat::Json,
+                        },
+                        &path,
+                        &responses
+                            .clone()
+                            .aoe2net
+                            .player_last_match
+                            .map_or(serde_json::Value::Null, |x| x),
+                    )
+                }
+            }
+            "match_id" => {
+                // GET `MatchID` data
+                responses.aoe2net.match_id = Some(
+                    util::build_api_request(
+                        client.clone(),
+                        root.clone(),
+                        "api/match",
+                        vec![(par.id_type.clone(), par.id_number.clone())],
+                    )
+                    .execute::<serde_json::Value>()
+                    .await?,
+                );
+
+                // Get `leaderboard_id` for future requests
+                responses.aoe2net.leaderboard_id =
+                    Some(responses.get_leaderboard_id_from_request(
+                        Aoe2netRequestType::MatchId,
+                    )?);
+            }
+            _ => return Err(ResponderError::InvalidIdType(par.id_type)),
         }
-
-        if let Some(mut path) = export_path.clone() {
-            path.push("aoe2net");
-            util::export_to_json(
-                &File {
-                    name: "last_match".to_string(),
-                    ext: FileFormat::Json,
-                },
-                &path,
-                &responses
-                    .clone()
-                    .aoe2net
-                    .player_last_match
-                    .map_or(serde_json::Value::Null, |x| x),
-            )
-        }
-
-        // Get `leaderboard_id` for future requests
-        let leaderboard_id = &responses.get_leaderboard_id_for_request()?;
 
         // Get all players from `LastMatch` response
         responses.aoe2net.players_temp =
@@ -512,7 +569,10 @@ impl MatchDataResponses {
                 vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
-                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
+                    (
+                        "leaderboard_id".to_string(),
+                        responses.aoe2net.leaderboard_id.clone().unwrap(),
+                    ),
                     ("count".to_string(), "1".to_string()),
                 ],
             );
@@ -525,7 +585,10 @@ impl MatchDataResponses {
                 vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
-                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
+                    (
+                        "leaderboard_id".to_string(),
+                        responses.aoe2net.leaderboard_id.clone().unwrap(),
+                    ),
                 ],
             );
 

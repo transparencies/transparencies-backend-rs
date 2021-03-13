@@ -15,8 +15,10 @@ pub struct MatchDataResponses {
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct Aoe2NetResponses {
+    pub leaderboard_id: Option<String>,
     pub player_last_match: Option<serde_json::Value>,
     pub leaderboard: DashMap<String, serde_json::Value>,
     pub rating_history: DashMap<String, serde_json::Value>,
     pub players_temp: Vec<aoe2net::Player>,
+    pub match_id: Option<serde_json::Value>,
 }

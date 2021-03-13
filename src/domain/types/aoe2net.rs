@@ -6,6 +6,7 @@ use serde::{
 };
 
 use derive_getters::Getters;
+use displaydoc::Display;
 
 /// Convenience datastructure for the `RatingHistory` endpoint to
 /// easily parse the data into our struct
@@ -68,4 +69,21 @@ pub struct Player {
 pub struct Aoe2netStringObj {
     id: usize,
     string: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Display)]
+pub enum Aoe2netIdTypes {
+    /// steam_id
+    SteamId,
+    /// profile_id
+    ProfileId,
+    /// match_id
+    MatchId,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Display)]
+pub enum Aoe2netRequestType {
+    /// Last_Match
+    LastMatch,
+    /// Match_ID
+    MatchId,
 }
