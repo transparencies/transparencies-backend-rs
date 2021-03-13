@@ -10,7 +10,10 @@ use crate::domain::{
     data_processing::MatchDataResponses,
     types::{
         aoc_ref,
-        aoe2net,
+        aoe2net::{
+            self,
+            Aoe2netRequestType,
+        },
         api::{
             MatchInfo,
             MatchInfoResult,
@@ -91,6 +94,13 @@ impl MatchInfoProcessor {
         // TODO: Collect errors in &self.errors or alike
         trace!("Processing MatchDataResponses ...");
 
+        let req_type = if self.responses.aoe2net.match_id.is_some() {
+            Aoe2netRequestType::MatchId
+        }
+        else {
+            Aoe2netRequestType::LastMatch
+        };
+
         let players_vec = &self.responses.aoe2net.players_temp.clone();
 
         let mut players_raw = Vec::with_capacity(players_vec.len() as usize);
@@ -133,7 +143,7 @@ impl MatchInfoProcessor {
         let translated_last_match_rating_type =
             &self.responses.get_translated_string_from_id(
                 "rating_type",
-                self.responses.get_rating_type_id()?,
+                self.responses.get_rating_type_id(&req_type)?,
             )?;
         trace!("Successfully translated rating type.");
 
@@ -141,7 +151,7 @@ impl MatchInfoProcessor {
         let translated_last_match_map_type =
             &self.responses.get_translated_string_from_id(
                 "map_type",
-                self.responses.get_map_type_id()?,
+                self.responses.get_map_type_id(&req_type)?,
             )?;
         trace!("Successfully translated map type.");
 
@@ -149,13 +159,15 @@ impl MatchInfoProcessor {
         let translated_last_match_match_type =
             &self.responses.get_translated_string_from_id(
                 "game_type",
-                self.responses.get_game_type_id()?,
+                self.responses.get_game_type_id(&req_type)?,
             )?;
         trace!("Successfully translated game type.");
 
         trace!("Getting match status ...");
-        let match_status = if let Ok(time) =
-            &self.responses.get_finished_time()?.parse::<usize>()
+        let match_status = if let Ok(time) = &self
+            .responses
+            .get_finished_time(&req_type)?
+            .parse::<usize>()
         {
             MatchStatus::Finished(*time)
         }
@@ -171,7 +183,7 @@ impl MatchInfoProcessor {
             .game_type(translated_last_match_match_type.to_string())
             .rating_type(translated_last_match_rating_type.to_string())
             .map_name(translated_last_match_map_type.to_string())
-            .server(self.responses.get_server_location()?)
+            .server(self.responses.get_server_location(&req_type)?)
             .teams(Teams(teams_raw.clone()))
             .match_status(match_status)
             .build();

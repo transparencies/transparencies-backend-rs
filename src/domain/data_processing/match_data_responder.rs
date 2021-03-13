@@ -153,11 +153,32 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_finished_time(&self) -> Result<String> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("finished time".to_string())),
-            |val| Ok(val["last_match"]["finished"].to_string()),
-        )
+    pub fn get_finished_time(
+        &self,
+        req_type: &Aoe2netRequestType,
+    ) -> Result<String> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match finished time".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["last_match"]["finished"].to_string()),
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id finished time".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["finished"].to_string()),
+                )
+            }
+        }
     }
 
     /// Returns the rating type id for a match
@@ -166,15 +187,38 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_rating_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("rating type".to_string())),
-            |val| {
-                Ok(val["last_match"]["rating_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_rating_type_id(
+        &self,
+        req_type: &Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last match rating type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["rating_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match id rating type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["rating_type"].to_string().parse::<usize>()?)
+                    },
+                )
+            }
+        }
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
@@ -330,15 +374,36 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_map_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("map type".to_string())),
-            |val| {
-                Ok(val["last_match"]["map_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_map_type_id(
+        &self,
+        req_type: &Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match map type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["map_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id map type".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["map_type"].to_string().parse::<usize>()?),
+                )
+            }
+        }
     }
 
     /// Returns the `game_type` id from a match
@@ -347,15 +412,36 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_game_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("game type".to_string())),
-            |val| {
-                Ok(val["last_match"]["game_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_game_type_id(
+        &self,
+        req_type: &Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match game type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["game_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id game type".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["game_type"].to_string().parse::<usize>()?),
+                )
+            }
+        }
     }
 
     /// Returns the server location of the match while looking it up from
@@ -363,28 +449,68 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_server_location(&self) -> Result<Server> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("server location".to_string())),
-            |val| {
-                let mut string = val["last_match"]["server"].to_string();
-                string.retain(|char| char != '\\');
-                string.retain(|char| char != '\"');
+    pub fn get_server_location(
+        &self,
+        req_type: &Aoe2netRequestType,
+    ) -> Result<Server> {
+        let mut server = String::new();
 
-                Ok(match string.as_str() {
-                    "australiasoutheast" => Server::Australia,
-                    "brazilsouth" => Server::Brazil,
-                    "ukwest" => Server::UK,
-                    "westindia" => Server::India,
-                    "southeastasia" => Server::SoutheastAsia,
-                    "westeurope" => Server::WesternEurope,
-                    "eastus" => Server::UsEast,
-                    "koreacentral" => Server::Korea,
-                    "westus2" => Server::UsWest,
-                    _ => Server::NotFound,
-                })
-            },
-        )
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        return Err(ResponderError::NotFound(
+                            "server location".to_string(),
+                        ));
+                    },
+                    |val| {
+                        server = val["last_match"]["server"].to_string();
+
+                        server.retain(|char| char != '\\');
+                        server.retain(|char| char != '\"');
+                        Ok(match server.as_str() {
+                            "australiasoutheast" => Server::Australia,
+                            "brazilsouth" => Server::Brazil,
+                            "ukwest" => Server::UK,
+                            "westindia" => Server::India,
+                            "southeastasia" => Server::SoutheastAsia,
+                            "westeurope" => Server::WesternEurope,
+                            "eastus" => Server::UsEast,
+                            "koreacentral" => Server::Korea,
+                            "westus2" => Server::UsWest,
+                            _ => Server::NotFound,
+                        })
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        return Err(ResponderError::NotFound(
+                            "server location".to_string(),
+                        ));
+                    },
+                    |val| {
+                        server = val["server"].to_string();
+
+                        server.retain(|char| char != '\\');
+                        server.retain(|char| char != '\"');
+                        Ok(match server.as_str() {
+                            "australiasoutheast" => Server::Australia,
+                            "brazilsouth" => Server::Brazil,
+                            "ukwest" => Server::UK,
+                            "westindia" => Server::India,
+                            "southeastasia" => Server::SoutheastAsia,
+                            "westeurope" => Server::WesternEurope,
+                            "eastus" => Server::UsEast,
+                            "koreacentral" => Server::Korea,
+                            "westus2" => Server::UsWest,
+                            _ => Server::NotFound,
+                        })
+                    },
+                )
+            }
+        }
     }
 
     /// Looks up a player rating list in a [`dashmap::DashMap`] for
@@ -578,7 +704,7 @@ impl MatchDataResponses {
                     util::build_api_request(
                         client.clone(),
                         root.clone(),
-                        "api/match",
+                        "match",
                         vec![(par.id_type.clone(), par.id_number.clone())],
                     )
                     .execute::<serde_json::Value>()
