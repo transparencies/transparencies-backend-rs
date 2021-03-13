@@ -143,7 +143,7 @@ impl MatchInfoProcessor {
         let translated_last_match_rating_type =
             &self.responses.get_translated_string_from_id(
                 "rating_type",
-                self.responses.get_rating_type_id(&req_type)?,
+                self.responses.get_rating_type_id(req_type)?,
             )?;
         trace!("Successfully translated rating type.");
 
@@ -151,7 +151,7 @@ impl MatchInfoProcessor {
         let translated_last_match_map_type =
             &self.responses.get_translated_string_from_id(
                 "map_type",
-                self.responses.get_map_type_id(&req_type)?,
+                self.responses.get_map_type_id(req_type)?,
             )?;
         trace!("Successfully translated map type.");
 
@@ -159,15 +159,13 @@ impl MatchInfoProcessor {
         let translated_last_match_match_type =
             &self.responses.get_translated_string_from_id(
                 "game_type",
-                self.responses.get_game_type_id(&req_type)?,
+                self.responses.get_game_type_id(req_type)?,
             )?;
         trace!("Successfully translated game type.");
 
         trace!("Getting match status ...");
-        let match_status = if let Ok(time) = &self
-            .responses
-            .get_finished_time(&req_type)?
-            .parse::<usize>()
+        let match_status = if let Ok(time) =
+            &self.responses.get_finished_time(req_type)?.parse::<usize>()
         {
             MatchStatus::Finished(*time)
         }
@@ -183,7 +181,7 @@ impl MatchInfoProcessor {
             .game_type(translated_last_match_match_type.to_string())
             .rating_type(translated_last_match_rating_type.to_string())
             .map_name(translated_last_match_map_type.to_string())
-            .server(self.responses.get_server_location(&req_type)?)
+            .server(self.responses.get_server_location(req_type)?)
             .teams(Teams(teams_raw.clone()))
             .match_status(match_status)
             .build();

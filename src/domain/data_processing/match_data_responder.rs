@@ -57,7 +57,7 @@ impl MatchDataResponses {
     /// Will return an error if the `leaderboard_id` could not be found
     pub fn get_leaderboard_id_from_request(
         &mut self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -92,7 +92,7 @@ impl MatchDataResponses {
     /// `Player` struct failed
     pub fn parse_all_players<T>(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<T>
     where
         T: for<'de> serde::Deserialize<'de>,
@@ -155,7 +155,7 @@ impl MatchDataResponses {
     /// Will return an error if the `last_match` could not be found
     pub fn get_finished_time(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -189,7 +189,7 @@ impl MatchDataResponses {
     /// Will return an error if the `last_match` could not be found
     pub fn get_rating_type_id(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -376,7 +376,7 @@ impl MatchDataResponses {
     /// Will return an error if the `last_match` could not be found
     pub fn get_map_type_id(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -414,7 +414,7 @@ impl MatchDataResponses {
     /// Will return an error if the `last_match` could not be found
     pub fn get_game_type_id(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -451,20 +451,20 @@ impl MatchDataResponses {
     /// Will return an error if the `last_match` could not be found
     pub fn get_server_location(
         &self,
-        req_type: &Aoe2netRequestType,
+        req_type: Aoe2netRequestType,
     ) -> Result<Server> {
         let mut server = String::new();
 
         match req_type {
             Aoe2netRequestType::LastMatch => {
-                self.aoe2net.player_last_match.as_ref().map(|val| {
+                if let Some(val) = self.aoe2net.player_last_match.as_ref() {
                     server = val["last_match"]["server"].to_string();
-                });
+                }
             }
             Aoe2netRequestType::MatchId => {
-                self.aoe2net.match_id.as_ref().map(|val| {
+                if let Some(val) = self.aoe2net.match_id.as_ref() {
                     server = val["server"].to_string();
-                });
+                }
             }
         };
 
@@ -645,13 +645,13 @@ impl MatchDataResponses {
                         // Get `leaderboard_id` for future requests
                         responses.aoe2net.leaderboard_id =
                             Some(responses.get_leaderboard_id_from_request(
-                                &Aoe2netRequestType::LastMatch,
+                                Aoe2netRequestType::LastMatch,
                             )?);
 
                         // Get all players from `LastMatch` response
                         responses.aoe2net.players_temp = responses
                             .parse_all_players::<Vec<aoe2net::Player>>(
-                                &Aoe2netRequestType::LastMatch,
+                                Aoe2netRequestType::LastMatch,
                             )?;
                     }
                 }
@@ -688,13 +688,13 @@ impl MatchDataResponses {
                 // Get `leaderboard_id` for future requests
                 responses.aoe2net.leaderboard_id =
                     Some(responses.get_leaderboard_id_from_request(
-                        &Aoe2netRequestType::MatchId,
+                        Aoe2netRequestType::MatchId,
                     )?);
 
                 // Get all players from `LastMatch` response
                 responses.aoe2net.players_temp = responses
                     .parse_all_players::<Vec<aoe2net::Player>>(
-                        &Aoe2netRequestType::MatchId,
+                        Aoe2netRequestType::MatchId,
                     )?;
             }
             _ => return Err(ResponderError::InvalidIdType(par.id_type)),
