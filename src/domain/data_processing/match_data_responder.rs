@@ -6,6 +6,7 @@ use crate::domain::{
     types::{
         aoe2net::{
             self,
+            Aoe2netRequestType,
             Aoe2netStringObj,
         },
         api::{
@@ -54,11 +55,32 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `leaderboard_id` could not be found
-    pub fn get_leaderboard_id_for_request(&self) -> Result<String> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("leaderboard_id".to_string())),
-            |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
-        )
+    pub fn get_leaderboard_id_from_request(
+        &mut self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<String> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "leaderboard_id from last_match".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "leaderboard_id from match_id".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["leaderboard_id"].to_string()),
+                )
+            }
+        }
     }
 
     /// Parses all the players into a `type T`
@@ -68,18 +90,50 @@ impl MatchDataResponses {
     /// Will return an error if either the `players array` can not be found
     /// or will `panic!` if the deserialisation failed or the parsing of the
     /// `Player` struct failed
-    pub fn parse_all_players<T>(&self) -> Result<T>
-    where T: for<'de> serde::Deserialize<'de> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("players array".to_string())),
-            |val| {
-                Ok(serde_json::from_str::<T>(
-                    &serde_json::to_string(&val["last_match"]["players"])
-                        .expect("Conversion of players to string failed."),
+    pub fn parse_all_players<T>(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<T>
+    where
+        T: for<'de> serde::Deserialize<'de>,
+    {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match players array".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(serde_json::from_str::<T>(
+                            &serde_json::to_string(
+                                &val["last_match"]["players"],
+                            )
+                            .expect("Conversion of last_match players to string failed."),
+                        )
+                        .expect("Parsing of last_match player struct failed."))
+                    },
                 )
-                .expect("Parsing of player struct failed."))
-            },
-        )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id players array".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(serde_json::from_str::<T>(
+                            &serde_json::to_string(&val["players"]).expect(
+                                "Conversion of match_id players to string failed.",
+                            ),
+                        )
+                        .expect("Parsing of match_id player struct failed."))
+                    },
+                )
+            }
+        }
     }
 
     /// Returns the number of players from the `last_match` response
@@ -99,11 +153,32 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_finished_time(&self) -> Result<String> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("finished time".to_string())),
-            |val| Ok(val["last_match"]["finished"].to_string()),
-        )
+    pub fn get_finished_time(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<String> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match finished time".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["last_match"]["finished"].to_string()),
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id finished time".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["finished"].to_string()),
+                )
+            }
+        }
     }
 
     /// Returns the rating type id for a match
@@ -112,15 +187,38 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_rating_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("rating type".to_string())),
-            |val| {
-                Ok(val["last_match"]["rating_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_rating_type_id(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last match rating type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["rating_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match id rating type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["rating_type"].to_string().parse::<usize>()?)
+                    },
+                )
+            }
+        }
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
@@ -276,15 +374,36 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_map_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("map type".to_string())),
-            |val| {
-                Ok(val["last_match"]["map_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_map_type_id(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match map type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["map_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id map type".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["map_type"].to_string().parse::<usize>()?),
+                )
+            }
+        }
     }
 
     /// Returns the `game_type` id from a match
@@ -293,15 +412,36 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_game_type_id(&self) -> Result<usize> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("game type".to_string())),
-            |val| {
-                Ok(val["last_match"]["game_type"]
-                    .to_string()
-                    .parse::<usize>()?)
-            },
-        )
+    pub fn get_game_type_id(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<usize> {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match game type".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(val["last_match"]["game_type"]
+                            .to_string()
+                            .parse::<usize>()?)
+                    },
+                )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id game type".to_string(),
+                        ))
+                    },
+                    |val| Ok(val["game_type"].to_string().parse::<usize>()?),
+                )
+            }
+        }
     }
 
     /// Returns the server location of the match while looking it up from
@@ -309,28 +449,42 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_server_location(&self) -> Result<Server> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("server location".to_string())),
-            |val| {
-                let mut string = val["last_match"]["server"].to_string();
-                string.retain(|char| char != '\\');
-                string.retain(|char| char != '\"');
+    pub fn get_server_location(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<Server> {
+        let mut server = String::new();
 
-                Ok(match string.as_str() {
-                    "australiasoutheast" => Server::Australia,
-                    "brazilsouth" => Server::Brazil,
-                    "ukwest" => Server::UK,
-                    "westindia" => Server::India,
-                    "southeastasia" => Server::SoutheastAsia,
-                    "westeurope" => Server::WesternEurope,
-                    "eastus" => Server::UsEast,
-                    "koreacentral" => Server::Korea,
-                    "westus2" => Server::UsWest,
-                    _ => Server::NotFound,
-                })
-            },
-        )
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                if let Some(val) = self.aoe2net.player_last_match.as_ref() {
+                    server = val["last_match"]["server"].to_string();
+                }
+            }
+            Aoe2netRequestType::MatchId => {
+                if let Some(val) = self.aoe2net.match_id.as_ref() {
+                    server = val["server"].to_string();
+                }
+            }
+        };
+
+        server.retain(|char| char != '\\');
+        server.retain(|char| char != '\"');
+
+        let server_result = match server.as_str() {
+            "australiasoutheast" => Server::Australia,
+            "brazilsouth" => Server::Brazil,
+            "ukwest" => Server::UK,
+            "westindia" => Server::India,
+            "southeastasia" => Server::SoutheastAsia,
+            "westeurope" => Server::WesternEurope,
+            "eastus" => Server::UsEast,
+            "koreacentral" => Server::Korea,
+            "westus2" => Server::UsWest,
+            _ => Server::NotFound,
+        };
+
+        Ok(server_result)
     }
 
     /// Looks up a player rating list in a [`dashmap::DashMap`] for
@@ -454,54 +608,97 @@ impl MatchDataResponses {
             ..MatchDataResponses::default()
         };
 
-        // GET `PlayerLastMatch` data
+        match par.id_type.as_str() {
+            "steam_id" | "profile_id" => {
+                // GET `PlayerLastMatch` data
+                let match_data_response = util::build_api_request(
+                    client.clone(),
+                    root.clone(),
+                    "player/lastmatch",
+                    vec![
+                        ("game".to_string(), game.clone()),
+                        (par.id_type.clone(), par.id_number.clone()),
+                    ],
+                )
+                .execute::<serde_json::Value>()
+                .await;
 
-        let match_data_response = util::build_api_request(
-            client.clone(),
-            root.clone(),
-            "player/lastmatch",
-            vec![
-                ("game".to_string(), game.clone()),
-                (par.id_type.clone(), par.id_number.clone()),
-            ],
-        )
-        .execute::<serde_json::Value>()
-        .await;
+                match match_data_response {
+                    Err(err) => match err {
+                        ApiRequestError::NotFoundResponse {
+                            root: _,
+                            endpoint: _,
+                            query: _,
+                        } => {
+                            return Err(
+                                ResponderError::UnrecordedPlayerDetected,
+                            )
+                        }
+                        _ => {
+                            return Err(ResponderError::OtherApiRequestError(
+                                err,
+                            ))
+                        }
+                    },
+                    Ok(value) => {
+                        responses.aoe2net.player_last_match = Some(value);
+                        // Get `leaderboard_id` for future requests
+                        responses.aoe2net.leaderboard_id =
+                            Some(responses.get_leaderboard_id_from_request(
+                                Aoe2netRequestType::LastMatch,
+                            )?);
 
-        match match_data_response {
-            Err(err) => match err {
-                ApiRequestError::NotFoundResponse {
-                    root: _,
-                    endpoint: _,
-                    query: _,
-                } => return Err(ResponderError::DerankedPlayerDetected),
-                _ => return Err(ResponderError::OtherApiRequestError(err)),
-            },
-            Ok(value) => responses.aoe2net.player_last_match = Some(value),
+                        // Get all players from `LastMatch` response
+                        responses.aoe2net.players_temp = responses
+                            .parse_all_players::<Vec<aoe2net::Player>>(
+                                Aoe2netRequestType::LastMatch,
+                            )?;
+                    }
+                }
+
+                if let Some(mut path) = export_path.clone() {
+                    path.push("aoe2net");
+                    util::export_to_json(
+                        &File {
+                            name: "last_match".to_string(),
+                            ext: FileFormat::Json,
+                        },
+                        &path,
+                        &responses
+                            .clone()
+                            .aoe2net
+                            .player_last_match
+                            .map_or(serde_json::Value::Null, |x| x),
+                    )
+                }
+            }
+            "match_id" => {
+                // GET `MatchID` data
+                responses.aoe2net.match_id = Some(
+                    util::build_api_request(
+                        client.clone(),
+                        root.clone(),
+                        "match",
+                        vec![(par.id_type.clone(), par.id_number.clone())],
+                    )
+                    .execute::<serde_json::Value>()
+                    .await?,
+                );
+
+                // Get `leaderboard_id` for future requests
+                responses.aoe2net.leaderboard_id =
+                    Some(responses.get_leaderboard_id_from_request(
+                        Aoe2netRequestType::MatchId,
+                    )?);
+
+                // Get all players from `LastMatch` response
+                responses.aoe2net.players_temp = responses
+                    .parse_all_players::<Vec<aoe2net::Player>>(
+                        Aoe2netRequestType::MatchId,
+                    )?;
+            }
+            _ => return Err(ResponderError::InvalidIdType(par.id_type)),
         }
-
-        if let Some(mut path) = export_path.clone() {
-            path.push("aoe2net");
-            util::export_to_json(
-                &File {
-                    name: "last_match".to_string(),
-                    ext: FileFormat::Json,
-                },
-                &path,
-                &responses
-                    .clone()
-                    .aoe2net
-                    .player_last_match
-                    .map_or(serde_json::Value::Null, |x| x),
-            )
-        }
-
-        // Get `leaderboard_id` for future requests
-        let leaderboard_id = &responses.get_leaderboard_id_for_request()?;
-
-        // Get all players from `LastMatch` response
-        responses.aoe2net.players_temp =
-            responses.parse_all_players::<Vec<aoe2net::Player>>()?;
 
         for player in &responses.aoe2net.players_temp {
             // Get Rating `HistoryData` for each player
@@ -512,7 +709,10 @@ impl MatchDataResponses {
                 vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
-                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
+                    (
+                        "leaderboard_id".to_string(),
+                        responses.aoe2net.leaderboard_id.clone().unwrap(),
+                    ),
                     ("count".to_string(), "1".to_string()),
                 ],
             );
@@ -525,7 +725,10 @@ impl MatchDataResponses {
                 vec![
                     ("game".to_string(), game.clone()),
                     ("profile_id".to_string(), player.profile_id.to_string()),
-                    ("leaderboard_id".to_string(), leaderboard_id.clone()),
+                    (
+                        "leaderboard_id".to_string(),
+                        responses.aoe2net.leaderboard_id.clone().unwrap(),
+                    ),
                 ],
             );
 

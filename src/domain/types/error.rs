@@ -60,8 +60,10 @@ pub enum ResponderError {
     TranslationHasBeenMovedError,
     /// Other ApiRequestError.
     OtherApiRequestError(#[from] ApiRequestError),
-    /// Data for LastMatch not found, possible deranked player detected.
-    DerankedPlayerDetected,
+    /// Data for LastMatch not found, possible unrecorded player detected.
+    UnrecordedPlayerDetected,
+    /// Invalid id_type: {0}
+    InvalidIdType(String),
 }
 
 /// Error type for a `FileRequest`
