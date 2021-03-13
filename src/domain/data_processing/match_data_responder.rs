@@ -457,60 +457,34 @@ impl MatchDataResponses {
 
         match req_type {
             Aoe2netRequestType::LastMatch => {
-                self.aoe2net.player_last_match.as_ref().map_or_else(
-                    || {
-                        Err(ResponderError::NotFound(
-                            "server location".to_string(),
-                        ));
-                    },
-                    |val| {
-                        server = val["last_match"]["server"].to_string();
-
-                        server.retain(|char| char != '\\');
-                        server.retain(|char| char != '\"');
-                        Ok(match server.as_str() {
-                            "australiasoutheast" => Server::Australia,
-                            "brazilsouth" => Server::Brazil,
-                            "ukwest" => Server::UK,
-                            "westindia" => Server::India,
-                            "southeastasia" => Server::SoutheastAsia,
-                            "westeurope" => Server::WesternEurope,
-                            "eastus" => Server::UsEast,
-                            "koreacentral" => Server::Korea,
-                            "westus2" => Server::UsWest,
-                            _ => Server::NotFound,
-                        })
-                    },
-                )
+                self.aoe2net.player_last_match.as_ref().map(|val| {
+                    server = val["last_match"]["server"].to_string();
+                });
             }
             Aoe2netRequestType::MatchId => {
-                self.aoe2net.match_id.as_ref().map_or_else(
-                    || {
-                        Err(ResponderError::NotFound(
-                            "server location".to_string(),
-                        ));
-                    },
-                    |val| {
-                        server = val["server"].to_string();
-
-                        server.retain(|char| char != '\\');
-                        server.retain(|char| char != '\"');
-                        Ok(match server.as_str() {
-                            "australiasoutheast" => Server::Australia,
-                            "brazilsouth" => Server::Brazil,
-                            "ukwest" => Server::UK,
-                            "westindia" => Server::India,
-                            "southeastasia" => Server::SoutheastAsia,
-                            "westeurope" => Server::WesternEurope,
-                            "eastus" => Server::UsEast,
-                            "koreacentral" => Server::Korea,
-                            "westus2" => Server::UsWest,
-                            _ => Server::NotFound,
-                        })
-                    },
-                )
+                self.aoe2net.match_id.as_ref().map(|val| {
+                    server = val["server"].to_string();
+                });
             }
-        }
+        };
+
+        server.retain(|char| char != '\\');
+        server.retain(|char| char != '\"');
+
+        let server_result = match server.as_str() {
+            "australiasoutheast" => Server::Australia,
+            "brazilsouth" => Server::Brazil,
+            "ukwest" => Server::UK,
+            "westindia" => Server::India,
+            "southeastasia" => Server::SoutheastAsia,
+            "westeurope" => Server::WesternEurope,
+            "eastus" => Server::UsEast,
+            "koreacentral" => Server::Korea,
+            "westus2" => Server::UsWest,
+            _ => Server::NotFound,
+        };
+
+        Ok(server_result)
     }
 
     /// Looks up a player rating list in a [`dashmap::DashMap`] for
