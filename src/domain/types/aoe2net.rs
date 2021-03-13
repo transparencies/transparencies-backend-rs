@@ -74,11 +74,11 @@ pub struct Aoe2netStringObj {
 #[derive(Debug, Serialize, Deserialize, Clone, Display)]
 pub enum Aoe2netIdType {
     /// steam_id
-    SteamId,
+    Steam,
     /// profile_id
-    ProfileId,
+    Profile,
     /// match_id
-    MatchId,
+    Match,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Display)]
 #[non_exhaustive]
