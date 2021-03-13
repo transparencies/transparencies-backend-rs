@@ -90,18 +90,50 @@ impl MatchDataResponses {
     /// Will return an error if either the `players array` can not be found
     /// or will `panic!` if the deserialisation failed or the parsing of the
     /// `Player` struct failed
-    pub fn parse_all_players<T>(&self) -> Result<T>
-    where T: for<'de> serde::Deserialize<'de> {
-        self.aoe2net.player_last_match.as_ref().map_or_else(
-            || Err(ResponderError::NotFound("players array".to_string())),
-            |val| {
-                Ok(serde_json::from_str::<T>(
-                    &serde_json::to_string(&val["last_match"]["players"])
-                        .expect("Conversion of players to string failed."),
+    pub fn parse_all_players<T>(
+        &self,
+        req_type: Aoe2netRequestType,
+    ) -> Result<T>
+    where
+        T: for<'de> serde::Deserialize<'de>,
+    {
+        match req_type {
+            Aoe2netRequestType::LastMatch => {
+                self.aoe2net.player_last_match.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "last_match players array".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(serde_json::from_str::<T>(
+                            &serde_json::to_string(
+                                &val["last_match"]["players"],
+                            )
+                            .expect("Conversion of last_match players to string failed."),
+                        )
+                        .expect("Parsing of last_match player struct failed."))
+                    },
                 )
-                .expect("Parsing of player struct failed."))
-            },
-        )
+            }
+            Aoe2netRequestType::MatchId => {
+                self.aoe2net.match_id.as_ref().map_or_else(
+                    || {
+                        Err(ResponderError::NotFound(
+                            "match_id players array".to_string(),
+                        ))
+                    },
+                    |val| {
+                        Ok(serde_json::from_str::<T>(
+                            &serde_json::to_string(&val["players"]).expect(
+                                "Conversion of match_id players to string failed.",
+                            ),
+                        )
+                        .expect("Parsing of match_id player struct failed."))
+                    },
+                )
+            }
+        }
     }
 
     /// Returns the number of players from the `last_match` response
@@ -515,6 +547,12 @@ impl MatchDataResponses {
                             Some(responses.get_leaderboard_id_from_request(
                                 Aoe2netRequestType::LastMatch,
                             )?);
+
+                        // Get all players from `LastMatch` response
+                        responses.aoe2net.players_temp = responses
+                            .parse_all_players::<Vec<aoe2net::Player>>(
+                                Aoe2netRequestType::LastMatch,
+                            )?;
                     }
                 }
 
@@ -552,13 +590,15 @@ impl MatchDataResponses {
                     Some(responses.get_leaderboard_id_from_request(
                         Aoe2netRequestType::MatchId,
                     )?);
+
+                // Get all players from `LastMatch` response
+                responses.aoe2net.players_temp = responses
+                    .parse_all_players::<Vec<aoe2net::Player>>(
+                        Aoe2netRequestType::MatchId,
+                    )?;
             }
             _ => return Err(ResponderError::InvalidIdType(par.id_type)),
         }
-
-        // Get all players from `LastMatch` response
-        responses.aoe2net.players_temp =
-            responses.parse_all_players::<Vec<aoe2net::Player>>()?;
 
         for player in &responses.aoe2net.players_temp {
             // Get Rating `HistoryData` for each player
