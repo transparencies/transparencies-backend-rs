@@ -12,8 +12,6 @@ use ron::ser::{
     PrettyConfig,
 };
 
-use displaydoc::Display;
-
 use std::{
     fs,
     io::{
