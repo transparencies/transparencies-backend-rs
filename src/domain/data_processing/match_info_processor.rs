@@ -528,7 +528,13 @@ fn build_player(
         .player_number(req_player.color.to_string().parse::<i64>()?)
         .team_number(req_player.team)
         .name(looked_up_alias.as_ref().map_or_else(
-            || req_player.name.to_string(),
+            || {
+                // Get rid of character escaping
+                let mut name = req_player.name.to_string();
+                name.retain(|char| char != '\\');
+                name.retain(|char| char != '\"');
+                name
+            },
             |lookup_player| lookup_player.name.clone(),
         ))
         .country(looked_up_alias.as_ref().map_or_else(
