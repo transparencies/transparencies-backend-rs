@@ -53,6 +53,8 @@
 - [X] implement `todo!()`s
 - [X] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
+- [ ] collect all `SoftFail` errors within each request to our API, collect them
+at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
 
 ### Testing
 
@@ -79,7 +81,7 @@ usage in test cases
         parsing on the run
     - [X] last_match == 404
     - [ ] New players without ranking (as deranked, but less than 10 games played)
-    - [ ] Deranked players (have an empty `leaderboard` entry)
+    - [X] Deranked players (have an empty `leaderboard` entry)
         - then we should use `ratinghistory` for the last data and `rank=DR`
     - [ ] Coop games
     - [ ] Game Type except RM (0) and DM (2)
