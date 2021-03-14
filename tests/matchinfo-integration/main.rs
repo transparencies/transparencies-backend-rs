@@ -39,7 +39,6 @@ use transparencies_backend_rs::{
         init_subscriber,
     },
 };
-use uuid::Uuid;
 use wiremock::{
     matchers::method,
     Mock,
@@ -47,12 +46,17 @@ use wiremock::{
     ResponseTemplate,
 };
 
+// Ensure that the `tracing` stack is only initialised once using `lazy_static`
+lazy_static::lazy_static! {
+static ref TRACING: () = {
+let filter = if std::env::var("TEST_LOG").is_ok() { "debug" } else { "" };
+let subscriber = get_subscriber("integration test".into(), filter.into());
+init_subscriber(subscriber);
+};
+}
+
 #[tokio::test]
 async fn matchinfo_pipeline_works() {
-    let subscriber =
-        get_subscriber("matchinfo-pipeline".into(), "debug".into());
-    init_subscriber(subscriber);
-
     let current_dir = std::env::current_dir().unwrap();
 
     let test_cases = TestCases::default()
@@ -72,6 +76,10 @@ async fn matchinfo_pipeline_works() {
 }
 
 async fn mock_test_match_info_result(test_cases: TestCases) {
+    // The first time `initialize` is invoked the code in `TRACING` is executed.
+    // All other invocations will instead skip execution.
+    lazy_static::initialize(&TRACING);
+
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
@@ -117,8 +125,6 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     let mut ran_once: bool = false;
 
     for mut test_case in test_cases.0 {
-        let request_id = Uuid::new_v4();
-
         // each test_case could be as well run in
         // a thread from here on
         load_responses_from_fs(
@@ -158,7 +164,6 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
         }
 
         let result = process_match_info_request(
-            request_id,
             test_case.parsed_request,
             api_clients.aoe2net.clone(),
             aoe2_net_root.to_owned(),

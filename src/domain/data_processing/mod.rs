@@ -16,10 +16,7 @@ use crate::domain::{
     },
 };
 
-use tracing::{
-    error,
-    info,
-};
+use tracing::error;
 use tracing_futures::Instrument;
 
 use std::{
@@ -43,8 +40,16 @@ use uuid::Uuid;
 ///
 /// # Errors
 /// Results get bubbled up and are handled by the caller
+#[tracing::instrument(
+name = "Processing MatchInfoRequest",
+skip(client, root, in_memory_db, export_path),
+fields(
+request_id = %Uuid::new_v4(),
+id_type = %par.id_type,
+id_number = %par.id_number
+)
+)]
 pub async fn process_match_info_request(
-    request_id: Uuid,
     par: MatchInfoRequest,
     client: reqwest::Client,
     root: Url,
@@ -55,11 +60,6 @@ pub async fn process_match_info_request(
     // `.instrument` takes care of it at the right moments
     // in the query future lifetime
     let query_span = tracing::info_span!("Querying for data from APIs...");
-
-    info!(
-        "request_id {:?} - Processing MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",
-        request_id, par.game, par.id_type, par.id_number, par.language
-    );
 
     let responses = MatchDataResponses::new_with_match_data(
         par.clone(),
@@ -77,7 +77,7 @@ pub async fn process_match_info_request(
     match responses {
         Err(err) => match err {
             ResponderError::UnrecordedPlayerDetected => {
-                error!("request_id {} - Failed with {:?}", request_id, err);
+                error!("Failed with {:?}", err);
                 result = MatchInfoResult::builder()
                     .error_message(
                         ErrorMessageToFrontend::UnrecordedPlayerDetected,
@@ -85,7 +85,7 @@ pub async fn process_match_info_request(
                     .build();
             }
             _ => {
-                error!("request_id {} - Failed with {:?}", request_id, err);
+                error!("Failed with {:?}", err);
 
                 result = MatchInfoResult::builder()
                     .error_message(
@@ -98,22 +98,9 @@ pub async fn process_match_info_request(
             }
         },
         Ok(response) => {
-            let processing_span = tracing::info_span!(
-            "Entering MatchInfoProcessor.",
-            %request_id,
-            id_type = %par.id_type,
-            id_number = %par.id_number,
-            );
-            let _processing_span_guard = processing_span.enter();
-
             result = MatchInfoProcessor::new_with_response(response)
                 .process()?
                 .assemble()?;
-
-            info!(
-                "request_id {} - MatchInfo processed successfully.",
-                request_id
-            );
         }
     }
 

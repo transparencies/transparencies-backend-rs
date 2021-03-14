@@ -29,8 +29,6 @@ use stable_eyre::eyre::{
     Result,
 };
 
-use uuid::Uuid;
-
 #[cfg(not(debug_assertions))]
 use human_panic::setup_panic;
 
@@ -79,7 +77,6 @@ async fn main() -> Result<(), Report> {
         .iter()
         .collect(),
     );
-    let request_id = Uuid::new_v4();
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
     let api_clients = ApiClient::default();
@@ -106,7 +103,6 @@ async fn main() -> Result<(), Report> {
     .expect("Preloading data failed.");
 
     let result = process_match_info_request(
-        request_id,
         match_info_request,
         api_clients.aoe2net.clone(),
         aoe2_net_root,
