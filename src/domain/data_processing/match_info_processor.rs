@@ -4,7 +4,7 @@
 
 use tracing::trace;
 
-use serde_json::Value;
+use serde_json::Value as JsonValue;
 
 use crate::domain::{
     data_processing::MatchDataResponses,
@@ -342,7 +342,7 @@ impl MatchInfoProcessor {
     fn lookup_leaderboard(
         &mut self,
         req_player: &aoe2net::Player,
-    ) -> Result<Value> {
+    ) -> Result<JsonValue> {
         let looked_up_leaderboard = if let Some(looked_up_leaderboard) =
             self.responses.lookup_leaderboard_for_profile_id(
                 &(req_player.profile_id.to_string()),
@@ -370,7 +370,7 @@ impl MatchInfoProcessor {
     fn lookup_rating(
         &mut self,
         req_player: &aoe2net::Player,
-    ) -> Result<Value> {
+    ) -> Result<JsonValue> {
         trace!("Looking up rating for player: {:?}", req_player.profile_id);
         let looked_up_rating = if let Some(looked_up_rating) =
             self.responses.lookup_player_rating_for_profile_id(

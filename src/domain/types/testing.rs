@@ -4,11 +4,6 @@ use std::{
     path::PathBuf,
 };
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
 use crate::domain::types::{
     api::{
         MatchInfoRequest,
@@ -16,6 +11,11 @@ use crate::domain::types::{
     },
     error::TestCaseError,
 };
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use serde_json::Value as JsonValue;
 
 use derive_getters::Getters;
 
@@ -42,7 +42,7 @@ pub struct TestCase {
     pub parsed_request: MatchInfoRequest,
     pub parsed_result: MatchInfoResult,
     pub profile_ids: Vec<String>,
-    last_match: serde_json::Value,
+    last_match: JsonValue,
 }
 
 impl TestCase {
@@ -54,7 +54,7 @@ impl TestCase {
             parsed_request: MatchInfoRequest::default(),
             parsed_result: MatchInfoResult::default(),
             profile_ids: Vec::with_capacity(8),
-            last_match: serde_json::Value::default(),
+            last_match: JsonValue::default(),
         }
     }
 
@@ -96,7 +96,7 @@ impl TestCase {
             parsed_result: ron::de::from_reader::<_, MatchInfoResult>(
                 BufReader::new(fs::File::open(resp)?),
             )?,
-            last_match: serde_json::from_reader::<_, serde_json::Value>(
+            last_match: serde_json::from_reader::<_, JsonValue>(
                 BufReader::new(fs::File::open(last_match)?),
             )?,
             ..self

@@ -16,13 +16,14 @@ use self::aoc_ref::RefDataLists;
 use crate::STANDARD;
 use dashmap::DashMap;
 use serde::Serialize;
+use serde_json::Value as JsonValue;
 
 /// The "Database" we use, which is in-memory for lookup of
 /// player names and other "more" static content
 #[derive(Debug, Clone, Serialize)]
 pub struct InMemoryDb {
     /// Translations for aoe2net
-    pub aoe2net_languages: DashMap<String, serde_json::Value>,
+    pub aoe2net_languages: DashMap<String, JsonValue>,
     /// Containing the Players (Aliases), Platforms and Teams of
     /// aoc-reference-data
     pub github_file_content: RefDataLists,

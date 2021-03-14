@@ -10,6 +10,8 @@ use std::{
     },
 };
 
+use serde_json::Value as JsonValue;
+
 use crate::domain::types::{
     requests::FileFormat,
     ApiRequest,
@@ -50,7 +52,7 @@ pub(crate) fn build_api_request(
 // TODO: Implement Error handling for [`serde_json::Error`],
 // [`ResponderError`], [`ProcessingError`]
 #[allow(dead_code, clippy::unnecessary_wraps)]
-pub(crate) fn parse_into<T, E>(val: &serde_json::Value) -> Result<T, E>
+pub(crate) fn parse_into<T, E>(val: &JsonValue) -> Result<T, E>
 where
     T: for<'de> serde::Deserialize<'de>,
     E: Error,

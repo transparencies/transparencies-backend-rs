@@ -1,7 +1,7 @@
 use reqwest::get;
 
 use dashmap::DashMap;
-use serde_json::Value;
+use serde_json::Value as JsonValue;
 
 use std::{
     self,
@@ -75,16 +75,15 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     ];
 
     // Preloaded data
-    let language_mock_responses: Arc<
-        Mutex<DashMap<String, serde_json::Value>>,
-    > = Arc::new(Mutex::new(DashMap::with_capacity(18)));
+    let language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>> =
+        Arc::new(Mutex::new(DashMap::with_capacity(18)));
     let language_mock_responses_clone = language_mock_responses.clone();
 
-    let github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>> =
+    let github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>> =
         Arc::new(Mutex::new(DashMap::with_capacity(3)));
     let github_mock_responses_clone = github_mock_responses.clone();
 
-    let aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>> =
+    let aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>> =
         Arc::new(Mutex::new(DashMap::with_capacity(16)));
     let aoe2net_mock_responses_clone = aoe2net_mock_responses.clone();
 
@@ -163,9 +162,9 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
 
 async fn load_responses_from_fs(
     test_case: &mut TestCase,
-    aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
-    language_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
-    github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+    language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+    github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
 ) -> Result<(), TestCaseError> {
     for entry in fs::read_dir(test_case.resource_dir()).unwrap() {
         let entry = entry.unwrap();
@@ -194,7 +193,7 @@ async fn load_responses_from_fs(
 
                                 test_case.profile_ids.push(file_name.clone());
 
-                                let val: serde_json::Value =
+                                let val: JsonValue =
                                     serde_json::from_reader(BufReader::new(
                                         fs::File::open(very_new_path).unwrap(),
                                     ))
@@ -236,7 +235,7 @@ async fn load_responses_from_fs(
                     let new_path = new_entry.path();
                     let file_name = util::extract_filename(&new_path);
 
-                    let val: serde_json::Value = serde_json::from_reader(
+                    let val: JsonValue = serde_json::from_reader(
                         BufReader::new(fs::File::open(new_path).unwrap()),
                     )
                     .unwrap();
@@ -255,7 +254,7 @@ async fn load_responses_from_fs(
                     let new_path = new_entry.path();
                     let file_name = util::extract_filename(&new_path);
 
-                    let val: serde_json::Value = serde_json::from_reader(
+                    let val: JsonValue = serde_json::from_reader(
                         BufReader::new(fs::File::open(new_path).unwrap()),
                     )
                     .unwrap();
@@ -275,11 +274,11 @@ async fn load_responses_from_fs(
 async fn mount_mocks(
     aoe2net_api_roots: &Vec<&str>,
     profile_ids: Vec<String>,
-    last_match: &serde_json::Value,
+    last_match: &JsonValue,
     mock_server: &MockServer,
-    aoe2net_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
-    language_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
-    github_mock_responses: Arc<Mutex<DashMap<String, serde_json::Value>>>,
+    aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+    language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+    github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
 ) {
     for root in aoe2net_api_roots.iter() {
         let url_string = &format!("{}", *root);
@@ -307,15 +306,13 @@ async fn mount_mocks(
                 // leaderboard_id=3"
                 for profile_id in &profile_ids {
                     #[allow(unused_assignments)]
-                    let mut json = serde_json::Value::default();
+                    let mut json = JsonValue::default();
                     {
                         let guard = aoe2net_mock_responses.lock().await;
 
                         json = guard
                             .get(&format!("ldb_{}", profile_id))
-                            .map_or(serde_json::Value::Null, |val| {
-                                val.value().clone()
-                            });
+                            .map_or(JsonValue::Null, |val| val.value().clone());
                     }
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
@@ -341,15 +338,13 @@ async fn mount_mocks(
                 // leaderboard_id=3&count=1"
                 for profile_id in &profile_ids {
                     #[allow(unused_assignments)]
-                    let mut json = serde_json::Value::default();
+                    let mut json = JsonValue::default();
                     {
                         let guard = aoe2net_mock_responses.lock().await;
 
                         json = guard
                             .get(&format!("rh_{}", profile_id))
-                            .map_or(serde_json::Value::Null, |val| {
-                                val.value().clone()
-                            });
+                            .map_or(JsonValue::Null, |val| val.value().clone());
                     }
 
                     Mock::given(method("GET"))
@@ -380,7 +375,7 @@ async fn mount_mocks(
                 #[allow(unused_assignments)]
                 let mut clone_language_mock_responses: DashMap<
                     std::string::String,
-                    Value,
+                    JsonValue,
                 > = DashMap::with_capacity(18);
 
                 {
@@ -409,14 +404,12 @@ async fn mount_mocks(
                 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/
                 for file in create_github_file_list() {
                     #[allow(unused_assignments)]
-                    let mut json = serde_json::Value::default();
+                    let mut json = JsonValue::default();
                     {
                         let guard = github_mock_responses.lock().await;
                         json = guard
                             .get(&format!("{}", file.name()))
-                            .map_or(serde_json::Value::Null, |val| {
-                                val.value().clone()
-                            });
+                            .map_or(JsonValue::Null, |val| val.value().clone());
                     }
 
                     let url_string = &format!("{}{}", root.clone(), file);

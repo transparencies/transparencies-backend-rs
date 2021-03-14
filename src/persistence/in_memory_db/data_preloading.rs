@@ -37,6 +37,8 @@ use crate::domain::{
     util,
 };
 
+use serde_json::Value as JsonValue;
+
 /// All of the current `language strings` of the AoE2.net API
 /// used for preloading the Language files
 pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
@@ -241,12 +243,12 @@ pub async fn preload_aoe2_net_data(
 async fn load_language_responses_into_dashmap(
     language_requests: Vec<(String, ApiRequest)>,
     export_path: Option<PathBuf>,
-) -> Result<DashMap<String, serde_json::Value>, ApiRequestError> {
-    let responses: DashMap<String, serde_json::Value> =
+) -> Result<DashMap<String, JsonValue>, ApiRequestError> {
+    let responses: DashMap<String, JsonValue> =
         DashMap::with_capacity(LANGUAGE_STRINGS.len());
 
     for (req_name, req) in language_requests {
-        let response: serde_json::Value = req.execute().await?;
+        let response: JsonValue = req.execute().await?;
         responses.insert(req_name.to_string(), response.clone());
 
         if export_path.is_some() {
@@ -350,7 +352,7 @@ async fn update_data_in_db(
                     util::export_to_json(
                         &file,
                         &export_path.clone().unwrap(),
-                        &serde_json::from_str::<serde_json::Value>(&response)?,
+                        &serde_json::from_str::<JsonValue>(&response)?,
                     )
                 };
 
@@ -363,7 +365,7 @@ async fn update_data_in_db(
                     util::export_to_json(
                         &file,
                         &export_path.clone().unwrap(),
-                        &serde_json::from_str::<serde_json::Value>(&response)?,
+                        &serde_json::from_str::<JsonValue>(&response)?,
                     )
                 };
 

@@ -5,6 +5,8 @@ use serde::{
     Serialize,
 };
 
+use serde_json::Value as JsonValue;
+
 use derive_getters::Getters;
 use displaydoc::Display;
 
@@ -26,30 +28,30 @@ pub struct RatingHistory {
 /// endpoint Used to easily deal with the assembly of the player vectors
 #[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Player {
-    pub civ: ::serde_json::Value,
+    pub civ: JsonValue,
     #[serde(skip)]
-    pub clan: ::serde_json::Value,
-    pub color: ::serde_json::Value,
-    pub country: ::serde_json::Value,
+    pub clan: JsonValue,
+    pub color: JsonValue,
+    pub country: JsonValue,
     #[serde(skip)]
-    pub drops: ::serde_json::Value,
+    pub drops: JsonValue,
     #[serde(skip)]
-    pub games: ::serde_json::Value,
-    pub name: ::serde_json::Value,
+    pub games: JsonValue,
+    pub name: JsonValue,
     pub profile_id: u64,
-    pub rating: ::serde_json::Value,
+    pub rating: JsonValue,
     #[serde(skip)]
-    pub rating_change: ::serde_json::Value,
-    pub slot: ::serde_json::Value,
-    pub slot_type: ::serde_json::Value,
+    pub rating_change: JsonValue,
+    pub slot: JsonValue,
+    pub slot_type: JsonValue,
     #[serde(skip)]
-    pub steam_id: ::serde_json::Value,
+    pub steam_id: JsonValue,
     #[serde(skip)]
-    pub streak: ::serde_json::Value,
+    pub streak: JsonValue,
     pub team: i64,
     #[serde(skip)]
-    pub wins: ::serde_json::Value,
-    pub won: ::serde_json::Value,
+    pub wins: JsonValue,
+    pub won: JsonValue,
 }
 
 /// Helper datastructure to easily parse parts of array

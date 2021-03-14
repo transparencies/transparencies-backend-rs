@@ -32,7 +32,7 @@ use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
 };
-use serde_json::Value;
+use serde_json::Value as JsonValue;
 use std::{
     fs,
     io::BufWriter,
@@ -51,7 +51,7 @@ use crate::STANDARD;
 type Result<T> = result::Result<T, ResponderError>;
 
 impl MatchDataResponses {
-    /// Return `serde_json::Value` for `leaderboard_id` for future requests
+    /// Return `String` for `leaderboard_id` for future requests
     ///
     /// # Errors
     /// Will return an error if the `leaderboard_id` could not be found
@@ -228,7 +228,7 @@ impl MatchDataResponses {
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
     #[must_use]
-    pub fn get_country(looked_up_leaderboard: &Value) -> Option<String> {
+    pub fn get_country(looked_up_leaderboard: &JsonValue) -> Option<String> {
         Some(looked_up_leaderboard["country"].to_string().to_lowercase()).map(
             |mut country| {
                 country.retain(|s| s != '\\');
@@ -250,8 +250,8 @@ impl MatchDataResponses {
     /// Function will throw errors in cases the deserialisation and conversion
     /// to the corresponding types is not successful
     pub fn get_rating(
-        looked_up_rating: &Value,
-        looked_up_leaderboard: &Value,
+        looked_up_rating: &JsonValue,
+        looked_up_leaderboard: &JsonValue,
     ) -> Result<Rating> {
         let player_rating = Rating::builder()
             .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
@@ -285,8 +285,8 @@ impl MatchDataResponses {
     /// value from the in-memory database. Errors there, due to threaded
     /// behaviour, will result in `runtime` errors, no compile-time checks
     /// possible.
-    pub fn get_translation_for_language(&mut self) -> Result<Value> {
-        let mut translation: Option<serde_json::Value> = None;
+    pub fn get_translation_for_language(&mut self) -> Result<JsonValue> {
+        let mut translation: Option<JsonValue> = None;
 
         trace!(
             "Length of self.db.aoe2net_languages is: {:?}",
@@ -502,7 +502,7 @@ impl MatchDataResponses {
     pub fn lookup_player_rating_for_profile_id(
         &self,
         profile_id: &str,
-    ) -> Option<serde_json::Value> {
+    ) -> Option<JsonValue> {
         self.aoe2net
             .rating_history
             .get(profile_id)
@@ -524,7 +524,7 @@ impl MatchDataResponses {
     pub fn lookup_leaderboard_for_profile_id(
         &self,
         profile_id: &str,
-    ) -> Option<serde_json::Value> {
+    ) -> Option<JsonValue> {
         self.aoe2net
             .leaderboard
             .get(profile_id)
@@ -620,7 +620,7 @@ impl MatchDataResponses {
                         (par.id_type.clone(), par.id_number.clone()),
                     ],
                 )
-                .execute::<serde_json::Value>()
+                .execute::<JsonValue>()
                 .await;
 
                 match match_data_response {
@@ -668,7 +668,7 @@ impl MatchDataResponses {
                             .clone()
                             .aoe2net
                             .player_last_match
-                            .map_or(serde_json::Value::Null, |x| x),
+                            .map_or(JsonValue::Null, |x| x),
                     )
                 }
             }
@@ -681,7 +681,7 @@ impl MatchDataResponses {
                         "match",
                         vec![(par.id_type.clone(), par.id_number.clone())],
                     )
-                    .execute::<serde_json::Value>()
+                    .execute::<JsonValue>()
                     .await?,
                 );
 
@@ -732,10 +732,8 @@ impl MatchDataResponses {
                 ],
             );
 
-            let rating_response: serde_json::Value =
-                req_rating.execute().await?;
-            let leaderboard_response: serde_json::Value =
-                req_lead.execute().await?;
+            let rating_response: JsonValue = req_rating.execute().await?;
+            let leaderboard_response: JsonValue = req_lead.execute().await?;
 
             if let Some(mut path) = export_path.clone() {
                 // TODO: Do requests just one time in export path
