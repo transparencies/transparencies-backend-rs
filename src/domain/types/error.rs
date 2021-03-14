@@ -31,11 +31,11 @@ pub enum ProcessingError {
     CivilisationError,
     /// Assembly of Matchinfo result failed. Result is empty.
     AssemblyError,
-    /// Responder experienced an error.
+    /// Responder experienced an error: {0}
     ResponderMalfunction(#[from] ResponderError),
-    /// Parsing of Integer data failed
+    /// Parsing of Integer data failed: {0}
     ProcessIntParsingError(#[from] ParseIntError),
-    /// Conversion to String failed.
+    /// Conversion to String failed: {0}
     SerdeStringConversionError(#[from] serde_json::Error),
     /// Dividing by Zero is not allowed.
     DividingByZeroError,
@@ -97,7 +97,7 @@ pub enum FileRequestError {
     JsonDeserializationError(#[from] serde_json::Error),
     /// YAML-Deserialisation failed: {0}
     YamlDeserializationError(#[from] serde_yaml::Error),
-    /// URL parsing failed.
+    /// URL parsing failed: {0}
     UrlParsingError(#[from] url::ParseError),
 }
 
