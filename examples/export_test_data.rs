@@ -37,10 +37,7 @@ use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     domain::{
         data_processing::process_match_info_request,
-        types::api::{
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
+        types::api::MatchInfoRequest,
     },
     persistence::in_memory_db::data_preloading::preload_data,
 };
@@ -112,8 +109,7 @@ async fn main() -> Result<(), Report> {
         in_memory_db_clone.clone(),
         export_path.clone(),
     )
-    .await
-    .expect("Matchinfo processing failed.");
+    .await;
 
     result.export_data_to_file(export_path.unwrap());
 
