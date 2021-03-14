@@ -44,21 +44,21 @@ pub enum ResponderError {
     },
     /// Data for `{0}` not found.
     NotFound(String),
-    /// HTTP-Client experienced an error.
-    HttpClientError(#[from] reqwest::Error),
-    /// Parsing of Integer data failed
-    RespondIntParsingError(#[from] ParseIntError),
-    /// Conversion to String failed.
-    SerdeStringConversionError(#[from] serde_json::Error),
+    /// HTTP-Client experienced an error: {0}
+    HttpClient(#[from] reqwest::Error),
+    /// Parsing of Integer data failed: {0}
+    RespondIntParsingFailed(#[from] ParseIntError),
+    /// Conversion to String failed: {0}
+    SerdeStringConversion(#[from] serde_json::Error),
     /// Haven't found a translation for {0}: {1}
-    TranslationError(String, usize),
+    TranslationFailed(String, usize),
     /// Couldn't get the value of the translation string: {0} at given index
     /// {1}
     TranslationPosError(String, usize),
     /// Couldn't get the value of the translation string, because it has
     /// already been moved.
-    TranslationHasBeenMovedError,
-    /// Other ApiRequestError.
+    TranslationHasBeenMoved,
+    /// Other ApiRequestError: {0}.
     OtherApiRequestError(#[from] ApiRequestError),
     /// Data for LastMatch not found, possible unrecorded player detected.
     UnrecordedPlayerDetected,
@@ -76,11 +76,11 @@ pub enum FileRequestError {
         /// Request itself
         req: GithubFileRequest,
     },
-    /// HTTP-Client experienced an error.
+    /// HTTP-Client experienced an error: {0}
     HttpClientError(#[from] reqwest::Error),
-    /// JSON-Deserialisation failed.
+    /// JSON-Deserialisation failed: {0}
     JsonDeserializationError(#[from] serde_json::Error),
-    /// YAML-Deserialisation failed.
+    /// YAML-Deserialisation failed: {0}
     YamlDeserializationError(#[from] serde_yaml::Error),
     /// URL parsing failed.
     UrlParsingError(#[from] url::ParseError),
@@ -96,11 +96,11 @@ pub enum ApiRequestError {
         /// Request itself
         req: ApiRequest,
     },
-    /// HTTP-Client experienced an error.
+    /// HTTP-Client experienced an error: {0}
     HttpClientError(#[from] reqwest::Error),
-    /// HTTP-Client error with status code
+    /// HTTP-Client error with status code: {0}
     HttpClientErrorWithStatusCode(http::StatusCode),
-    /// NotFound
+    /// Response NotFound: {root:?}/{endpoint:?} with {query:?}
     NotFoundResponse {
         root: String,
         endpoint: String,

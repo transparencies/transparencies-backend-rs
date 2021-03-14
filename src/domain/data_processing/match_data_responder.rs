@@ -64,7 +64,7 @@ impl MatchDataResponses {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
                     || {
                         Err(ResponderError::NotFound(
-                            "leaderboard_id from last_match".to_string(),
+                            "Leaderboard ID in last_match response".to_string(),
                         ))
                     },
                     |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
@@ -74,7 +74,7 @@ impl MatchDataResponses {
                 self.aoe2net.match_id.as_ref().map_or_else(
                     || {
                         Err(ResponderError::NotFound(
-                            "leaderboard_id from match_id".to_string(),
+                            "Leaderboard ID in match_id response".to_string(),
                         ))
                     },
                     |val| Ok(val["leaderboard_id"].to_string()),
@@ -302,7 +302,7 @@ impl MatchDataResponses {
             }
         }
         else {
-            return Err(ResponderError::TranslationHasBeenMovedError);
+            return Err(ResponderError::TranslationHasBeenMoved);
         }
         Ok(translation.expect("Translation should never be None value."))
     }

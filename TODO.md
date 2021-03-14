@@ -87,6 +87,27 @@ to use them inside the integration tests and be able to update frequently
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
 
+### Fixes
+
+- [ ] Fix character escaping in e.g. `"name": "\"[RUS-F]GriN\""`
+- [ ] Make error message more  understandable for frontend:
+
+    ```sh
+    "GenericResponderError":
+    "Other ApiRequestError: HTTP-Client experienced an error: error decoding response
+    body: EOF while parsing a value at line 1 column 0."
+    ```
+
+    probably from
+
+    ```sh
+    http: error: ConnectionError: ('Connection aborted.', RemoteDisconnected('
+    Remote end closed connection without response')) while doing a GET request 
+    to URL: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=224786&language=en&game=aoe2de
+    ```
+
+- [ ] Check HTTPie errors for more edge cases
+
 ### Refactoring
 
 - [X] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
