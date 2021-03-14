@@ -7,7 +7,10 @@ use crate::domain::{
             MatchInfoRequest,
             MatchInfoResult,
         },
-        error::ErrorMessageToFrontend,
+        error::{
+            ErrorMessageToFrontend,
+            ProcessingError,
+        },
         InMemoryDb,
     },
 };
@@ -64,18 +67,32 @@ pub async fn return_matchinfo_to_client(
     .await;
 
     match processed_match_info {
-        Err(err) => {
-            error!("Failed with {:?}", err);
-            let err_match_info = MatchInfoResult::builder()
-                .error_message(ErrorMessageToFrontend::HardFail(format!(
-                    "MatchInfo processing failed for {:?}:{:?} with {}",
-                    opts.id_type,
-                    opts.id_number,
-                    err.to_string()
-                )))
-                .build();
-            Ok(warp::reply::json(&err_match_info))
-        }
+        Err(err) => match err {
+            ProcessingError::NotRankedLeaderboard(_) => {
+                error!("Failed with {:?}", err);
+                let err_match_info = MatchInfoResult::builder()
+                    .error_message(ErrorMessageToFrontend::HardFail(format!(
+                        "Not ranked on leaderboard! MatchInfo processing failed for {:?}:{:?} with {}",
+                        opts.id_type,
+                        opts.id_number,
+                        err.to_string()
+                    )))
+                    .build();
+                Ok(warp::reply::json(&err_match_info))
+            }
+            _ => {
+                error!("Failed with {:?}", err);
+                let err_match_info = MatchInfoResult::builder()
+                    .error_message(ErrorMessageToFrontend::HardFail(format!(
+                        "MatchInfo processing failed for {:?}:{:?} with {}",
+                        opts.id_type,
+                        opts.id_number,
+                        err.to_string()
+                    )))
+                    .build();
+                Ok(warp::reply::json(&err_match_info))
+            }
+        },
         Ok(match_info_result) => Ok(warp::reply::json(&match_info_result)),
     }
 }

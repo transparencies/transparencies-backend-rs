@@ -368,7 +368,14 @@ impl MatchInfoProcessor {
             ));
         };
 
-        Ok(looked_up_leaderboard["leaderboard"][0].clone())
+        if looked_up_leaderboard["count"].to_string() == 1.to_string() {
+            Ok(looked_up_leaderboard["leaderboard"][0].clone())
+        }
+        else {
+            return Err(ProcessingError::NotRankedLeaderboard(
+                req_player.profile_id,
+            ));
+        }
     }
 
     /// Lookup a corresponding player's `rating`

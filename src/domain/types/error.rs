@@ -41,10 +41,12 @@ pub enum ProcessingError {
     DividingByZeroError,
     /// Haven't found a rating for player id: {0}
     LookupRatingNotFound(u64),
-    /// Haven't found a leaderboard value for player id: {0}
+    /// Haven't found a leaderboard response for player id: {0}
     LeaderboardNotFound(u64),
     /// Haven't found a translation for {0}: {1}
     TranslationError(String, usize),
+    /// Player id {0} is not ranked on that leaderboard.
+    NotRankedLeaderboard(u64),
 }
 
 /// Error type for the `MatchInfoResponder`
