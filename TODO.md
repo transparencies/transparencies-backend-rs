@@ -120,6 +120,7 @@ from `ron` file for ease of testing/exporting
 - [X] create only new clients for each new api-root not for each request to us
 - [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
+    - [ ] Create API client struct that wraps `ApiRequests` and `ApiResponses`
     - [ ] Also think about the openAPI parsing and request generating logics
     for the future
     - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
@@ -127,7 +128,7 @@ objects, etc.)
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
-- [X] structured logging: use `tracing` crate in addition to `log` and refactor
+- [ ] **WIP** structured logging: use `tracing` crate in addition to `log` and refactor
 accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing
