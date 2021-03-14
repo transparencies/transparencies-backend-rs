@@ -8,6 +8,7 @@ use tracing_bunyan_formatter::{
     BunyanFormattingLayer,
     JsonStorageLayer,
 };
+use tracing_error::ErrorLayer;
 use tracing_log::LogTracer;
 use tracing_subscriber::{
     layer::SubscriberExt,
@@ -35,6 +36,7 @@ pub fn get_subscriber(
     let formatting_layer = BunyanFormattingLayer::new(name, std::io::stdout);
     Registry::default()
         .with(HierarchicalLayer::new(2).with_thread_ids(true))
+        .with(ErrorLayer::default())
         .with(env_filter)
         .with(JsonStorageLayer)
         .with(formatting_layer)

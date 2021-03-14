@@ -90,6 +90,7 @@ impl MatchInfoProcessor {
     ///
     /// # Errors
     // TODO: Many errors can come up here, that need to be collected and named
+    #[tracing::instrument(name = "Processing MatchDataResponses", skip(self))]
     pub fn process(&mut self) -> Result<Self> {
         // TODO: Collect errors in &self.errors or alike
         trace!("Processing MatchDataResponses ...");
