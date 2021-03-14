@@ -37,7 +37,10 @@ use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     domain::{
         data_processing::process_match_info_request,
-        types::api::MatchInfoRequest,
+        types::api::{
+            MatchInfoRequest,
+            MatchInfoResult,
+        },
     },
     persistence::in_memory_db::data_preloading::preload_data,
 };
