@@ -34,7 +34,12 @@ use transparencies_backend_rs::{
         create_github_file_list,
         preload_data,
     },
+    setup::telemetry::{
+        get_subscriber,
+        init_subscriber,
+    },
 };
+use uuid::Uuid;
 use wiremock::{
     matchers::method,
     Mock,
@@ -43,7 +48,11 @@ use wiremock::{
 };
 
 #[tokio::test]
-async fn standard_mock_test() {
+async fn matchinfo_pipeline_works() {
+    let subscriber =
+        get_subscriber("matchinfo-pipeline".into(), "debug".into());
+    init_subscriber(subscriber);
+
     let current_dir = std::env::current_dir().unwrap();
 
     let test_cases = TestCases::default()
@@ -108,6 +117,8 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     let mut ran_once: bool = false;
 
     for mut test_case in test_cases.0 {
+        let request_id = Uuid::new_v4();
+
         // each test_case could be as well run in
         // a thread from here on
         load_responses_from_fs(
@@ -147,6 +158,7 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
         }
 
         let result = process_match_info_request(
+            request_id,
             test_case.parsed_request,
             api_clients.aoe2net.clone(),
             aoe2_net_root.to_owned(),

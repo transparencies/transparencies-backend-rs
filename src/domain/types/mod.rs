@@ -8,9 +8,9 @@ pub mod match_data;
 pub mod requests;
 pub mod testing;
 
-use log::trace;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
+use tracing::trace;
 
 use self::aoc_ref::RefDataLists;
 use crate::STANDARD;

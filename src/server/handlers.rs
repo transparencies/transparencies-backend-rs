@@ -7,6 +7,7 @@ use crate::domain::{
         InMemoryDb,
     },
 };
+use uuid::Uuid;
 
 use std::{
     convert::Infallible,
@@ -47,10 +48,23 @@ pub async fn return_matchinfo_to_client(
     aoe_net_client: reqwest::Client,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
+    let request_id = Uuid::new_v4();
+
+    // Spans, like logs, have an associated level
+    // `info_span` creates a span at the info-level
+    let request_span = tracing::info_span!(
+    "Processing a new matchinfo request.",
+    %request_id,
+    id_type = %opts.id_type,
+    id_number = %opts.id_number,
+    );
+    let _request_span_guard = request_span.enter();
+
     // API root for aoe2net
     let root = Url::parse("https://aoe2.net/api").unwrap();
 
     let processed_match_info = process_match_info_request(
+        request_id,
         opts,
         aoe_net_client.clone(),
         root,

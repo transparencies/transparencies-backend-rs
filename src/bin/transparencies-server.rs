@@ -3,10 +3,6 @@
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 
-// Error handling
-// #[macro_use]
-extern crate log;
-
 extern crate transparencies_backend_rs;
 
 use warp::Filter;
