@@ -27,6 +27,7 @@ use crate::domain::{
         },
         error::ProcessingError,
     },
+    util,
 };
 
 use std::result;
@@ -260,11 +261,14 @@ impl MatchInfoProcessor {
 
         trace!("Looking up rating ...");
         let looked_up_rating = self.lookup_rating(req_player)?;
-        trace!("Successfully looked up rating.");
+        trace!("Successfully looked up rating: {:#?}", looked_up_rating);
 
         trace!("Looking up leaderboard ...");
         let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
-        trace!("Successfully looked up leaderboard.");
+        trace!(
+            "Successfully looked up leaderboard: {:#?}",
+            looked_up_leaderboard
+        );
 
         trace!("Getting requested player ...");
         let requested_player_boolean = self.get_requested_player(req_player);
@@ -278,12 +282,18 @@ impl MatchInfoProcessor {
             &looked_up_rating,
             &looked_up_leaderboard,
         )?;
-        trace!("Successfully got requested player's rating.");
+        trace!(
+            "Successfully got requested player's rating: {:?}",
+            player_rating
+        );
 
         trace!("Getting player country ...");
         let player_country =
             MatchDataResponses::get_country(&looked_up_leaderboard);
-        trace!("Successfully got requested player's country.");
+        trace!(
+            "Successfully got requested player's country: {:?}",
+            player_country
+        );
 
         trace!("Getting player civilisation translation ...");
         let translated_civilisation_string =
@@ -326,7 +336,9 @@ impl MatchInfoProcessor {
         self.responses.aoe2net.player_last_match.as_ref().map_or(
             false,
             |player_last_match| {
-                player_last_match["profile_id"] == req_player.profile_id
+                util::remove_escaping(
+                    player_last_match["profile_id"].to_string(),
+                ) == util::remove_escaping(req_player.profile_id.to_string())
             },
         )
     }
@@ -529,10 +541,7 @@ fn build_player(
         .team_number(req_player.team)
         .name(looked_up_alias.as_ref().map_or_else(
             || {
-                // Get rid of character escaping
-                let mut name = req_player.name.to_string();
-                name.retain(|char| char != '\\');
-                name.retain(|char| char != '\"');
+                let name = util::remove_escaping(req_player.name.to_string());
                 name
             },
             |lookup_player| lookup_player.name.clone(),

@@ -106,13 +106,9 @@ impl MatchDataResponses {
                         ))
                     },
                     |val| {
-                        Ok(serde_json::from_str::<T>(
-                            &serde_json::to_string(
-                                &val["last_match"]["players"],
-                            )
-                            .expect("Conversion of last_match players to string failed."),
-                        )
-                        .expect("Parsing of last_match player struct failed."))
+                        Ok(serde_json::from_str::<T>(&serde_json::to_string(
+                            &val["last_match"]["players"],
+                        )?)?)
                     },
                 )
             }
@@ -124,12 +120,9 @@ impl MatchDataResponses {
                         ))
                     },
                     |val| {
-                        Ok(serde_json::from_str::<T>(
-                            &serde_json::to_string(&val["players"]).expect(
-                                "Conversion of match_id players to string failed.",
-                            ),
-                        )
-                        .expect("Parsing of match_id player struct failed."))
+                        Ok(serde_json::from_str::<T>(&serde_json::to_string(
+                            &val["players"],
+                        )?)?)
                     },
                 )
             }
@@ -231,8 +224,7 @@ impl MatchDataResponses {
     pub fn get_country(looked_up_leaderboard: &JsonValue) -> Option<String> {
         Some(looked_up_leaderboard["country"].to_string().to_lowercase()).map(
             |mut country| {
-                country.retain(|s| s != '\\');
-                country.retain(|s| s != '\"');
+                country = util::remove_escaping(country);
                 country
             },
         )
@@ -468,8 +460,7 @@ impl MatchDataResponses {
             }
         };
 
-        server.retain(|char| char != '\\');
-        server.retain(|char| char != '\"');
+        server = util::remove_escaping(server);
 
         let server_result = match server.as_str() {
             "australiasoutheast" => Server::Australia,

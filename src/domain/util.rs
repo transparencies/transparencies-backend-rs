@@ -62,6 +62,7 @@ where
     )
     .expect("Deserialisation to Type T failed."))
 }
+
 /// Write the data in JSON format to a file for debugging purposes
 ///
 /// # Arguments
@@ -115,4 +116,13 @@ pub fn extract_filename(path: &Path) -> String {
     let file_name = path.file_name().unwrap().to_str().unwrap().to_owned();
     let name: Vec<&str> = file_name.split(".json").collect();
     name[0].to_string()
+}
+
+/// Remove escaping
+#[inline]
+pub fn remove_escaping(string: String) -> String {
+    let mut edit = string;
+    edit.retain(|char| char != '\\');
+    edit.retain(|char| char != '\"');
+    edit
 }

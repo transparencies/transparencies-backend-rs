@@ -55,7 +55,7 @@ pub async fn return_matchinfo_to_client(
     let root = Url::parse("https://aoe2.net/api").unwrap();
 
     let processed_match_info = process_match_info_request(
-        opts,
+        opts.clone(),
         aoe_net_client.clone(),
         root,
         in_memory_db.clone(),
@@ -68,7 +68,9 @@ pub async fn return_matchinfo_to_client(
             error!("Failed with {:?}", err);
             let err_match_info = MatchInfoResult::builder()
                 .error_message(ErrorMessageToFrontend::HardFail(format!(
-                    "MatchInfo processing failed: {}",
+                    "MatchInfo processing failed for {:?}:{:?} with {}",
+                    opts.id_type,
+                    opts.id_number,
                     err.to_string()
                 )))
                 .build();
