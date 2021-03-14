@@ -33,7 +33,10 @@ use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
 };
-use serde_json::Value as JsonValue;
+use serde_json::{
+    json,
+    Value as JsonValue,
+};
 use std::{
     fs,
     io::BufWriter,
@@ -282,10 +285,10 @@ impl MatchDataResponses {
                 )?)?)
                 .rank(serde_json::from_str::<u64>(&serde_json::to_string(&{
                     let rank = if leaderboard["rank"] == JsonValue::Null {
-                        0.to_string()
+                        json![0]
                     }
                     else {
-                        leaderboard["rank"].to_string()
+                        leaderboard["rank"].clone()
                     };
                     rank
                 })?)?)
@@ -303,10 +306,10 @@ impl MatchDataResponses {
                         let rating_high = if leaderboard["highest_rating"]
                             == JsonValue::Null
                         {
-                            0.to_string()
+                            json![0]
                         }
                         else {
-                            leaderboard["highest_rating"].to_string()
+                            leaderboard["highest_rating"].clone()
                         };
                         rating_high
                     })?,
