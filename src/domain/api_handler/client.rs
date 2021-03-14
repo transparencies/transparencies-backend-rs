@@ -167,31 +167,22 @@ impl ApiRequest {
             .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
             .query(&self.query())
             .send()
-            .await;
+            .await?;
 
-        match response {
-            Err(err) => {
-                if let Some(status_code) = err.status() {
-                    match status_code {
-                        StatusCode::NOT_FOUND => {
-                            return Err(ApiRequestError::NotFoundResponse {
-                                root: self.root().as_str().to_string(),
-                                endpoint: self.endpoint().to_string(),
-                                query: self.query().to_vec(),
-                            })
-                        }
-                        _ => {
-                            return Err(
-                                ApiRequestError::HttpClientErrorWithStatusCode(
-                                    status_code,
-                                ),
-                            )
-                        }
-                    }
-                }
-                return Err(ApiRequestError::HttpClientError(err));
+        match response.status() {
+            StatusCode::OK => Ok(response.json().await?),
+            StatusCode::NOT_FOUND => {
+                return Err(ApiRequestError::NotFoundResponse {
+                    root: self.root().as_str().to_string(),
+                    endpoint: self.endpoint().to_string(),
+                    query: self.query().to_vec(),
+                })
             }
-            Ok(response) => Ok(response.json().await?),
+            _ => {
+                return Err(ApiRequestError::HttpClientErrorWithStatusCode(
+                    response.status(),
+                ))
+            }
         }
     }
 }

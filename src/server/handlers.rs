@@ -79,18 +79,16 @@ pub async fn return_matchinfo_to_client(
                 Ok(warp::reply::json(&err_match_info))
             }
             _ => {
-                panic!("ERROR!");
-                // Use later, first panic! to rule out possible error cases
-                // error!("Failed with {:?}", err);
-                // let err_match_info = MatchInfoResult::builder()
-                //     .error_message(ErrorMessageToFrontend::HardFail(format!(
-                //         "MatchInfo processing failed for {:?}:{:?} with {}",
-                //         opts.id_type,
-                //         opts.id_number,
-                //         err.to_string()
-                //     )))
-                //     .build();
-                // Ok(warp::reply::json(&err_match_info))
+                error!("Failed with {:?}", err);
+                let err_match_info = MatchInfoResult::builder()
+                    .error_message(ErrorMessageToFrontend::HardFail(format!(
+                        "MatchInfo processing failed for {:?}:{:?} with {}",
+                        opts.id_type,
+                        opts.id_number,
+                        err.to_string()
+                    )))
+                    .build();
+                Ok(warp::reply::json(&err_match_info))
             }
         },
         Ok(match_info_result) => Ok(warp::reply::json(&match_info_result)),
