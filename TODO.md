@@ -106,7 +106,8 @@ to use them inside the integration tests and be able to update frequently
     to URL: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=224786&language=en&game=aoe2de
     ```
 
-- [ ] Check HTTPie errors for more edge cases
+- [ ] Investigate HTTPie errors for more edge cases
+- [ ] in case `team == -1` start setting from Team 1/2 not from the back (7/8)
 
 ### Refactoring
 
