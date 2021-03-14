@@ -18,9 +18,7 @@ use crate::setup::telemetry::{
 ///
 /// # Errors
 // TODO
-pub fn set_up_logging<T: CommandLineSetting>(
-    cli_args: &T
-) -> Result<(), Report> {
+pub fn set_up_logging(cli_args: &dyn CommandLineSetting) -> Result<(), Report> {
     // Webserver logging
     if env::var_os("RUST_LOG").is_none() {
         // Show debug logs only when running with `debug` flags
