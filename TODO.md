@@ -77,6 +77,7 @@ usage in test cases
         - **A:** We only parse `Players` of `last_match` into some losely-typed
         datastructure for easier handling, the rest is `serde_json::Value` and
         parsing on the run
+    - [X] last_match == 404
     - [ ] New players without ranking (as deranked, but less than 10 games played)
     - [ ] Deranked players (have an empty `leaderboard` entry)
         - then we should use `ratinghistory` for the last data and `rank=DR`

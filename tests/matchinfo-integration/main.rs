@@ -75,6 +75,26 @@ async fn matchinfo_pipeline_works() {
     mock_test_match_info_result(test_cases).await
 }
 
+#[tokio::test]
+async fn last_match_404() {
+    let current_dir = std::env::current_dir().unwrap();
+
+    let test_cases = TestCases::default()
+        .add_case(
+            [
+                &format!("{}", current_dir.display()),
+                "tests",
+                "matchinfo-integration",
+                "last_match_404",
+            ]
+            .iter()
+            .collect(),
+        )
+        .unwrap();
+
+    mock_test_match_info_result(test_cases).await
+}
+
 async fn mock_test_match_info_result(test_cases: TestCases) {
     // The first time `initialize` is invoked the code in `TRACING` is executed.
     // All other invocations will instead skip execution.
@@ -170,8 +190,7 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
             in_memory_db_clone.clone(),
             None,
         )
-        .await
-        .expect("Matchinfo processing failed.");
+        .await;
 
         assert_eq!(test_case.parsed_result, result);
     }

@@ -34,7 +34,7 @@ use crate::domain::types::{
     error::ProcessingError,
     InMemoryDb,
 };
-use stable_eyre::eyre::Result;
+
 use url::Url;
 use uuid::Uuid;
 
@@ -57,7 +57,7 @@ pub async fn process_match_info_request(
     root: Url,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     export_path: Option<PathBuf>,
-) -> Result<MatchInfoResult, ProcessingError> {
+) -> MatchInfoResult {
     // We do not call `.enter` on query_span!
     // `.instrument` takes care of it at the right moments
     // in the query future lifetime
@@ -81,7 +81,10 @@ pub async fn process_match_info_request(
             ResponderError::LastMatchNotFound => {
                 error!("Failed with {:?}", err);
                 result = MatchInfoResult::builder()
-                    .error_message(ErrorMessageToFrontend::LastMatchNotFound)
+                    .error_message(ErrorMessageToFrontend::HardFail(format!(
+                        "MatchInfo processing failed: {}",
+                        err.to_string()
+                    )))
                     .build();
             }
             _ => {
@@ -97,11 +100,45 @@ pub async fn process_match_info_request(
             }
         },
         Ok(response) => {
-            result = MatchInfoProcessor::new_with_response(response)
-                .process()?
-                .assemble()?;
+            // Process the Responses
+            let processed_result =
+                MatchInfoProcessor::new_with_response(response).process();
+
+            // Handle all the errors and make sure, we always return a
+            // `MatchInfoResult`
+            if let Err(err) = processed_result {
+                match err {
+                    ProcessingError::NotRankedLeaderboard(_) => {
+                        error!("Failed with {:?}", err);
+                        result = MatchInfoResult::builder()
+                            .error_message(ErrorMessageToFrontend::HardFail(
+                                format!(
+                                    "MatchInfo processing failed: {}",
+                                    err.to_string()
+                                ),
+                            ))
+                            .build();
+                    }
+                    _ => {
+                        error!("Failed with {:?}", err);
+                        result = MatchInfoResult::builder()
+                            .error_message(ErrorMessageToFrontend::HardFail(format!(
+                                "MatchInfo processing failed for {:?}:{:?} with {}",
+                                par.id_type,
+                                par.id_number,
+                                err.to_string()
+                            )))
+                            .build();
+                    }
+                }
+            }
+            else {
+                result = processed_result
+                    .unwrap()
+                    .assemble()
+                    .expect("MatchInfoResult assembly failed.");
+            }
         }
     }
-
-    Ok(result)
+    result
 }

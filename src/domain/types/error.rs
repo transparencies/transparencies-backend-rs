@@ -16,12 +16,14 @@ use serde::{
 
 #[derive(Error, Display, Debug, Serialize, Clone, PartialEq, Deserialize)]
 pub enum ErrorMessageToFrontend {
-    /// Player has no record on AoE2.net
-    LastMatchNotFound,
     /// Generic error from the Responder: {0}
     GenericResponderError(String),
     /// Matchinfo processing failed: {0}
     HardFail(String),
+    /// Matchinfo processing failed: {0}
+    SoftFail(String),
+    /// Rocover: {0}
+    Recover(String),
 }
 
 /// Error type for the `MatchInfoProcessor`
