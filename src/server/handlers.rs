@@ -3,14 +3,7 @@
 use crate::domain::{
     data_processing::process_match_info_request,
     types::{
-        api::{
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
-        error::{
-            ErrorMessageToFrontend,
-            ProcessingError,
-        },
+        api::MatchInfoRequest,
         InMemoryDb,
     },
 };
@@ -20,7 +13,6 @@ use std::{
 };
 use tokio::sync::Mutex;
 
-use tracing::error;
 use url::Url;
 
 /// Small `health_check` function to return 200 on `health_check` endpoint

@@ -13,6 +13,7 @@ use crate::domain::{
         aoe2net::{
             self,
             Aoe2netRequestType,
+            RecoveredRating,
         },
         api::{
             MatchInfo,
@@ -264,11 +265,8 @@ impl MatchInfoProcessor {
         trace!("Successfully looked up rating: {:#?}", looked_up_rating);
 
         trace!("Looking up leaderboard ...");
+        // TODO: Recover from leaderboard array being empty
         let looked_up_leaderboard = self.lookup_leaderboard(req_player)?;
-        trace!(
-            "Successfully looked up leaderboard: {:#?}",
-            looked_up_leaderboard
-        );
 
         trace!("Getting requested player ...");
         let requested_player_boolean = self.get_requested_player(req_player);
@@ -355,7 +353,7 @@ impl MatchInfoProcessor {
     fn lookup_leaderboard(
         &mut self,
         req_player: &aoe2net::Player,
-    ) -> Result<JsonValue> {
+    ) -> Result<(RecoveredRating, JsonValue)> {
         let looked_up_leaderboard = if let Some(looked_up_leaderboard) =
             self.responses.lookup_leaderboard_for_profile_id(
                 &(req_player.profile_id.to_string()),
@@ -368,14 +366,32 @@ impl MatchInfoProcessor {
             ));
         };
 
-        if looked_up_leaderboard["count"].to_string() == 1.to_string() {
-            Ok(looked_up_leaderboard["leaderboard"][0].clone())
-        }
-        else {
-            return Err(ProcessingError::NotRankedLeaderboard(
-                req_player.profile_id,
+        if looked_up_leaderboard["count"].to_string() >= 1.to_string() {
+            return Ok((
+                RecoveredRating::Original,
+                looked_up_leaderboard["leaderboard"][0].clone(),
             ));
         }
+        else if looked_up_leaderboard["count"].to_string() == 0.to_string() {
+            // Try to recover
+            if let Some(looked_up_leaderboard) =
+                self.responses.lookup_leaderboard_for_profile_id(
+                    &(format!(
+                        "{}_recovery",
+                        &req_player.profile_id.to_string()
+                    )),
+                )
+            {
+                return Ok((
+                    RecoveredRating::Recovered,
+                    looked_up_leaderboard.clone(),
+                ));
+            }
+        }
+
+        return Err(ProcessingError::NotRankedLeaderboard(
+            req_player.profile_id,
+        ));
     }
 
     /// Lookup a corresponding player's `rating`

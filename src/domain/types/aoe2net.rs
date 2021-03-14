@@ -10,6 +10,12 @@ use serde_json::Value as JsonValue;
 use derive_getters::Getters;
 use displaydoc::Display;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum RecoveredRating {
+    Recovered,
+    Original,
+}
+
 /// Convenience datastructure for the `RatingHistory` endpoint to
 /// easily parse the data into our struct
 #[derive(

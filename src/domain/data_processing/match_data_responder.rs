@@ -8,6 +8,7 @@ use crate::domain::{
             self,
             Aoe2netRequestType,
             Aoe2netStringObj,
+            RecoveredRating,
         },
         api::{
             MatchInfoRequest,
@@ -214,20 +215,29 @@ impl MatchDataResponses {
         }
     }
 
-    /// Get a `Rating` datastructure from a `response` for a given player
+    /// Get a the country from the `leaderboard response` for a given player
     ///
     /// # Errors
     /// Won't throw an error, but `Option` is set to `None` resulting in an
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
     #[must_use]
-    pub fn get_country(looked_up_leaderboard: &JsonValue) -> Option<String> {
-        Some(looked_up_leaderboard["country"].to_string().to_lowercase()).map(
-            |mut country| {
-                country = util::remove_escaping(country);
-                country
-            },
-        )
+    pub fn get_country(
+        looked_up_leaderboard: &(RecoveredRating, JsonValue)
+    ) -> Option<String> {
+        let (recover, value) = looked_up_leaderboard;
+
+        if *recover == RecoveredRating::Original {
+            Some(value["country"].to_string().to_lowercase()).map(
+                |mut country| {
+                    country = util::remove_escaping(country);
+                    country
+                },
+            )
+        }
+        else {
+            None
+        }
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
@@ -243,28 +253,66 @@ impl MatchDataResponses {
     /// to the corresponding types is not successful
     pub fn get_rating(
         looked_up_rating: &JsonValue,
-        looked_up_leaderboard: &JsonValue,
+        looked_up_leaderboard: &(RecoveredRating, JsonValue),
     ) -> Result<Rating> {
-        let player_rating = Rating::builder()
-            .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_rating["rating"],
-            )?)?)
-            .rank(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_leaderboard["rank"],
-            )?)?)
-            .wins(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_wins"],
-            )?)?)
-            .losses(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_losses"],
-            )?)?)
-            .streak(serde_json::from_str::<i32>(&serde_json::to_string(
-                &looked_up_rating["streak"],
-            )?)?)
-            .highest_mmr(serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_leaderboard["highest_rating"],
-            )?)?)
-            .build();
+        let player_rating = match looked_up_leaderboard {
+            (RecoveredRating::Original, leaderboard) => Rating::builder()
+                .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_rating["rating"],
+                )?)?)
+                .rank(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &leaderboard["rank"],
+                )?)?)
+                .wins(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_wins"],
+                )?)?)
+                .losses(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_losses"],
+                )?)?)
+                .streak(serde_json::from_str::<i32>(&serde_json::to_string(
+                    &looked_up_rating["streak"],
+                )?)?)
+                .highest_mmr(serde_json::from_str::<u32>(
+                    &serde_json::to_string(&leaderboard["highest_rating"])?,
+                )?)
+                .build(),
+            (RecoveredRating::Recovered, leaderboard) => Rating::builder()
+                .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_rating["rating"],
+                )?)?)
+                .rank(serde_json::from_str::<u64>(&serde_json::to_string(&{
+                    let rank = if leaderboard["rank"] == JsonValue::Null {
+                        0.to_string()
+                    }
+                    else {
+                        leaderboard["rank"].to_string()
+                    };
+                    rank
+                })?)?)
+                .wins(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_wins"],
+                )?)?)
+                .losses(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_losses"],
+                )?)?)
+                .streak(serde_json::from_str::<i32>(&serde_json::to_string(
+                    &looked_up_rating["streak"],
+                )?)?)
+                .highest_mmr(serde_json::from_str::<u32>(
+                    &serde_json::to_string(&{
+                        let rating_high = if leaderboard["highest_rating"]
+                            == JsonValue::Null
+                        {
+                            0.to_string()
+                        }
+                        else {
+                            leaderboard["highest_rating"].to_string()
+                        };
+                        rating_high
+                    })?,
+                )?)
+                .build(),
+        };
 
         Ok(player_rating)
     }
@@ -721,10 +769,48 @@ impl MatchDataResponses {
 
             let rating_response: JsonValue = req_rating.execute().await?;
             let leaderboard_response: JsonValue = req_lead.execute().await?;
+            let mut leaderboard_recovery: Option<JsonValue> = None;
+
+            if leaderboard_response["count"].to_string() == 0.to_string() {
+                // GET `Rating` data as recovery data
+                let req_lead_rating = util::build_api_request(
+                    client.clone(),
+                    root.clone(),
+                    "player/rating",
+                    vec![
+                        ("game".to_string(), game.clone()),
+                        (
+                            "profile_id".to_string(),
+                            player.profile_id.to_string(),
+                        ),
+                        (
+                            "leaderboard_id".to_string(),
+                            responses.aoe2net.leaderboard_id.clone().unwrap(),
+                        ),
+                    ],
+                );
+
+                leaderboard_recovery = Some(req_lead_rating.execute().await?);
+            }
 
             if let Some(mut path) = export_path.clone() {
                 // TODO: Do requests just one time in export path
                 path.push("aoe2net");
+
+                if leaderboard_recovery.is_some() {
+                    util::export_to_json(
+                        &File {
+                            name: format!("{:?}_recovery", player.profile_id),
+                            ext: FileFormat::Json,
+                        },
+                        &{
+                            let mut p = path.clone();
+                            p.push("leaderboard");
+                            p
+                        },
+                        &rating_response,
+                    );
+                }
 
                 util::export_to_json(
                     &File {
@@ -761,6 +847,13 @@ impl MatchDataResponses {
                 .aoe2net
                 .leaderboard
                 .insert(player.profile_id.to_string(), leaderboard_response);
+
+            if leaderboard_recovery.is_some() {
+                responses.aoe2net.leaderboard.insert(
+                    format!("{}_recovery", &player.profile_id.to_string()),
+                    leaderboard_recovery.unwrap(),
+                );
+            }
         }
 
         Ok(responses)
