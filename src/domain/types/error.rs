@@ -17,7 +17,7 @@ use serde::{
 #[derive(Error, Display, Debug, Serialize, Clone, PartialEq, Deserialize)]
 pub enum ErrorMessageToFrontend {
     /// Player has no record on AoE2.net
-    UnrecordedPlayerDetected,
+    LastMatchNotFound,
     /// Generic error from the Responder: {0}
     GenericResponderError(String),
     /// Matchinfo processing failed: {0}
@@ -78,7 +78,7 @@ pub enum ResponderError {
     /// Other ApiRequestError: {0}.
     OtherApiRequestError(#[from] ApiRequestError),
     /// Data for LastMatch not found, possible unrecorded player detected.
-    UnrecordedPlayerDetected,
+    LastMatchNotFound,
     /// Invalid id_type: {0}
     InvalidIdType(String),
 }

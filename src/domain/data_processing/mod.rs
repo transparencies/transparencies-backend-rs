@@ -78,12 +78,10 @@ pub async fn process_match_info_request(
 
     match responses {
         Err(err) => match err {
-            ResponderError::UnrecordedPlayerDetected => {
+            ResponderError::LastMatchNotFound => {
                 error!("Failed with {:?}", err);
                 result = MatchInfoResult::builder()
-                    .error_message(
-                        ErrorMessageToFrontend::UnrecordedPlayerDetected,
-                    )
+                    .error_message(ErrorMessageToFrontend::LastMatchNotFound)
                     .build();
             }
             _ => {

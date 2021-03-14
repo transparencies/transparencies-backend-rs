@@ -620,11 +620,7 @@ impl MatchDataResponses {
                             root: _,
                             endpoint: _,
                             query: _,
-                        } => {
-                            return Err(
-                                ResponderError::UnrecordedPlayerDetected,
-                            )
-                        }
+                        } => return Err(ResponderError::LastMatchNotFound),
                         _ => {
                             return Err(ResponderError::OtherApiRequestError(
                                 err,
