@@ -107,7 +107,7 @@ to use them inside the integration tests and be able to update frequently
     ```
 
 - [ ] Investigate HTTPie errors for more edge cases
-- [ ] in case `team == -1` start setting from Team 1/2 not from the back (7/8)
+- [X] in case `team == -1` start setting from Team 1/2 not from the back (7/8)
 
 ### Refactoring
 
@@ -128,7 +128,7 @@ objects, etc.)
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
-- [ ] **WIP** structured logging: use `tracing` crate in addition to `log` and refactor
+- [X] structured logging: use `tracing` crate instead of `log` and refactor
 accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing

@@ -479,7 +479,7 @@ fn assemble_teams_to_vec(
                 let helper: Vec<PlayerRaw> = vec![ffa_player];
                 let own_team = TeamRaw::builder()
                     .team_number(
-                        available_empty_teams.pop().map_or(-1, |val| val),
+                        available_empty_teams.first().map_or(-1, |val| *val),
                     )
                     .players(Players(helper.clone()))
                     .build();
