@@ -79,7 +79,7 @@ usage in test cases
     - [ ] Deranked players
     - [ ] Coop games
     - [ ] Game Type except RM (0) and DM (2)
-    - [ ] FFA with teams set to ’-1’
+    - [X] FFA with teams set to ’-1’
 - [X] Write functionality to save a set of JSON responses (also our own) to a file
 to use them inside the integration tests and be able to update frequently
     - [X] Parse requests and use `wiremock` for HTTP-mocking and test requests
@@ -89,7 +89,7 @@ to use them inside the integration tests and be able to update frequently
 
 ### Fixes
 
-- [ ] Fix character escaping in e.g. `"name": "\"[RUS-F]GriN\""`
+- [X] Fix character escaping in e.g. `"name": "\"[RUS-F]GriN\""`
 - [ ] Make error message more  understandable for frontend:
 
     ```sh

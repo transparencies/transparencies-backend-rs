@@ -11,9 +11,9 @@ use tokio::{
     sync::Mutex,
     time,
 };
-
 use tracing::warn;
 use url::Url;
+use uuid::Uuid;
 
 use crate::domain::{
     types::{
@@ -151,6 +151,14 @@ pub async fn get_static_data_inside_thread(
 /// # Errors
 // TODO: Better error handling, how should we deal with it, if one of these
 // doesn't work or get parsed correctly?
+#[tracing::instrument(
+    name = "Preloading data ...",
+    skip(api_client, git_client, in_memory_db, github_root, aoe2_net_root, export_path),
+    fields(
+task_id = %Uuid::new_v4(),
+mocking_enabled = %mocking,
+)
+)]
 pub async fn preload_data(
     api_client: Option<reqwest::Client>,
     git_client: Option<reqwest::Client>,
