@@ -118,7 +118,6 @@ from `ron` file for ease of testing/exporting
     for `integration` testing
 - [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 - [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
     - [ ] Also think about the openAPI parsing and request generating logics
@@ -133,10 +132,12 @@ accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing
 - [X] Use a concurrent hashmap instead of a HashMap: <https://crates.io/crates/dashmap>
+- [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 
 ### Documentation
 
-- [X] Create good documentation
+- [X] Create good base documentation
+- [ ] Add more documentation
 
 ### Performance
 
