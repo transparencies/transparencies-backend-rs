@@ -3,7 +3,6 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
-use displaydoc::Display;
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -23,6 +22,8 @@ use std::{
     path::PathBuf,
 };
 use typed_builder::TypedBuilder;
+
+use crate::domain::types::error::ErrorMessageToFrontend;
 
 /// An enum describing the different `MatchSizes` we support on our overlay
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -46,14 +47,6 @@ pub enum MatchSize {
 }
 /// Convenience type
 type Time = usize;
-
-#[derive(Clone, Debug, Display, Serialize, PartialEq, Deserialize)]
-pub enum ErrorMessageToFrontend {
-    /// Player has no record on AoE2.net
-    UnrecordedPlayerDetected,
-    /// Generic error from the Responder: {0}
-    GenericResponderError(String),
-}
 
 /// Status of a match derived from `Last_match` AoE2.net endpoint
 /// if a game has no finished time, we threat it as running

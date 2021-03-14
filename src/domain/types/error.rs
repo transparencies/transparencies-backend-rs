@@ -9,6 +9,21 @@ use crate::domain::types::{
     GithubFileRequest,
 };
 
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+#[derive(Error, Display, Debug, Serialize, Clone, PartialEq, Deserialize)]
+pub enum ErrorMessageToFrontend {
+    /// Player has no record on AoE2.net
+    UnrecordedPlayerDetected,
+    /// Generic error from the Responder: {0}
+    GenericResponderError(String),
+    /// Matchinfo processing failed: {0}
+    HardFail(String),
+}
+
 /// Error type for the `MatchInfoProcessor`
 #[derive(Error, Display, Debug)]
 pub enum ProcessingError {

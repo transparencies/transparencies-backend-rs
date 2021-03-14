@@ -3,7 +3,11 @@
 use crate::domain::{
     data_processing::process_match_info_request,
     types::{
-        api::MatchInfoRequest,
+        api::{
+            MatchInfoRequest,
+            MatchInfoResult,
+        },
+        error::ErrorMessageToFrontend,
         InMemoryDb,
     },
 };
@@ -13,6 +17,7 @@ use std::{
 };
 use tokio::sync::Mutex;
 
+use tracing::error;
 use url::Url;
 
 /// Small `health_check` function to return 200 on `health_check` endpoint
@@ -56,8 +61,19 @@ pub async fn return_matchinfo_to_client(
         in_memory_db.clone(),
         None,
     )
-    .await
-    .expect("Matchinfo processing failed.");
+    .await;
 
-    Ok(warp::reply::json(&processed_match_info))
+    match processed_match_info {
+        Err(err) => {
+            error!("Failed with {:?}", err);
+            let err_match_info = MatchInfoResult::builder()
+                .error_message(ErrorMessageToFrontend::HardFail(format!(
+                    "MatchInfo processing failed: {}",
+                    err.to_string()
+                )))
+                .build();
+            Ok(warp::reply::json(&err_match_info))
+        }
+        Ok(match_info_result) => Ok(warp::reply::json(&match_info_result)),
+    }
 }

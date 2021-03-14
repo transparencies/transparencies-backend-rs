@@ -49,7 +49,7 @@
         - [X] On `hard error`, no match_info but instead error status code (HTTP)
     - [X] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
 - [X] implement `todo!()`s
-- [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
+- [X] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
 
 ### Testing
