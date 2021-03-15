@@ -126,3 +126,37 @@ pub fn remove_escaping(string: String) -> String {
     edit.retain(|char| char != '\"');
     edit
 }
+
+#[allow(unused_macros)]
+macro_rules! enum_with_str_representation {
+    (enum $enum_name:ident {
+        $($variant:ident => $nice_name:expr,)+
+    }) => {
+        #[derive(Debug, PartialEq, Eq, Clone, Hash)]
+        enum $enum_name {
+            $($variant),+
+        }
+
+        impl ::std::fmt::Display for $enum_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                match *self {
+                    $($enum_name::$variant => write!(f, $nice_name)),+
+                }
+            }
+        }
+
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        struct ParseError;
+
+        impl ::std::str::FromStr for $enum_name {
+            type Err = ParseError;
+
+            fn from_str(s: &str) -> Result<$enum_name, Self::Err> {
+                match s {
+                    $($nice_name => Ok($enum_name::$variant),)+
+                    _ => Err(ParseError),
+                }
+            }
+        }
+    }
+}
