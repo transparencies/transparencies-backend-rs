@@ -54,9 +54,14 @@ version = "0.1.0"
 dependencies = [
  "derive-getters",
  "displaydoc",
+ "futures",
+ "http",
+ "reqwest",
  "serde 1.0.124",
  "serde_json",
  "thiserror",
+ "tokio",
+ "url",
 ]
 
 [[package]]
