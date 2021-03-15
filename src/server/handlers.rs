@@ -1,7 +1,7 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::{
-    data_processing::process_match_info_request,
+    data_processing::build_result,
     types::{
         api::MatchInfoRequest,
         InMemoryDb,
@@ -49,7 +49,7 @@ pub async fn return_matchinfo_to_client(
     // API root for aoe2net
     let root = Url::parse("https://aoe2.net/api").unwrap();
 
-    let processed_match_info = process_match_info_request(
+    let processed_match_info = build_result(
         opts.clone(),
         aoe_net_client.clone(),
         root,

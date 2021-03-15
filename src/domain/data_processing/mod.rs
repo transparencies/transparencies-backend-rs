@@ -51,7 +51,7 @@ id_type = %par.id_type,
 id_number = %par.id_number
 )
 )]
-pub async fn process_match_info_request(
+pub async fn build_result(
     par: MatchInfoRequest,
     client: reqwest::Client,
     root: Url,
@@ -63,7 +63,7 @@ pub async fn process_match_info_request(
     // in the query future lifetime
     let query_span = tracing::info_span!("Querying for data from APIs...");
 
-    let responses = MatchDataResponses::new_with_match_data(
+    let responses = MatchDataResponses::with_match_data(
         par.clone(),
         client,
         in_memory_db,
@@ -74,7 +74,7 @@ pub async fn process_match_info_request(
     .await;
 
     #[allow(unused_assignments)]
-    let mut result = MatchInfoResult::new();
+    let mut result = MatchInfoResult::default();
 
     match responses {
         Err(err) => match err {
@@ -102,7 +102,7 @@ pub async fn process_match_info_request(
         Ok(response) => {
             // Process the Responses
             let processed_result =
-                MatchInfoProcessor::new_with_response(response).process();
+                MatchInfoProcessor::with_response(response).process();
 
             // Handle all the errors and make sure, we always return a
             // `MatchInfoResult`

@@ -36,7 +36,7 @@ use std::path::PathBuf;
 use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     domain::{
-        data_processing::process_match_info_request,
+        data_processing::build_result,
         types::api::MatchInfoRequest,
     },
     persistence::in_memory_db::data_preloading::preload_data,
@@ -81,7 +81,7 @@ async fn main() -> Result<(), Report> {
     let in_memory_db_clone = in_memory_db.clone();
     let api_clients = ApiClient::default();
     let match_info_request =
-        MatchInfoRequest::new_from_folder(export_path.clone().unwrap());
+        MatchInfoRequest::with_folder(export_path.clone().unwrap());
 
     // match_info_request
     //     .export_data_to_file(PathBuf::from_str(export_path.unwrap()).
@@ -102,7 +102,7 @@ async fn main() -> Result<(), Report> {
     .await
     .expect("Preloading data failed.");
 
-    let result = process_match_info_request(
+    let result = build_result(
         match_info_request,
         api_clients.aoe2net.clone(),
         aoe2_net_root,
@@ -111,7 +111,7 @@ async fn main() -> Result<(), Report> {
     )
     .await;
 
-    result.export_data_to_file(export_path.unwrap());
+    result.export_to_file(export_path.unwrap());
 
     Ok(())
 }

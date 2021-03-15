@@ -20,7 +20,7 @@ use serde_json::Value as JsonValue;
 
 /// The "Database" we use, which is in-memory for lookup of
 /// player names and other "more" static content
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
     /// Translations for aoe2net
     pub aoe2net_languages: DashMap<String, JsonValue>,
@@ -29,22 +29,13 @@ pub struct InMemoryDb {
     pub github_file_content: RefDataLists,
 }
 
-impl Default for InMemoryDb {
-    fn default() -> Self {
-        Self {
-            aoe2net_languages: DashMap::new(),
-            github_file_content: RefDataLists::default(),
-        }
-    }
-}
-
 impl InMemoryDb {
     /// Return the [`InMemoryDb`] with only the language needed
     ///
     /// # Panics
     /// Could panic if the [`dashmap::DashMap`] in [`static@crate::STANDARD`] is
     /// returning None
-    pub fn retain_language(
+    pub fn retain_only_requested_language(
         &mut self,
         language: &str,
     ) -> Self {

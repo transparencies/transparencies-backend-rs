@@ -18,7 +18,7 @@ use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     self,
     domain::{
-        data_processing::process_match_info_request,
+        data_processing::build_result,
         types::{
             error::TestCaseError,
             requests::ApiClient,
@@ -31,7 +31,7 @@ use transparencies_backend_rs::{
         util,
     },
     persistence::in_memory_db::data_preloading::{
-        create_github_file_list,
+        get_github_file_list,
         preload_data,
     },
     setup::telemetry::{
@@ -183,7 +183,7 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
             ran_once = true;
         }
 
-        let result = process_match_info_request(
+        let result = build_result(
             test_case.parsed_request,
             api_clients.aoe2net.clone(),
             aoe2_net_root.to_owned(),
@@ -438,7 +438,7 @@ async fn mount_mocks(
             "/SiegeEngineers/aoc-reference-data/master/data/" => {
                 // Github FileRequest Mock
                 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/
-                for file in create_github_file_list() {
+                for file in get_github_file_list() {
                     #[allow(unused_assignments)]
                     let mut json = JsonValue::default();
                     {

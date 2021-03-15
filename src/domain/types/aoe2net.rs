@@ -19,7 +19,16 @@ pub enum RecoveredRating {
 /// Convenience datastructure for the `RatingHistory` endpoint to
 /// easily parse the data into our struct
 #[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    PartialOrd,
+    Eq,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
 )]
 pub struct RatingHistory {
     pub drops: i64,
@@ -88,6 +97,13 @@ pub enum Aoe2netIdType {
     /// match_id
     Match,
 }
+
+impl Default for Aoe2netIdType {
+    fn default() -> Self {
+        Aoe2netIdType::Profile
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Display)]
 #[non_exhaustive]
 pub enum Aoe2netRequestType {
@@ -95,4 +111,10 @@ pub enum Aoe2netRequestType {
     LastMatch,
     /// Match_ID
     MatchId,
+}
+
+impl Default for Aoe2netRequestType {
+    fn default() -> Self {
+        Aoe2netRequestType::LastMatch
+    }
 }

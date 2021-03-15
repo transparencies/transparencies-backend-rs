@@ -76,7 +76,7 @@ impl MatchInfoProcessor {
     /// * `responses` - takes a [`MatchDataResponses`] struct to initialize
     ///   `self.responses`
     #[must_use]
-    pub fn new_with_response(responses: MatchDataResponses) -> Self {
+    pub fn with_response(responses: MatchDataResponses) -> Self {
         Self {
             responses,
             match_info: None,
@@ -124,7 +124,7 @@ impl MatchInfoProcessor {
         trace!("Creating different teams vectors.");
         // Create the different teams vectors
         let amount_of_successfully_processed_teams =
-            assemble_teams_to_vec(diff_team, &players_raw, &mut teams_raw);
+            assemble_teams(diff_team, &players_raw, &mut teams_raw);
         trace!("Successfully created different teams vectors.");
 
         trace!("Calculating match size ...");
@@ -144,15 +144,15 @@ impl MatchInfoProcessor {
 
         trace!("Translate rating type ...");
         let translated_last_match_rating_type =
-            &self.responses.get_translated_string_from_id(
+            &self.responses.lookup_string_for_id(
                 "rating_type",
-                self.responses.get_rating_type_id(req_type)?,
+                self.responses.get_id_for_rating_type(req_type)?,
             )?;
         trace!("Successfully translated rating type.");
 
         trace!("Translate map type ...");
         let translated_last_match_map_type =
-            &self.responses.get_translated_string_from_id(
+            &self.responses.lookup_string_for_id(
                 "map_type",
                 self.responses.get_map_type_id(req_type)?,
             )?;
@@ -160,7 +160,7 @@ impl MatchInfoProcessor {
 
         trace!("Translate into game type from match type...");
         let translated_last_match_match_type =
-            &self.responses.get_translated_string_from_id(
+            &self.responses.lookup_string_for_id(
                 "game_type",
                 self.responses.get_game_type_id(req_type)?,
             )?;
@@ -276,7 +276,7 @@ impl MatchInfoProcessor {
         );
 
         trace!("Getting player's rating ...");
-        let mut player_rating = MatchDataResponses::get_rating(
+        let mut player_rating = MatchDataResponses::create_rating(
             &looked_up_rating,
             &looked_up_leaderboard,
         )?;
@@ -287,7 +287,7 @@ impl MatchInfoProcessor {
 
         trace!("Getting player country ...");
         let player_country =
-            MatchDataResponses::get_country(&looked_up_leaderboard);
+            MatchDataResponses::get_country_code(&looked_up_leaderboard);
         trace!(
             "Successfully got requested player's country: {:?}",
             player_country
@@ -295,7 +295,7 @@ impl MatchInfoProcessor {
 
         trace!("Getting player civilisation translation ...");
         let translated_civilisation_string =
-            &self.responses.get_translated_string_from_id(
+            &self.responses.lookup_string_for_id(
                 "civ",
                 req_player.civ.to_string().parse::<usize>()?,
             )?;
@@ -471,7 +471,7 @@ impl MatchInfoProcessor {
 ///
 /// # Errors
 /// Errors are bubbled up into the processing stage of [`MatchInfoProcessor`]
-fn assemble_teams_to_vec(
+fn assemble_teams(
     mut diff_team: Vec<i64>,
     players_raw: &[PlayerRaw],
     teams_raw: &mut Vec<TeamRaw>,

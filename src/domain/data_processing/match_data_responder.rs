@@ -94,7 +94,7 @@ impl MatchDataResponses {
     /// Will return an error if either the `players array` can not be found
     /// or will `panic!` if the deserialisation failed or the parsing of the
     /// `Player` struct failed
-    pub fn parse_all_players<T>(
+    pub fn parse_players_into<T>(
         &self,
         req_type: Aoe2netRequestType,
     ) -> Result<T>
@@ -137,7 +137,7 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_number_of_players(&self) -> Result<String> {
+    pub fn get_player_amount(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("number of players".to_string())),
             |val| Ok(val["last_match"]["num_players"].to_string()),
@@ -184,7 +184,7 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_rating_type_id(
+    pub fn get_id_for_rating_type(
         &self,
         req_type: Aoe2netRequestType,
     ) -> Result<usize> {
@@ -225,7 +225,7 @@ impl MatchDataResponses {
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
     #[must_use]
-    pub fn get_country(
+    pub fn get_country_code(
         looked_up_leaderboard: &(RecoveredRating, JsonValue)
     ) -> Option<String> {
         let (recover, value) = looked_up_leaderboard;
@@ -254,7 +254,7 @@ impl MatchDataResponses {
     /// # Errors
     /// Function will throw errors in cases the deserialisation and conversion
     /// to the corresponding types is not successful
-    pub fn get_rating(
+    pub fn create_rating(
         looked_up_rating: &JsonValue,
         looked_up_leaderboard: &(RecoveredRating, JsonValue),
     ) -> Result<Rating> {
@@ -367,7 +367,7 @@ impl MatchDataResponses {
     /// # Panics
     /// Panics if the conversion to a string failed
     // TODO: Get rid of panic and handle gracefully
-    pub fn get_translated_string_from_id(
+    pub fn lookup_string_for_id(
         &self,
         first: &str,
         id: usize,
@@ -583,7 +583,7 @@ impl MatchDataResponses {
     /// # Panics
     /// Will panic if data cannot be written or file can not be created in
     /// Filesystem
-    pub fn export_data_to_file(&self) {
+    pub fn export_to_file(&self) {
         let ron_config = PrettyConfig::new()
             .with_depth_limit(8)
             .with_separate_tuple_members(true)
@@ -618,7 +618,7 @@ impl MatchDataResponses {
     /// Function could panic if the [`dashmap::DashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
     #[allow(clippy::too_many_lines)]
-    pub async fn new_with_match_data(
+    pub async fn with_match_data(
         par: MatchInfoRequest,
         client: reqwest::Client,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
@@ -646,7 +646,7 @@ impl MatchDataResponses {
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: db_cloned.retain_language(&language),
+            db: db_cloned.retain_only_requested_language(&language),
             ..MatchDataResponses::default()
         };
 
@@ -688,7 +688,7 @@ impl MatchDataResponses {
 
                         // Get all players from `LastMatch` response
                         responses.aoe2net.players_temp = responses
-                            .parse_all_players::<Vec<aoe2net::Player>>(
+                            .parse_players_into::<Vec<aoe2net::Player>>(
                                 Aoe2netRequestType::LastMatch,
                             )?;
                     }
@@ -731,7 +731,7 @@ impl MatchDataResponses {
 
                 // Get all players from `LastMatch` response
                 responses.aoe2net.players_temp = responses
-                    .parse_all_players::<Vec<aoe2net::Player>>(
+                    .parse_players_into::<Vec<aoe2net::Player>>(
                         Aoe2netRequestType::MatchId,
                     )?;
             }

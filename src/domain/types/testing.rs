@@ -31,7 +31,8 @@ impl TestCases {
         mut self,
         root_dir: PathBuf,
     ) -> Result<Self, TestCaseError> {
-        self.0.push(TestCase::new_with_root(root_dir).parse_from()?);
+        self.0
+            .push(TestCase::with_root_dir(root_dir).parse_from_root_dir()?);
         Ok(self)
     }
 }
@@ -47,7 +48,7 @@ pub struct TestCase {
 
 impl TestCase {
     #[must_use]
-    pub fn new_with_root(dir: PathBuf) -> Self {
+    pub fn with_root_dir(dir: PathBuf) -> Self {
         Self {
             // resource_dir: PathBuf::from(dir),
             resource_dir: dir,
@@ -65,7 +66,7 @@ impl TestCase {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn new_from_file(path: PathBuf) -> Result<Self, TestCaseError> {
+    pub fn with_file(path: PathBuf) -> Result<Self, TestCaseError> {
         Ok(ron::de::from_reader::<_, Self>(BufReader::new(
             fs::File::open(path)?,
         ))?)
@@ -78,7 +79,7 @@ impl TestCase {
     // TODO
     /// # Panics
     // TODO
-    pub fn parse_from(self) -> Result<Self, TestCaseError> {
+    pub fn parse_from_root_dir(self) -> Result<Self, TestCaseError> {
         let mut req = self.resource_dir.to_owned();
         req.push("match_info_request.ron");
 

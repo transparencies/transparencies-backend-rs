@@ -229,11 +229,10 @@ pub async fn preload_aoe2_net_data(
     root: Url,
     export_path: Option<PathBuf>,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = assemble_language_requests(&api_client, &root);
+    let language_requests = build_language_requests(&api_client, &root);
 
     let responses =
-        load_language_responses_into_dashmap(language_requests, export_path)
-            .await?;
+        assemble_languages_to_dashmap(language_requests, export_path).await?;
 
     {
         let mut guard = in_memory_db.lock().await;
@@ -248,7 +247,7 @@ pub async fn preload_aoe2_net_data(
 ///
 /// # Errors
 // TODO
-async fn load_language_responses_into_dashmap(
+async fn assemble_languages_to_dashmap(
     language_requests: Vec<(String, ApiRequest)>,
     export_path: Option<PathBuf>,
 ) -> Result<DashMap<String, JsonValue>, ApiRequestError> {
@@ -275,7 +274,7 @@ async fn load_language_responses_into_dashmap(
 }
 
 /// Builds all requests for the `LANGUAGE_STRINGS`
-fn assemble_language_requests(
+fn build_language_requests(
     api_client: &reqwest::Client,
     root: &Url,
 ) -> Vec<(String, ApiRequest)> {
@@ -316,7 +315,7 @@ pub async fn preload_aoc_ref_data(
     export_path: Option<PathBuf>,
     mocking: bool,
 ) -> Result<(), FileRequestError> {
-    let files = create_github_file_list();
+    let files = get_github_file_list();
 
     let mut ref_data_repository = root.clone();
     ref_data_repository
@@ -329,7 +328,7 @@ pub async fn preload_aoc_ref_data(
 
         let response: String = req.execute().await?.text().await?;
 
-        update_data_in_db(
+        assemble_data_to_db(
             file,
             in_memory_db.clone(),
             response,
@@ -345,7 +344,7 @@ pub async fn preload_aoc_ref_data(
 
 /// Parses the responses from a `request::Response` type and writes the Result
 /// into the in-memory database
-async fn update_data_in_db(
+async fn assemble_data_to_db(
     file: File,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     response: String,
@@ -438,7 +437,7 @@ async fn update_data_in_db(
 
 /// Create a list of files that need to be downloaded from github repository
 #[must_use]
-pub fn create_github_file_list() -> Vec<File> {
+pub fn get_github_file_list() -> Vec<File> {
     vec![
         File {
             name: "platforms".to_string(),
