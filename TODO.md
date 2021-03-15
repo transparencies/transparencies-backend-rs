@@ -148,7 +148,7 @@ to satisfy the borrow checker
 get rid of unnecessary boilerplate
 - [ ] make use of conversion traits: `fn foo<P: Into<PathBuf>>(p: P)`
 - [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
-- [ ] implement `FromStr` for types? https://doc.rust-lang.org/std/str/trait.FromStr.html
+- [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 
 ### Documentation
