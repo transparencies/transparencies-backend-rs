@@ -6,15 +6,18 @@ use tracing::trace;
 
 use serde_json::Value as JsonValue;
 
+use aoe2net::types::{
+    api::Player as aoe2net_Player,
+    helper::{
+        Aoe2netRequestType,
+        RecoveredRating,
+    },
+};
+
 use crate::domain::{
     data_processing::MatchDataResponses,
     types::{
         aoc_ref,
-        aoe2net::{
-            self,
-            Aoe2netRequestType,
-            RecoveredRating,
-        },
         api::{
             MatchInfo,
             MatchInfoResult,
@@ -208,7 +211,7 @@ impl MatchInfoProcessor {
     /// Process all the players given in a `Last_Match` response
     ///
     /// # Arguments
-    /// * `players_vec` - a slice of a vector of [`aoe2net::Player`]s that holds
+    /// * `players_vec` - a slice of a vector of [`aoe2net_Player`]s that holds
     ///   all the players that are in that corresponding game
     /// * `players_raw` - a mutable reference to a vector of raw Players to push
     ///   each processed [`PlayerRaw`] to
@@ -220,7 +223,7 @@ impl MatchInfoProcessor {
     /// [`MatchInfoProcessor`]
     fn process_all_players(
         &mut self,
-        players_vec: &[aoe2net::Player],
+        players_vec: &[aoe2net_Player],
         players_raw: &mut Vec<PlayerRaw>,
         diff_team: &mut Vec<i64>,
     ) -> Result<usize> {
@@ -241,8 +244,8 @@ impl MatchInfoProcessor {
     /// player. Afterwards pushes it into a vector of [`PlayerRaw`].
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
-    ///   contains all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
+    ///   all information we got from the `last_match` response
     /// * `players_processing` - a mutable reference to a vector of
     ///   [`PlayerRaw`] containing the succesfully built players with all
     ///   information belonging to them
@@ -252,7 +255,7 @@ impl MatchInfoProcessor {
     /// [`MatchInfoProcessor`]
     fn assemble_player_to_vec(
         &mut self,
-        req_player: &aoe2net::Player,
+        req_player: &aoe2net_Player,
         players_processing: &mut Vec<PlayerRaw>,
     ) -> Result<()> {
         // Lookups
@@ -325,11 +328,11 @@ impl MatchInfoProcessor {
     /// was made for on our `matchinfo` endpoint and returns this as Boolean
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
-    ///   contains all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
+    ///   all information we got from the `last_match` response
     fn get_requested_player(
         &self,
-        req_player: &aoe2net::Player,
+        req_player: &aoe2net_Player,
     ) -> bool {
         self.responses.aoe2net.player_last_match.as_ref().map_or(
             false,
@@ -344,15 +347,15 @@ impl MatchInfoProcessor {
     /// Lookup a corresponding player in the `leaderboard` response
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
-    ///   contains all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
+    ///   all information we got from the `last_match` response
     ///
     /// # Errors
     /// This function will error out if the Leaderboard [`serde_json::Value`]
     /// could not be found
     fn lookup_leaderboard(
         &mut self,
-        req_player: &aoe2net::Player,
+        req_player: &aoe2net_Player,
     ) -> Result<(RecoveredRating, JsonValue)> {
         let looked_up_leaderboard = if let Some(looked_up_leaderboard) =
             self.responses.lookup_leaderboard_for_profile_id(
@@ -397,15 +400,15 @@ impl MatchInfoProcessor {
     /// Lookup a corresponding player's `rating`
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
-    ///   contains all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
+    ///   all information we got from the `last_match` response
     ///
     /// # Errors
     /// This function will error out if the rating [`serde_json::Value`]
     /// could not be found
     fn lookup_rating(
         &mut self,
-        req_player: &aoe2net::Player,
+        req_player: &aoe2net_Player,
     ) -> Result<JsonValue> {
         trace!("Looking up rating for player: {:?}", req_player.profile_id);
         let looked_up_rating = if let Some(looked_up_rating) =
@@ -429,11 +432,11 @@ impl MatchInfoProcessor {
     /// `players.yaml` for that player
     ///
     /// # Arguments
-    /// * `req_player` - holding a reference to [`aoe2net::Player`] that
-    ///   contains all information we got from the `last_match` response
+    /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
+    ///   all information we got from the `last_match` response
     fn lookup_alias(
         &mut self,
-        req_player: &aoe2net::Player,
+        req_player: &aoe2net_Player,
     ) -> Option<aoc_ref::players::Player> {
         // Lookup profile id in alias list
         self.responses
@@ -541,7 +544,7 @@ fn assemble_teams(
 /// * `player_country` - a String wrapped in an Option that is `None` if the
 ///   country was `not set` resulting in a `Standard Value` for our API of
 ///   `null`
-/// * `req_player` - a reference to [`aoe2net::Player`] information for that
+/// * `req_player` - a reference to [`aoe2net_Player`] information for that
 ///   corresponding player
 /// * `looked_up_alias` - a reference to an Option of
 ///   [`aoc_ref::players::Player`] with all player information coming from
@@ -553,7 +556,7 @@ fn assemble_teams(
 fn build_player(
     player_rating: Rating,
     player_country: Option<String>,
-    req_player: &aoe2net::Player,
+    req_player: &aoe2net_Player,
     looked_up_alias: &Option<aoc_ref::players::Player>,
     translated_civilisation_string: String,
     requested: bool,

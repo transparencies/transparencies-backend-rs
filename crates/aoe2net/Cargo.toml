@@ -1,0 +1,14 @@
+[package]
+name = "aoe2net"
+version = "0.1.0"
+authors = ["Simon <simon@systemli.org>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+displaydoc = "0.1.7"
+serde = { version = "1.0.124", features = ["derive"] }
+serde_json = "1.0.64"
+derive-getters = "0.2.0"
+thiserror = "1.0.24"

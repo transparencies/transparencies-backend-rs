@@ -49,6 +49,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afddf7f520a80dbf76e6f50a35bca42a2331ef227a28b3b6dc5c2e2338d114b1"
 
 [[package]]
+name = "aoe2net"
+version = "0.1.0"
+dependencies = [
+ "derive-getters",
+ "displaydoc",
+ "serde 1.0.124",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2203,6 +2214,7 @@ dependencies = [
 name = "transparencies-backend-rs"
 version = "0.0.1"
 dependencies = [
+ "aoe2net",
  "bytes",
  "config",
  "dashmap",

@@ -2,14 +2,17 @@
 //! Beware, there is a close connection to the [`super::MatchInfoProcessor`]
 //! in many places
 
+use aoe2net::types::{
+    api::Player as aoe2net_Player,
+    helper::{
+        Aoe2netRequestType,
+        Aoe2netStringObj,
+        RecoveredRating,
+    },
+};
+
 use crate::domain::{
     types::{
-        aoe2net::{
-            self,
-            Aoe2netRequestType,
-            Aoe2netStringObj,
-            RecoveredRating,
-        },
         api::{
             MatchInfoRequest,
             Rating,
@@ -84,6 +87,7 @@ impl MatchDataResponses {
                     |val| Ok(val["leaderboard_id"].to_string()),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -130,6 +134,7 @@ impl MatchDataResponses {
                     },
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -175,6 +180,7 @@ impl MatchDataResponses {
                     |val| Ok(val["finished"].to_string()),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -215,6 +221,7 @@ impl MatchDataResponses {
                     },
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -446,6 +453,7 @@ impl MatchDataResponses {
                     |val| Ok(val["map_type"].to_string().parse::<usize>()?),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -484,6 +492,7 @@ impl MatchDataResponses {
                     |val| Ok(val["game_type"].to_string().parse::<usize>()?),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -508,6 +517,11 @@ impl MatchDataResponses {
                 if let Some(val) = self.aoe2net.match_id.as_ref() {
                     server = val["server"].to_string();
                 }
+            }
+            _ => {
+                return Err(ResponderError::InvalidReqType(
+                    req_type.to_string(),
+                ))
             }
         };
 
@@ -629,7 +643,8 @@ impl MatchDataResponses {
             (*STANDARD.get(&"language").unwrap()).to_string();
         let mut game: String = (*STANDARD.get(&"game").unwrap()).to_string();
 
-        let mut db_cloned: InMemoryDb;
+        #[allow(unused_assignments)]
+        let mut db_cloned = InMemoryDb::default();
         {
             // Just clone and drop the lock
             db_cloned = in_memory_db.lock().await.clone();
@@ -688,7 +703,7 @@ impl MatchDataResponses {
 
                         // Get all players from `LastMatch` response
                         responses.aoe2net.players_temp = responses
-                            .parse_players_into::<Vec<aoe2net::Player>>(
+                            .parse_players_into::<Vec<aoe2net_Player>>(
                                 Aoe2netRequestType::LastMatch,
                             )?;
                     }
@@ -731,7 +746,7 @@ impl MatchDataResponses {
 
                 // Get all players from `LastMatch` response
                 responses.aoe2net.players_temp = responses
-                    .parse_players_into::<Vec<aoe2net::Player>>(
+                    .parse_players_into::<Vec<aoe2net_Player>>(
                         Aoe2netRequestType::MatchId,
                     )?;
             }

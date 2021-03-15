@@ -18,6 +18,9 @@ upload-doc = true
 no-dev-version = true
 pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
+[workspace]
+members = ["crates/aoe2net"]
+
 [lib]
 path = "src/lib.rs"
 test = true                                 
@@ -60,6 +63,9 @@ edition = "2018"
 #[[bench]]
 
 [dependencies]
+
+aoe2net = { path = "crates/aoe2net", version = "*" }
+
 # Error handling
 #human-panic = "1.0.3"
 eyre = "0.6.5"

@@ -3,7 +3,7 @@
 use dashmap::DashMap;
 use serde::Serialize;
 
-use crate::domain::types::aoe2net;
+use aoe2net::types::api::Player as aoe2net_Player;
 
 use serde_json::Value as JsonValue;
 
@@ -21,6 +21,6 @@ pub struct Aoe2NetResponses {
     pub player_last_match: Option<JsonValue>,
     pub leaderboard: DashMap<String, JsonValue>,
     pub rating_history: DashMap<String, JsonValue>,
-    pub players_temp: Vec<aoe2net::Player>,
+    pub players_temp: Vec<aoe2net_Player>,
     pub match_id: Option<JsonValue>,
 }

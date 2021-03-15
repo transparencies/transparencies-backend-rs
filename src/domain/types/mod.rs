@@ -1,7 +1,7 @@
 //! Collection of all the types used in this repository
 
 pub mod aoc_ref;
-pub mod aoe2net;
+
 pub mod api;
 pub mod error;
 pub mod match_data;

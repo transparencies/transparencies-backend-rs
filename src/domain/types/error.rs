@@ -83,6 +83,8 @@ pub enum ResponderError {
     LastMatchNotFound,
     /// Invalid id_type: {0}
     InvalidIdType(String),
+    /// Invalid RequestType: {0}
+    InvalidReqType(String),
 }
 
 /// Error type for a `FileRequest`
