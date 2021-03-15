@@ -140,6 +140,16 @@ accordingly
     structured summaries of tracing
 - [X] Use a concurrent hashmap instead of a HashMap: <https://crates.io/crates/dashmap>
 - [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
+- [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
+to satisfy the borrow checker
+- [ ] check where enums in parameters are more applicable (no stringly typed apis)
+- [ ] no `self` on `with_` alternative constructors
+- [ ] having a struct for exporting/mocking/maintenance to spare parameters and get
+get rid of unnecessary boilerplate
+- [ ] make use of conversion traits: `fn foo<P: Into<PathBuf>>(p: P)`
+- [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
+- [ ] implement `FromStr` for types? https://doc.rust-lang.org/std/str/trait.FromStr.html
+- [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 
 ### Documentation
 
