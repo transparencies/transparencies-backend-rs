@@ -1,22 +1,28 @@
 //! Implementation side of the core http
 //! client logic of the application
 
-use crate::domain::{
-    api_handler::client_new::request::{
+use crate::{
+    domain::{
+        api_handler::client_new::request::{
+            Request,
+            RequestGet,
+        },
+        types::{
+            error::{
+                ApiRequestError,
+                FileRequestError,
+            },
+            requests::{
+                ApiRequest,
+                File,
+                FileFormat,
+                GithubFileRequest,
+            },
+        },
+    },
+    request::{
         Request,
         RequestGet,
-    },
-    types::{
-        error::{
-            ApiRequestError,
-            FileRequestError,
-        },
-        requests::{
-            ApiRequest,
-            File,
-            FileFormat,
-            GithubFileRequest,
-        },
     },
 };
 use derive_getters::Getters;
