@@ -13,7 +13,7 @@ use crate::{
     ser,
 };
 
-use crate::error::*;
+pub use crate::error::*;
 
 /// A request is an API endpoint
 #[async_trait::async_trait]
@@ -54,7 +54,6 @@ pub trait RequestGet: Request {
     /// Create a [`http::Request`] from this [`Request`] in your client
     fn create_request(
         &self,
-        token: &str,
         client_id: &str,
     ) -> Result<http::Request<Vec<u8>>, CreateRequestError> {
         let uri = self.get_uri()?;
@@ -64,6 +63,34 @@ pub trait RequestGet: Request {
             .uri(uri)
             .header("Client-ID", client_id)
             .header("Content-Type", "application/json")
+            .body(Vec::with_capacity(0))
+            .map_err(Into::into)
+    }
+
+    /// Create a [`http::Request`] with bearer auth from this [`Request`] in
+    /// your client
+    fn create_request_with_bearer(
+        &self,
+        token: &str,
+        client_id: &str,
+    ) -> Result<http::Request<Vec<u8>>, CreateRequestError> {
+        let uri = self.get_uri()?;
+
+        let mut bearer =
+            http::HeaderValue::from_str(&format!("Bearer {}", token)).map_err(
+                |_| {
+                    CreateRequestError::Custom(
+                        "Could not make token into headervalue".into(),
+                    )
+                },
+            )?;
+        bearer.set_sensitive(true);
+        http::Request::builder()
+            .method(http::Method::GET)
+            .uri(uri)
+            .header("Client-ID", client_id)
+            .header("Content-Type", "application/json")
+            .header(http::header::AUTHORIZATION, bearer)
             .body(Vec::with_capacity(0))
             .map_err(Into::into)
     }
@@ -110,12 +137,16 @@ pub trait RequestGet: Request {
             })?;
         Ok(Response {
             data: response.data,
+            pagination: None,
+            // TODO: pagination: response.pagination.cursor,
             request,
         })
     }
 }
 
 /// Deserialize 'null' as <T as Default>::Default
+// TODO: For now allow it
+#[allow(dead_code)]
 fn deserialize_default_from_empty_string<'de, D, T>(
     deserializer: D
 ) -> Result<Option<T>, D::Error>

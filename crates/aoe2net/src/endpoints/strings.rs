@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 /// Query Parameters for [Get Strings](super::get_channel_information)
 ///
 /// [`strings`](https://aoe2.net/#api)
@@ -9,9 +11,16 @@ use serde::{
     Serialize,
 };
 
-use api_client::request::{
-    Request,
-    RequestGet,
+use api_client::{
+    error::*,
+    request::{
+        Request,
+        RequestGet,
+    },
+    response::{
+        InnerResponse,
+        Response,
+    },
 };
 
 #[derive(
@@ -37,28 +46,25 @@ impl<'a> RequestGet for GetApiStringsRequest<'a> {
         request: Option<Self>,
         uri: &http::Uri,
         response: http::Response<Vec<u8>>,
-    ) -> Result<
-        helix::Response<Self, Option<ChannelInformation>>,
-        helix::HelixRequestGetError,
-    >
+    ) -> Result<Response<Self, Option<JsonValue>>, ApiRequestGetError>
     where
         Self: Sized,
     {
         let text = std::str::from_utf8(&response.body()).map_err(|e| {
-            helix::HelixRequestGetError::Utf8Error(
+            ApiRequestGetError::Utf8Error(
                 response.body().clone(),
                 e,
                 uri.clone(),
             )
         })?;
         // eprintln!("\n\nmessage is ------------ {} ------------", text);
-        if let Ok(helix::HelixRequestError {
+        if let Ok(ApiRequestError {
             error,
             status,
             message,
-        }) = serde_json::from_str::<helix::HelixRequestError>(&text)
+        }) = serde_json::from_str::<ApiRequestError>(&text)
         {
-            return Err(helix::HelixRequestGetError::Error {
+            return Err(ApiRequestGetError::Error {
                 error,
                 status: status
                     .try_into()
@@ -67,17 +73,18 @@ impl<'a> RequestGet for GetApiStringsRequest<'a> {
                 uri: uri.clone(),
             });
         }
-        let response: helix::InnerResponse<Vec<_>> =
-            serde_json::from_str(&text).map_err(|e| {
-                helix::HelixRequestGetError::DeserializeError(
+        let response: InnerResponse<Vec<_>> = serde_json::from_str(&text)
+            .map_err(|e| {
+                ApiRequestGetError::DeserializeError(
                     text.to_string(),
                     e,
                     uri.clone(),
                 )
             })?;
-        Ok(helix::Response {
+        Ok(Response {
             data: response.data.into_iter().next(),
-            pagination: response.pagination.cursor,
+            pagination: None,
+            // pagination: response.pagination.cursor,
             request,
         })
     }

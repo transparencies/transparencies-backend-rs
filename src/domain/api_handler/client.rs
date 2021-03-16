@@ -91,7 +91,7 @@ impl ApiClient {
     /// This function panics if [`reqwest::Client`] can not be build.
     #[inline]
     #[must_use]
-    pub fn new_with_https(enabled: bool) -> Self {
+    pub fn with_https(enabled: bool) -> Self {
         Self {
             aoe2net: reqwest::Client::builder()
                 .user_agent(APP_USER_AGENT)

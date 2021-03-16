@@ -32,9 +32,9 @@ pub enum ClientRequestError<RE: std::error::Error + Send + Sync + 'static> {
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct ApiRequestError {
-    error: String,
-    status: u16,
-    message: String,
+    pub error: String,
+    pub status: u16,
+    pub message: String,
 }
 
 /// Could not create request
