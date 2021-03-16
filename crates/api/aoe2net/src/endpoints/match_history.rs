@@ -42,9 +42,9 @@ pub struct GetMatchHistoryRequest<'a> {
     #[builder(default = None, setter(into))]
     pub profile_id: Option<&'a str>,
     #[builder(default = None, setter(into))]
-    pub steam_ids: Option<&'a [str]>,
+    pub steam_ids: Option<Vec<&'a str>>,
     #[builder(default = None, setter(into))]
-    pub profile_ids: Option<&'a [str]>,
+    pub profile_ids: Option<Vec<&'a str>>,
 }
 
 impl<'a> Request for GetMatchHistoryRequest<'a> {
