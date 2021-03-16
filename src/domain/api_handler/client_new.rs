@@ -111,7 +111,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
         R: Request<Response = D> + Request + RequestGet,
         D: serde::de::DeserializeOwned + PartialEq,
     {
-        let req = request.create_request("000_000")?;
+        let req = request.create_request()?;
         let uri = req.uri().clone();
         let response = self
             .client
@@ -304,7 +304,7 @@ impl<'a, C: Client<'a>> GitClient<'a, C> {
         R: Request<Response = D> + Request + RequestGet,
         D: serde::de::DeserializeOwned + PartialEq,
     {
-        let req = request.create_request("000_000")?;
+        let req = request.create_request()?;
         let uri = req.uri().clone();
         let response = self
             .client

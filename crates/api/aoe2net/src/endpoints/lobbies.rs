@@ -1,8 +1,8 @@
 use std::convert::TryInto;
 
-/// Query Parameters for [Get Strings](super::get_channel_information)
+/// Query Parameters for [Get Lobbies](super::get_lobbies)
 ///
-/// [`strings`](https://aoe2.net/#api)
+/// [`lobbies`](https://aoe2.net/#api)
 // TODO
 use serde_json::Value as JsonValue;
 
@@ -27,22 +27,20 @@ use api_client::{
     PartialEq, typed_builder::TypedBuilder, Deserialize, Serialize, Clone, Debug,
 )]
 #[non_exhaustive]
-pub struct GetApiStringsRequest<'a> {
+pub struct GetLobbiesRequest<'a> {
     /// ID of the channel
     #[builder(setter(into))]
-    pub game: &'a str,
-    #[builder(setter(into))]
-    pub language: &'a str,
+    pub game: Option<&'a str>,
 }
 
-impl<'a> Request for GetApiStringsRequest<'a> {
+impl<'a> Request for GetLobbiesRequest<'a> {
     type Response = Option<JsonValue>;
 
-    const PATH: &'static str = "strings";
+    const PATH: &'static str = "lobbies";
     const ROOT: &'static str = crate::AOE2_NET_URL;
 }
 
-impl<'a> RequestGet for GetApiStringsRequest<'a> {
+impl<'a> RequestGet for GetLobbiesRequest<'a> {
     fn parse_response(
         request: Option<Self>,
         uri: &http::Uri,

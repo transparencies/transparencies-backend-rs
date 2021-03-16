@@ -53,15 +53,13 @@ pub trait Request: serde::Serialize {
 pub trait RequestGet: Request {
     /// Create a [`http::Request`] from this [`Request`] in your client
     fn create_request(
-        &self,
-        client_id: &str,
+        &self
     ) -> Result<http::Request<Vec<u8>>, CreateRequestError> {
         let uri = self.get_uri()?;
 
         http::Request::builder()
             .method(http::Method::GET)
             .uri(uri)
-            .header("Client-ID", client_id)
             .header("Content-Type", "application/json")
             .body(Vec::with_capacity(0))
             .map_err(Into::into)

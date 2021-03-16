@@ -1,8 +1,8 @@
 use std::convert::TryInto;
 
-/// Query Parameters for [Get Strings](super::get_channel_information)
+/// Query Parameters for [Get Last match](super::get_last_match)
 ///
-/// [`strings`](https://aoe2.net/#api)
+/// [`last_match`](https://aoe2.net/#api)
 // TODO
 use serde_json::Value as JsonValue;
 
@@ -27,22 +27,24 @@ use api_client::{
     PartialEq, typed_builder::TypedBuilder, Deserialize, Serialize, Clone, Debug,
 )]
 #[non_exhaustive]
-pub struct GetApiStringsRequest<'a> {
+pub struct GetLastMatchRequest<'a> {
     /// ID of the channel
     #[builder(setter(into))]
     pub game: &'a str,
-    #[builder(setter(into))]
-    pub language: &'a str,
+    #[builder(default = None, setter(into))]
+    pub steam_id: Option<&'a str>,
+    #[builder(default = None, setter(into))]
+    pub profile_id: Option<&'a str>,
 }
 
-impl<'a> Request for GetApiStringsRequest<'a> {
+impl<'a> Request for GetLastMatchRequest<'a> {
     type Response = Option<JsonValue>;
 
-    const PATH: &'static str = "strings";
+    const PATH: &'static str = "player/lastmatch";
     const ROOT: &'static str = crate::AOE2_NET_URL;
 }
 
-impl<'a> RequestGet for GetApiStringsRequest<'a> {
+impl<'a> RequestGet for GetLastMatchRequest<'a> {
     fn parse_response(
         request: Option<Self>,
         uri: &http::Uri,
