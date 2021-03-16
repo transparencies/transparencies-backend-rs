@@ -41,9 +41,9 @@
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [X] use `thiserror` in library part
     - [X] use `eyre` consistently for results with reports in binary part
-    - [X] **Q** use `.map_err` and return HTTP status codes
-        - **A** We return errors in the `error message` field for frontend error
-        handling
+    - [ ] **Q** use `.map_err` (e.g. return HTTP status codes, other errors)
+        - **A** We should return more warnings/errors in the `error message`
+        field for frontend error handling
     - [X] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
         and return a maximum of valuable information on the MatchInfo and the
         errors to the client
