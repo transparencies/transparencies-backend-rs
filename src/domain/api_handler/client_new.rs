@@ -24,7 +24,7 @@ pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 /// Timeout for http-connections
 pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
 
-/// Datastructure storing different our `ApiClients`
+/// Datastructure storing our different [`ApiClient`]s
 #[derive(Getters, Debug, Clone)]
 pub struct ApiClient<'a, C>
 where C: Client<'a>
