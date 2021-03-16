@@ -103,7 +103,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     /// # }
     /// # // fn main() {run()}
     /// ```
-    pub async fn req_get<R, D, T>(
+    pub async fn req_get<R, D>(
         &'a self,
         request: R,
     ) -> Result<Response<R, D>, ClientRequestError<<C as Client<'a>>::Error>>

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use aoe2net::endpoints::strings::GetApiStringsRequest;
+use aoe2net::endpoints::last_match::*;
 use transparencies_backend_rs::domain::api_handler::client_new::A2NClient;
 
 /// Our app name as USERAGENT for the clients
@@ -25,9 +25,9 @@ async fn main() {
 
     let client = A2NClient::with_client(base_client);
 
-    let req = aoe2net::GetApiStringsRequest::builder()
+    let req = GetLastMatchRequest::builder()
         .game("aoe2de")
-        .language("it")
+        .profile_id("196240")
         .build();
 
     let response = client.req_get(req).await;

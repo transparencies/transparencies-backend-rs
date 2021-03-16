@@ -17,10 +17,7 @@ use api_client::{
         Request,
         RequestGet,
     },
-    response::{
-        InnerResponse,
-        Response,
-    },
+    response::Response,
 };
 
 #[derive(
@@ -86,16 +83,15 @@ impl<'a> RequestGet for GetMatchHistoryRequest<'a> {
                 uri: uri.clone(),
             });
         }
-        let response: InnerResponse<Vec<_>> = serde_json::from_str(&text)
-            .map_err(|e| {
-                ApiRequestGetError::DeserializeError(
-                    text.to_string(),
-                    e,
-                    uri.clone(),
-                )
-            })?;
+        let response: JsonValue = serde_json::from_str(&text).map_err(|e| {
+            ApiRequestGetError::DeserializeError(
+                text.to_string(),
+                e,
+                uri.clone(),
+            )
+        })?;
         Ok(Response {
-            data: response.data.into_iter().next(),
+            data: response.into(),
             pagination: None,
             // pagination: response.pagination.cursor,
             request,
