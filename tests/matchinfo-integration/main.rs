@@ -127,7 +127,7 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let api_clients = ApiClient::new_with_https(false);
+    let api_clients = ApiClient::with_https(false);
 
     let github_root = Url::parse(&format!("{}", &mock_server.uri())).unwrap();
     let aoe2_net_root =

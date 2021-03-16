@@ -1,5 +1,8 @@
 //! Error types of our library part
-use std::num::ParseIntError;
+use std::{
+    borrow::Cow,
+    num::ParseIntError,
+};
 
 use displaydoc::Display;
 use thiserror::Error;
@@ -85,6 +88,11 @@ pub enum ResponderError {
     InvalidIdType(String),
     /// Invalid RequestType: {0}
     InvalidReqType(String),
+    /* /// Unsupported
+     * NotSupported {
+     *     /// Location where this was triggered
+     *     location: &'static std::panic::Location<'static>,
+     * }, */
 }
 
 /// Error type for a `FileRequest`
@@ -155,4 +163,62 @@ pub enum IndexingError {
         /// Position of doublet
         doublet: usize,
     },
+}
+
+#[derive(Debug, thiserror::Error, displaydoc::Display)]
+/// Errors from the query serializer
+pub enum Error {
+    /// {0}
+    Custom(Cow<'static, str>),
+    /// serializer only supports structs and maps on top-level
+    TopLevelNotSupported {
+        /// Location where this was triggered
+        location: &'static std::panic::Location<'static>,
+    },
+    /// field serializer only supports strings, sequences, options, maps and
+    /// tuples
+    FieldNotSupported {
+        /// Location where this was triggered
+        location: &'static std::panic::Location<'static>,
+    },
+    /// pair serializer only supports strings, integers, floats, bools. options
+    PairNotSupported {
+        /// Location where this was triggered
+        location: &'static std::panic::Location<'static>,
+    },
+    /// value serializer only supports primitive types
+    ValueNotSupported {
+        /// Location where this was triggered
+        location: &'static std::panic::Location<'static>,
+    },
+}
+
+impl Error {
+    #[track_caller]
+    fn top_level_not_supported() -> Self {
+        Error::TopLevelNotSupported {
+            location: std::panic::Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    fn field_not_supported() -> Self {
+        Error::FieldNotSupported {
+            location: std::panic::Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    fn pair_not_supported() -> Self {
+        Error::PairNotSupported {
+            location: std::panic::Location::caller(),
+        }
+    }
+
+    #[track_caller]
+    fn value_not_supported() -> Self {
+        Error::ValueNotSupported {
+            location: std::panic::Location::caller(),
+        }
+    }
 }

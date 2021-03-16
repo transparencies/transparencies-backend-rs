@@ -19,7 +19,10 @@ no-dev-version = true
 pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
 [workspace]
-members = ["crates/aoe2net"]
+members = [
+    "crates/aoe2net",
+    "crates/api_client",
+]
 
 [lib]
 path = "src/lib.rs"
@@ -63,8 +66,8 @@ edition = "2018"
 #[[bench]]
 
 [dependencies]
-
 aoe2net = { path = "crates/aoe2net", version = "*" }
+api-client = { path = "crates/api_client", version = "*" }
 
 # Error handling
 #human-panic = "1.0.3"
