@@ -29,6 +29,7 @@ impl<'a> Request for GetApiStringsRequest<'a> {
     type Response = Option<JsonValue>;
 
     const PATH: &'static str = "strings";
+    const ROOT: &'static str = crate::AOE2_NET_URL;
 }
 
 impl<'a> RequestGet for GetApiStringsRequest<'a> {

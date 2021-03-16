@@ -21,6 +21,12 @@ use crate::{
         },
     },
     request::{
+        ApiRequestDeleteError,
+        ApiRequestGetError,
+        ApiRequestPatchError,
+        ApiRequestPostError,
+        ApiRequestPutError,
+        CreateRequestError,
         Request,
         RequestGet,
     },
@@ -504,32 +510,4 @@ impl<'a> Client<'a> for DummyHttpClient {
     ) -> BoxedFuture<'a, Result<Response, Self::Error>> {
         Box::pin(async { Err(DummyHttpClient) })
     }
-}
-
-/// Errors for [`HelixClient::req_get`] and similar functions.
-#[derive(thiserror::Error, Debug, displaydoc::Display)]
-pub enum ClientRequestError<RE: std::error::Error + Send + Sync + 'static> {
-    /// request failed from reqwests side
-    RequestError(RE),
-    /// no pagination found
-    NoPage,
-    /// could not create request
-    CreateRequestError(#[from] CreateRequestError),
-    /// could not parse GET response
-    // #[error(transparent)] // FIXME: https://github.com/yaahc/displaydoc/issues/15
-    HelixRequestGetError(#[from] HelixRequestGetError),
-    /// could not parse PUT response
-    // #[error(transparent)] // FIXME: https://github.com/yaahc/displaydoc/issues/15
-    HelixRequestPutError(#[from] HelixRequestPutError),
-    /// could not parse POST response
-    // #[error(transparent)] // FIXME: https://github.com/yaahc/displaydoc/issues/15
-    HelixRequestPostError(#[from] HelixRequestPostError),
-    /// could not parse PATCH response
-    // #[error(transparent)] // FIXME: https://github.com/yaahc/displaydoc/issues/15
-    HelixRequestPatchError(#[from] HelixRequestPatchError),
-    /// could not parse DELETE response
-    // #[error(transparent)] // FIXME: https://github.com/yaahc/displaydoc/issues/15
-    HelixRequestDeleteError(#[from] HelixRequestDeleteError),
-    /// {0}
-    Custom(std::borrow::Cow<'static, str>),
 }

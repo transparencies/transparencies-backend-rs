@@ -16,8 +16,8 @@ where
 }
 
 #[derive(PartialEq, serde::Deserialize, Debug)]
-struct InnerResponse<D> {
-    data: D,
+pub(crate) struct InnerResponse<D> {
+    pub(crate) data: D,
     /* /// A cursor value, to be used in a subsequent request to specify the
      * /// starting point of the next set of results.
      *     #[serde(default)]
