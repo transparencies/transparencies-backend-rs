@@ -56,7 +56,6 @@ dependencies = [
  "async-trait",
  "derive-getters",
  "displaydoc",
- "futures",
  "http",
  "reqwest",
  "serde 1.0.124",
@@ -72,16 +71,13 @@ name = "api-client"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "derive-getters",
  "displaydoc",
- "futures",
  "http",
  "reqwest",
  "serde 1.0.124",
  "serde_json",
  "thiserror",
  "tokio",
- "typed-builder",
  "url",
 ]
 
