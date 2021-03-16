@@ -20,13 +20,13 @@ use serde::{
 #[derive(Error, Display, Debug, Serialize, Clone, PartialEq, Deserialize)]
 pub enum ErrorMessageToFrontend {
     /// Generic error from the Responder: {0}
-    GenericResponderError(String),
+    GenericResponderError(Cow<'static, str>),
     /// Matchinfo processing failed: {0}
-    HardFail(String),
+    HardFail(Cow<'static, str>),
     /// Matchinfo processing failed: {0}
-    SoftFail(String),
+    SoftFail(Cow<'static, str>),
     /// Rocover: {0}
-    Recover(String),
+    Recover(Cow<'static, str>),
 }
 
 /// Error type for the `MatchInfoProcessor`
@@ -85,7 +85,7 @@ pub enum ResponderError {
     /// Data for LastMatch not found, possible unrecorded player detected.
     LastMatchNotFound,
     /// Invalid id_type: {0}
-    InvalidIdType(String),
+    InvalidIdType(Cow<'static, str>),
     /// Invalid RequestType: {0}
     InvalidReqType(String),
     /* /// Unsupported
@@ -163,62 +163,4 @@ pub enum IndexingError {
         /// Position of doublet
         doublet: usize,
     },
-}
-
-#[derive(Debug, thiserror::Error, displaydoc::Display)]
-/// Errors from the query serializer
-pub enum Error {
-    /// {0}
-    Custom(Cow<'static, str>),
-    /// serializer only supports structs and maps on top-level
-    TopLevelNotSupported {
-        /// Location where this was triggered
-        location: &'static std::panic::Location<'static>,
-    },
-    /// field serializer only supports strings, sequences, options, maps and
-    /// tuples
-    FieldNotSupported {
-        /// Location where this was triggered
-        location: &'static std::panic::Location<'static>,
-    },
-    /// pair serializer only supports strings, integers, floats, bools. options
-    PairNotSupported {
-        /// Location where this was triggered
-        location: &'static std::panic::Location<'static>,
-    },
-    /// value serializer only supports primitive types
-    ValueNotSupported {
-        /// Location where this was triggered
-        location: &'static std::panic::Location<'static>,
-    },
-}
-
-impl Error {
-    #[track_caller]
-    fn top_level_not_supported() -> Self {
-        Error::TopLevelNotSupported {
-            location: std::panic::Location::caller(),
-        }
-    }
-
-    #[track_caller]
-    fn field_not_supported() -> Self {
-        Error::FieldNotSupported {
-            location: std::panic::Location::caller(),
-        }
-    }
-
-    #[track_caller]
-    fn pair_not_supported() -> Self {
-        Error::PairNotSupported {
-            location: std::panic::Location::caller(),
-        }
-    }
-
-    #[track_caller]
-    fn value_not_supported() -> Self {
-        Error::ValueNotSupported {
-            location: std::panic::Location::caller(),
-        }
-    }
 }

@@ -81,20 +81,21 @@ pub async fn build_result(
             ResponderError::LastMatchNotFound => {
                 error!("Failed with {:?}", err);
                 result = MatchInfoResult::builder()
-                    .error_message(ErrorMessageToFrontend::HardFail(format!(
-                        "MatchInfo processing failed: {}",
-                        err.to_string()
-                    )))
+                    .error_message(ErrorMessageToFrontend::HardFail(
+                        std::borrow::Cow::Owned(format!(
+                            "MatchInfo processing failed: {}",
+                            err
+                        )),
+                    ))
                     .build();
             }
             _ => {
                 error!("Failed with {:?}", err);
                 result = MatchInfoResult::builder()
                     .error_message(
-                        ErrorMessageToFrontend::GenericResponderError(format!(
-                            "{}",
-                            err
-                        )),
+                        ErrorMessageToFrontend::GenericResponderError(
+                            std::borrow::Cow::Owned(format!("{}", err)),
+                        ),
                     )
                     .build();
             }
@@ -112,22 +113,22 @@ pub async fn build_result(
                         error!("Failed with {:?}", err);
                         result = MatchInfoResult::builder()
                             .error_message(ErrorMessageToFrontend::HardFail(
-                                format!(
+                                std::borrow::Cow::Owned(format!(
                                     "MatchInfo processing failed: {}",
-                                    err.to_string()
-                                ),
+                                    err
+                                )),
                             ))
                             .build();
                     }
                     _ => {
                         error!("Failed with {:?}", err);
                         result = MatchInfoResult::builder()
-                            .error_message(ErrorMessageToFrontend::HardFail(format!(
+                            .error_message(ErrorMessageToFrontend::HardFail(std::borrow::Cow::Owned(format!(
                                 "MatchInfo processing failed for {:?}:{:?} with {}",
                                 par.id_type,
                                 par.id_number,
                                 err.to_string()
-                            )))
+                            ))))
                             .build();
                     }
                 }

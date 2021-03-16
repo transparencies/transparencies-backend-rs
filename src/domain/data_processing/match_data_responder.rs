@@ -750,7 +750,11 @@ impl MatchDataResponses {
                         Aoe2netRequestType::MatchId,
                     )?;
             }
-            _ => return Err(ResponderError::InvalidIdType(par.id_type)),
+            _ => {
+                return Err(ResponderError::InvalidIdType(
+                    std::borrow::Cow::Owned(par.id_type),
+                ))
+            }
         }
 
         for player in &responses.aoe2net.players_temp {
