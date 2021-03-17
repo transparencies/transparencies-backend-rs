@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use aoe2net::endpoints::last_match::*;
+use aoe2net::endpoints::leaderboard::*;
 use transparencies_backend_rs::domain::api_handler::client_new::A2NClient;
 
 /// Our app name as USERAGENT for the clients
@@ -25,9 +25,12 @@ async fn main() {
 
     let client = A2NClient::with_client(base_client);
 
-    let req = GetLastMatchRequest::builder()
+    let req = GetLeaderboardRequest::builder()
         .game("aoe2de")
         .profile_id("196240")
+        .leaderboard_id("3")
+        .start("1")
+        .count("1")
         .build();
 
     let response = client.req_get(req).await;
