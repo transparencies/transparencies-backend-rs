@@ -385,16 +385,11 @@ impl MatchInfoProcessor {
                     )),
                 )
             {
-                return Ok((
-                    RecoveredRating::Recovered,
-                    looked_up_leaderboard.clone(),
-                ));
+                return Ok((RecoveredRating::Recovered, looked_up_leaderboard));
             }
         }
 
-        return Err(ProcessingError::NotRankedLeaderboard(
-            req_player.profile_id,
-        ));
+        Err(ProcessingError::NotRankedLeaderboard(req_player.profile_id))
     }
 
     /// Lookup a corresponding player's `rating`
@@ -513,7 +508,7 @@ fn assemble_teams(
         // Case: team == `-1` then push each player to a different
         // team
         if team == -1 {
-            for ffa_player in player_vec_helper.to_owned() {
+            for ffa_player in player_vec_helper.clone() {
                 let helper: Vec<PlayerRaw> = vec![ffa_player];
                 let own_team = TeamRaw::builder()
                     .team_number(
@@ -566,10 +561,7 @@ fn build_player(
         .player_number(req_player.color.to_string().parse::<i64>()?)
         .team_number(req_player.team)
         .name(looked_up_alias.as_ref().map_or_else(
-            || {
-                let name = util::remove_escaping(req_player.name.to_string());
-                name
-            },
+            || util::remove_escaping(req_player.name.to_string()),
             |lookup_player| lookup_player.name.clone(),
         ))
         .country(looked_up_alias.as_ref().map_or_else(

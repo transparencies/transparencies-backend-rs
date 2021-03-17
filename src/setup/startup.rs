@@ -39,7 +39,7 @@ pub fn set_up_logging(
     }
 
     let subscriber =
-        get_subscriber("transparencies".into(), cli_args.log_level().into());
+        get_subscriber("transparencies".into(), cli_args.log_level());
     init_subscriber(subscriber);
 
     Ok(())

@@ -291,13 +291,12 @@ impl MatchDataResponses {
                     &looked_up_rating["rating"],
                 )?)?)
                 .rank(serde_json::from_str::<u64>(&serde_json::to_string(&{
-                    let rank = if leaderboard["rank"] == JsonValue::Null {
+                    if leaderboard["rank"] == JsonValue::Null {
                         json![0]
                     }
                     else {
                         leaderboard["rank"].clone()
-                    };
-                    rank
+                    }
                 })?)?)
                 .wins(serde_json::from_str::<u64>(&serde_json::to_string(
                     &looked_up_rating["num_wins"],
@@ -310,15 +309,12 @@ impl MatchDataResponses {
                 )?)?)
                 .highest_mmr(serde_json::from_str::<u32>(
                     &serde_json::to_string(&{
-                        let rating_high = if leaderboard["highest_rating"]
-                            == JsonValue::Null
-                        {
+                        if leaderboard["highest_rating"] == JsonValue::Null {
                             json![0]
                         }
                         else {
                             leaderboard["highest_rating"].clone()
                         };
-                        rating_high
                     })?,
                 )?)
                 .build(),

@@ -13,11 +13,11 @@ impl CommandLineSetting for CommandLineSettings {
     }
 
     fn log_file_path(&self) -> String {
-        self.log_file_path.to_owned()
+        self.log_file_path.clone()
     }
 
     fn log_level(&self) -> String {
-        self.log_level.to_owned()
+        self.log_level.clone()
     }
 }
 impl CommandLineSetting for ExportCommandLineSettings {
@@ -26,11 +26,11 @@ impl CommandLineSetting for ExportCommandLineSettings {
     }
 
     fn log_file_path(&self) -> String {
-        self.log_file_path.to_owned()
+        self.log_file_path.clone()
     }
 
     fn log_level(&self) -> String {
-        self.log_level.to_owned()
+        self.log_level.clone()
     }
 }
 

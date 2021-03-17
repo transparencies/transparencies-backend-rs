@@ -80,13 +80,13 @@ impl TestCase {
     /// # Panics
     // TODO
     pub fn parse_from_root_dir(self) -> Result<Self, TestCaseError> {
-        let mut req = self.resource_dir.to_owned();
+        let mut req = self.resource_dir.clone();
         req.push("match_info_request.ron");
 
-        let mut resp = self.resource_dir.to_owned();
+        let mut resp = self.resource_dir.clone();
         resp.push("match_info_result.ron");
 
-        let mut last_match = self.resource_dir.to_owned();
+        let mut last_match = self.resource_dir.clone();
         last_match.push("aoe2net");
         last_match.push("last_match.json");
 

@@ -120,6 +120,7 @@ pub fn extract_filename(path: &Path) -> String {
 
 /// Remove escaping
 #[inline]
+#[must_use]
 pub fn remove_escaping(string: String) -> String {
     let mut edit = string;
     edit.retain(|char| char != '\\');

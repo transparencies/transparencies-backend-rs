@@ -139,7 +139,7 @@ impl GithubFileRequest {
     /// see [`reqwest::Error`]
     #[inline]
     pub async fn execute(&self) -> Result<reqwest::Response, FileRequestError> {
-        Ok(self.client().get(self.url().to_owned()).send().await?)
+        Ok(self.client().get(self.url().clone()).send().await?)
     }
 }
 
@@ -175,7 +175,7 @@ impl ApiRequest {
                 return Err(ApiRequestError::NotFoundResponse {
                     root: self.root().as_str().to_string(),
                     endpoint: self.endpoint().to_string(),
-                    query: self.query().to_vec(),
+                    query: self.query().clone(),
                 })
             }
             _ => {
