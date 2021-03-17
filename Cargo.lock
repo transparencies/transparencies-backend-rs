@@ -655,24 +655,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6503fe142514ca4799d4c26297c4248239fe8838d827db6bd6065c6ed29a6ce"
 
 [[package]]
-name = "github"
-version = "0.1.0"
-dependencies = [
- "api-client",
- "async-trait",
- "derive-getters",
- "displaydoc",
- "http",
- "reqwest",
- "serde 1.0.124",
- "serde_json",
- "thiserror",
- "tokio",
- "typed-builder",
- "url",
-]
-
-[[package]]
 name = "h2"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2263,7 +2245,6 @@ dependencies = [
  "displaydoc",
  "eyre",
  "futures",
- "github",
  "http",
  "hyper",
  "lazy_static",

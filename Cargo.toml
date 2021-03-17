@@ -21,7 +21,6 @@ pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 [workspace]
 members = [
     "crates/api/aoe2net",
-    "crates/api/github",
     "crates/api_client",
 ]
 
@@ -69,7 +68,6 @@ edition = "2018"
 [dependencies]
 # APIs
 aoe2net = { path = "crates/api/aoe2net", version = "*" }
-github = { path = "crates/api/github", version = "*" }
 
 # API client
 api-client = { path = "crates/api_client", version = "*" }
