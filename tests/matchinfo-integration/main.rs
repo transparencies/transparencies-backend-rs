@@ -18,10 +18,10 @@ use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     self,
     domain::{
+        api_handler::client_new::A2NClient,
         data_processing::build_result,
         types::{
             error::TestCaseError,
-            requests::ApiClient,
             testing::{
                 TestCase,
                 TestCases,
@@ -38,6 +38,9 @@ use transparencies_backend_rs::{
         get_subscriber,
         init_subscriber,
     },
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
 };
 use wiremock::{
     matchers::method,
@@ -75,25 +78,25 @@ async fn matchinfo_pipeline_works() {
     mock_test_match_info_result(test_cases).await
 }
 
-#[tokio::test]
-async fn last_match_404() {
-    let current_dir = std::env::current_dir().unwrap();
+// #[tokio::test]
+// async fn last_match_404() {
+//     let current_dir = std::env::current_dir().unwrap();
 
-    let test_cases = TestCases::default()
-        .add_case(
-            [
-                &format!("{}", current_dir.display()),
-                "tests",
-                "matchinfo-integration",
-                "last_match_404",
-            ]
-            .iter()
-            .collect(),
-        )
-        .unwrap();
+//     let test_cases = TestCases::default()
+//         .add_case(
+//             [
+//                 &format!("{}", current_dir.display()),
+//                 "tests",
+//                 "matchinfo-integration",
+//                 "last_match_404",
+//             ]
+//             .iter()
+//             .collect(),
+//         )
+//         .unwrap();
 
-    mock_test_match_info_result(test_cases).await
-}
+//     mock_test_match_info_result(test_cases).await
+// }
 
 async fn mock_test_match_info_result(test_cases: TestCases) {
     // The first time `initialize` is invoked the code in `TRACING` is executed.
@@ -127,7 +130,16 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let api_clients = ApiClient::with_https(false);
+    let mock_client = reqwest::Client::builder()
+        .user_agent(*APP_USER_AGENT)
+        .timeout(*CLIENT_REQUEST_TIMEOUT)
+        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+        .use_rustls_tls()
+        .https_only(false)
+        .build()
+        .unwrap();
+
+    let a2n_client = A2NClient::with_client(mock_client.clone());
 
     let github_root = Url::parse(&format!("{}", &mock_server.uri())).unwrap();
     let aoe2_net_root =
@@ -169,8 +181,8 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
 
         if ran_once == false {
             preload_data(
-                Some(api_clients.github.clone()),
-                Some(api_clients.aoe2net.clone()),
+                Some(mock_client.clone()),
+                Some(mock_client.clone()),
                 in_memory_db_clone.clone(),
                 github_root.clone(),
                 aoe2_net_root.clone(),
@@ -185,7 +197,7 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
 
         let result = build_result(
             test_case.parsed_request,
-            api_clients.aoe2net.clone(),
+            a2n_client.clone(),
             aoe2_net_root.to_owned(),
             in_memory_db_clone.clone(),
             None,
