@@ -6,9 +6,15 @@ use serde::{
 };
 
 /// A Team from `aoc-ref-data`
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           PartialEq,
+           PartialOrd,
+           Eq,
+           Ord,
+           Hash,
+           Serialize,
+           Deserialize)]
 pub struct Team {
     /// (Optional) short form of the name
     pub abbreviation: Option<String>,

@@ -3,93 +3,128 @@
 mod match_data_responder;
 pub mod match_info_processor;
 
-use crate::domain::{
-    data_processing::match_info_processor::MatchInfoProcessor,
-    types::{
-        api::{
-            ErrorMessageToFrontend,
-            MatchInfoRequest,
-            MatchInfoResult,
-        },
-        error::ResponderError,
-        MatchDataResponses,
-    },
-};
-
-use tracing::debug;
-
 use std::{
     path::PathBuf,
     sync::Arc,
 };
+
 use tokio::{
     self,
     sync::Mutex,
 };
-
-use crate::domain::types::{
-    error::ProcessingError,
-    InMemoryDb,
-};
-
+use tracing::error;
+use tracing_futures::Instrument;
 use url::Url;
+use uuid::Uuid;
 
-use stable_eyre::eyre::Result;
+use crate::domain::{
+    api_handler::client::A2NClient,
+    data_processing::match_info_processor::MatchInfoProcessor,
+    types::{
+        api::{
+            MatchInfoRequest,
+            MatchInfoResult,
+        },
+        error::{
+            ErrorMessageToFrontend,
+            ProcessingError,
+            ResponderError,
+        },
+        InMemoryDb,
+        MatchDataResponses,
+    },
+};
 
 /// Entry point for processing part of `matchinfo` endpoint
 ///
 /// # Errors
 /// Results get bubbled up and are handled by the caller
-pub async fn process_match_info_request(
-    par: MatchInfoRequest,
-    client: reqwest::Client,
-    root: Url,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export_path: Option<PathBuf>,
-) -> Result<MatchInfoResult, ProcessingError> {
-    debug!(
-        "MatchInfoRequest for Game {:?}: {:?} with {:?} in Language {:?}",
-        par.game, par.id_type, par.id_number, par.language
-    );
+#[tracing::instrument(
+name = "Processing MatchInfoRequest",
+skip(client, root, in_memory_db, export_path),
+fields(
+request_id = %Uuid::new_v4(),
+id_type = %par.id_type,
+id_number = %par.id_number
+)
+)]
+pub async fn build_result(par: MatchInfoRequest,
+                          client: A2NClient<'static, reqwest::Client>,
+                          root: Url,
+                          in_memory_db: Arc<Mutex<InMemoryDb>>,
+                          export_path: Option<PathBuf>)
+                          -> MatchInfoResult {
+    // We do not call `.enter` on query_span!
+    // `.instrument` takes care of it at the right moments
+    // in the query future lifetime
+    let query_span = tracing::info_span!("Querying for data from APIs...");
 
-    let responses = MatchDataResponses::new_with_match_data(
-        par,
-        client,
-        in_memory_db,
-        export_path,
-        root,
-    )
-    .await;
-
-    #[allow(unused_assignments)]
-    let mut result = MatchInfoResult::new();
+    let responses =
+        MatchDataResponses::with_match_data(par.clone(),
+                                            client,
+                                            in_memory_db,
+                                            export_path,
+                                            root).instrument(query_span)
+                                                 .await;
 
     match responses {
-        Err(err) => match err {
-            ResponderError::UnrecordedPlayerDetected => {
-                result = MatchInfoResult::builder()
-                    .error_message(
-                        ErrorMessageToFrontend::UnrecordedPlayerDetected,
-                    )
-                    .build()
-            }
-            _ => {
-                result = MatchInfoResult::builder()
-                    .error_message(
-                        ErrorMessageToFrontend::GenericResponderError(format!(
-                            "{}",
+        Err(err) => {
+            if let ResponderError::LastMatchNotFound = err {
+                error!("Failed with {:?}", err);
+                MatchInfoResult::builder()
+                    .error_message(ErrorMessageToFrontend::HardFail(
+                        std::borrow::Cow::Owned(format!(
+                            "MatchInfo processing failed: {}",
                             err
                         )),
+                    ))
+                    .build()
+            }
+            else {
+                error!("Failed with {:?}", err);
+                MatchInfoResult::builder()
+                    .error_message(
+                        ErrorMessageToFrontend::GenericResponderError(
+                            std::borrow::Cow::Owned(format!("{}", err)),
+                        ),
                     )
                     .build()
             }
         },
         Ok(response) => {
-            result = MatchInfoProcessor::new_with_response(response)
-                .process()?
-                .assemble()?
-        }
-    }
+            // Process the Responses
+            let processed_result =
+                MatchInfoProcessor::with_response(response).process().map_err(|err| {
 
-    Ok(result)
+            // Handle all the errors and make sure, we always return a
+            // `MatchInfoResult`
+                    if let ProcessingError::NotRankedLeaderboard(_) = err {
+                    error!("Failed with {:?}", err);
+                    MatchInfoResult::builder()
+                        .error_message(ErrorMessageToFrontend::HardFail(
+                            std::borrow::Cow::Owned(format!(
+                                "MatchInfo processing failed: {}",
+                                err
+                            )),
+                        ))
+                        .build()
+                }
+                else {
+                    error!("Failed with {:?}", err);
+                    MatchInfoResult::builder()
+                            .error_message(ErrorMessageToFrontend::HardFail(std::borrow::Cow::Owned(format!(
+                                "MatchInfo processing failed for {:?}:{:?} with {}",
+                                par.id_type,
+                                par.id_number,
+                                err.to_string()
+                            ))))
+                            .build()
+                }
+                });
+
+            processed_result.unwrap()
+                            .assemble()
+                            .expect("MatchInfoResult assembly failed.")
+        },
+    }
 }

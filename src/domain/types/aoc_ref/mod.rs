@@ -2,10 +2,11 @@ pub mod platforms;
 pub mod players;
 pub mod teams;
 
-use crate::domain::types::error::IndexingError;
 use ::serde::Serialize;
 use dashmap::DashMap;
 use tracing::debug;
+
+use crate::domain::types::error::IndexingError;
 
 /// A list of Players
 pub type AoePlayers = Vec<players::Player>;
@@ -92,10 +93,9 @@ impl RefDataLists {
 
     /// Search through alias list for `player_id` and return `players::Player`
     #[must_use]
-    pub fn lookup_player_alias_for_profile_id(
-        &self,
-        profile_id: &str,
-    ) -> Option<players::Player> {
+    pub fn lookup_player_alias_for_profile_id(&self,
+                                              profile_id: &str)
+                                              -> Option<players::Player> {
         self.players_index_aoe2de
             .get(profile_id)
             .map(|alias_position| self.players[*alias_position].clone())

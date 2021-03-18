@@ -2,37 +2,6 @@
 //! Beware, there is a close connection to the [`super::MatchInfoProcessor`]
 //! in many places
 
-use crate::domain::{
-    types::{
-        aoe2net::{
-            self,
-            Aoe2netRequestType,
-            Aoe2netStringObj,
-        },
-        api::{
-            MatchInfoRequest,
-            Rating,
-            Server,
-        },
-        error::{
-            ApiRequestError,
-            ResponderError,
-        },
-        File,
-        FileFormat,
-        InMemoryDb,
-        MatchDataResponses,
-    },
-    util,
-};
-
-use url::Url;
-
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
-use serde_json::Value;
 use std::{
     fs,
     io::BufWriter,
@@ -40,31 +9,75 @@ use std::{
     result,
     sync::Arc,
 };
+
+use aoe2net::{
+    endpoints::{
+        last_match::GetLastMatchRequest,
+        leaderboard::GetLeaderboardRequest,
+        r#match::GetMatchRequest,
+        rating::GetRatingRequest,
+        rating_history::GetRatingHistoryRequest,
+    },
+    types::{
+        api::Player as aoe2net_Player,
+        helper::{
+            Aoe2netRequestType,
+            Aoe2netStringObj,
+            RecoveredRating,
+        },
+    },
+};
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+use serde_json::{
+    json,
+    Value as JsonValue,
+};
 use tokio::sync::Mutex;
 use tracing::{
     debug,
     trace,
 };
+use url::Url;
 
-use crate::STANDARD;
+use crate::{
+    domain::{
+        api_handler::client::A2NClient,
+        types::{
+            api::{
+                MatchInfoRequest,
+                Rating,
+                Server,
+            },
+            error::ResponderError,
+            File,
+            FileFormat,
+            InMemoryDb,
+            MatchDataResponses,
+        },
+        util,
+    },
+    STANDARD,
+};
 
 type Result<T> = result::Result<T, ResponderError>;
 
 impl MatchDataResponses {
-    /// Return `serde_json::Value` for `leaderboard_id` for future requests
+    /// Return `String` for `leaderboard_id` for future requests
     ///
     /// # Errors
     /// Will return an error if the `leaderboard_id` could not be found
-    pub fn get_leaderboard_id_from_request(
-        &mut self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<String> {
+    pub fn get_leaderboard_id_from_request(&mut self,
+                                           req_type: Aoe2netRequestType)
+                                           -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
                     || {
                         Err(ResponderError::NotFound(
-                            "leaderboard_id from last_match".to_string(),
+                            "Leaderboard ID in last_match response".to_string(),
                         ))
                     },
                     |val| Ok(val["last_match"]["leaderboard_id"].to_string()),
@@ -74,12 +87,13 @@ impl MatchDataResponses {
                 self.aoe2net.match_id.as_ref().map_or_else(
                     || {
                         Err(ResponderError::NotFound(
-                            "leaderboard_id from match_id".to_string(),
+                            "Leaderboard ID in match_id response".to_string(),
                         ))
                     },
                     |val| Ok(val["leaderboard_id"].to_string()),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -90,12 +104,10 @@ impl MatchDataResponses {
     /// Will return an error if either the `players array` can not be found
     /// or will `panic!` if the deserialisation failed or the parsing of the
     /// `Player` struct failed
-    pub fn parse_all_players<T>(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<T>
-    where
-        T: for<'de> serde::Deserialize<'de>,
+    pub fn parse_players_into<T>(&self,
+                                 req_type: Aoe2netRequestType)
+                                 -> Result<T>
+        where T: for<'de> serde::Deserialize<'de>,
     {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -106,13 +118,9 @@ impl MatchDataResponses {
                         ))
                     },
                     |val| {
-                        Ok(serde_json::from_str::<T>(
-                            &serde_json::to_string(
-                                &val["last_match"]["players"],
-                            )
-                            .expect("Conversion of last_match players to string failed."),
-                        )
-                        .expect("Parsing of last_match player struct failed."))
+                        Ok(serde_json::from_str::<T>(&serde_json::to_string(
+                            &val["last_match"]["players"],
+                        )?)?)
                     },
                 )
             }
@@ -124,15 +132,13 @@ impl MatchDataResponses {
                         ))
                     },
                     |val| {
-                        Ok(serde_json::from_str::<T>(
-                            &serde_json::to_string(&val["players"]).expect(
-                                "Conversion of match_id players to string failed.",
-                            ),
-                        )
-                        .expect("Parsing of match_id player struct failed."))
+                        Ok(serde_json::from_str::<T>(&serde_json::to_string(
+                            &val["players"],
+                        )?)?)
                     },
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -140,7 +146,7 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_number_of_players(&self) -> Result<String> {
+    pub fn get_player_amount(&self) -> Result<String> {
         self.aoe2net.player_last_match.as_ref().map_or_else(
             || Err(ResponderError::NotFound("number of players".to_string())),
             |val| Ok(val["last_match"]["num_players"].to_string()),
@@ -153,10 +159,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_finished_time(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<String> {
+    pub fn get_finished_time(&self,
+                             req_type: Aoe2netRequestType)
+                             -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -178,6 +183,7 @@ impl MatchDataResponses {
                     |val| Ok(val["finished"].to_string()),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -187,10 +193,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_rating_type_id(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_rating_type(&self,
+                                  req_type: Aoe2netRequestType)
+                                  -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -218,24 +223,33 @@ impl MatchDataResponses {
                     },
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
-    /// Get a `Rating` datastructure from a `response` for a given player
+    /// Get a the country from the `leaderboard response` for a given player
     ///
     /// # Errors
     /// Won't throw an error, but `Option` is set to `None` resulting in an
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
     #[must_use]
-    pub fn get_country(looked_up_leaderboard: &Value) -> Option<String> {
-        Some(looked_up_leaderboard["country"].to_string().to_lowercase()).map(
-            |mut country| {
-                country.retain(|s| s != '\\');
-                country.retain(|s| s != '\"');
-                country
-            },
-        )
+    pub fn get_country_code(looked_up_leaderboard: &(RecoveredRating,
+                              JsonValue))
+                            -> Option<String> {
+        let (recover, value) = looked_up_leaderboard;
+
+        if *recover == RecoveredRating::Original {
+            Some(value["country"].to_string().to_lowercase()).map(
+                |mut country| {
+                    country = util::remove_escaping(country);
+                    country
+                },
+            )
+        }
+        else {
+            None
+        }
     }
 
     /// Get a `Rating` datastructure from a `response` for a given player
@@ -249,30 +263,64 @@ impl MatchDataResponses {
     /// # Errors
     /// Function will throw errors in cases the deserialisation and conversion
     /// to the corresponding types is not successful
-    pub fn get_rating(
-        looked_up_rating: &Value,
-        looked_up_leaderboard: &Value,
-    ) -> Result<Rating> {
-        let player_rating = Rating::builder()
-            .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_rating["rating"],
-            )?)?)
-            .rank(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_leaderboard["rank"],
-            )?)?)
-            .wins(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_wins"],
-            )?)?)
-            .losses(serde_json::from_str::<u64>(&serde_json::to_string(
-                &looked_up_rating["num_losses"],
-            )?)?)
-            .streak(serde_json::from_str::<i32>(&serde_json::to_string(
-                &looked_up_rating["streak"],
-            )?)?)
-            .highest_mmr(serde_json::from_str::<u32>(&serde_json::to_string(
-                &looked_up_leaderboard["highest_rating"],
-            )?)?)
-            .build();
+    pub fn create_rating(looked_up_rating: &JsonValue,
+                         looked_up_leaderboard: &(RecoveredRating,
+                           JsonValue))
+                         -> Result<Rating> {
+        let player_rating = match looked_up_leaderboard {
+            (RecoveredRating::Original, leaderboard) => Rating::builder()
+                .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_rating["rating"],
+                )?)?)
+                .rank(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &leaderboard["rank"],
+                )?)?)
+                .wins(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_wins"],
+                )?)?)
+                .losses(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_losses"],
+                )?)?)
+                .streak(serde_json::from_str::<i32>(&serde_json::to_string(
+                    &looked_up_rating["streak"],
+                )?)?)
+                .highest_mmr(serde_json::from_str::<u32>(
+                    &serde_json::to_string(&leaderboard["highest_rating"])?,
+                )?)
+                .build(),
+            (RecoveredRating::Recovered, leaderboard) => Rating::builder()
+                .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
+                    &looked_up_rating["rating"],
+                )?)?)
+                .rank(serde_json::from_str::<u64>(&serde_json::to_string(&{
+                    if leaderboard["rank"] == JsonValue::Null {
+                        json![0]
+                    }
+                    else {
+                        leaderboard["rank"].clone()
+                    }
+                })?)?)
+                .wins(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_wins"],
+                )?)?)
+                .losses(serde_json::from_str::<u64>(&serde_json::to_string(
+                    &looked_up_rating["num_losses"],
+                )?)?)
+                .streak(serde_json::from_str::<i32>(&serde_json::to_string(
+                    &looked_up_rating["streak"],
+                )?)?)
+                .highest_mmr(serde_json::from_str::<u32>(
+                    &serde_json::to_string(&{
+                        if leaderboard["highest_rating"] == JsonValue::Null {
+                            json![0]
+                        }
+                        else {
+                            leaderboard["highest_rating"].clone()
+                        };
+                    })?,
+                )?)
+                .build(),
+        };
 
         Ok(player_rating)
     }
@@ -285,13 +333,11 @@ impl MatchDataResponses {
     /// value from the in-memory database. Errors there, due to threaded
     /// behaviour, will result in `runtime` errors, no compile-time checks
     /// possible.
-    pub fn get_translation_for_language(&mut self) -> Result<Value> {
-        let mut translation: Option<serde_json::Value> = None;
+    pub fn get_translation_for_language(&mut self) -> Result<JsonValue> {
+        let mut translation: Option<JsonValue> = None;
 
-        trace!(
-            "Length of self.db.aoe2net_languages is: {:?}",
-            self.db.aoe2net_languages.len()
-        );
+        trace!("Length of self.db.aoe2net_languages is: {:?}",
+               self.db.aoe2net_languages.len());
 
         if self.db.aoe2net_languages.len() == 1 {
             for (language, translation_value) in
@@ -302,7 +348,7 @@ impl MatchDataResponses {
             }
         }
         else {
-            return Err(ResponderError::TranslationHasBeenMovedError);
+            return Err(ResponderError::TranslationHasBeenMoved);
         }
         Ok(translation.expect("Translation should never be None value."))
     }
@@ -324,11 +370,10 @@ impl MatchDataResponses {
     /// # Panics
     /// Panics if the conversion to a string failed
     // TODO: Get rid of panic and handle gracefully
-    pub fn get_translated_string_from_id(
-        &self,
-        first: &str,
-        id: usize,
-    ) -> Result<String> {
+    pub fn lookup_string_for_id(&self,
+                                first: &str,
+                                id: usize)
+                                -> Result<String> {
         trace!("Getting translated string in {:?} with id: {:?}", first, id);
         let language =
             if let Ok(lang) = self.clone().get_translation_for_language() {
@@ -374,10 +419,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_map_type_id(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_map_type(&self,
+                               req_type: Aoe2netRequestType)
+                               -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -403,6 +447,7 @@ impl MatchDataResponses {
                     |val| Ok(val["map_type"].to_string().parse::<usize>()?),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -412,10 +457,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_game_type_id(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_game_type(&self,
+                                req_type: Aoe2netRequestType)
+                                -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -441,6 +485,7 @@ impl MatchDataResponses {
                     |val| Ok(val["game_type"].to_string().parse::<usize>()?),
                 )
             }
+            _ => Err(ResponderError::InvalidReqType(req_type.to_string())),
         }
     }
 
@@ -449,10 +494,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_server_location(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<Server> {
+    pub fn get_server_location(&self,
+                               req_type: Aoe2netRequestType)
+                               -> Result<Server> {
         let mut server = String::new();
 
         match req_type {
@@ -466,10 +510,14 @@ impl MatchDataResponses {
                     server = val["server"].to_string();
                 }
             }
+            _ => {
+                return Err(ResponderError::InvalidReqType(
+                    req_type.to_string(),
+                ))
+            }
         };
 
-        server.retain(|char| char != '\\');
-        server.retain(|char| char != '\"');
+        server = util::remove_escaping(server);
 
         let server_result = match server.as_str() {
             "australiasoutheast" => Server::Australia,
@@ -499,10 +547,9 @@ impl MatchDataResponses {
     /// Doesn't throw any errors, but returns an Option type that is `None` if
     /// the profile ID couldn't be found in the index
     #[must_use]
-    pub fn lookup_player_rating_for_profile_id(
-        &self,
-        profile_id: &str,
-    ) -> Option<serde_json::Value> {
+    pub fn lookup_player_rating_for_profile_id(&self,
+                                               profile_id: &str)
+                                               -> Option<JsonValue> {
         self.aoe2net
             .rating_history
             .get(profile_id)
@@ -521,10 +568,9 @@ impl MatchDataResponses {
     /// Doesn't throw any errors, but returns an Option type that is `None` if
     /// the profile ID couldn't be found in the index
     #[must_use]
-    pub fn lookup_leaderboard_for_profile_id(
-        &self,
-        profile_id: &str,
-    ) -> Option<serde_json::Value> {
+    pub fn lookup_leaderboard_for_profile_id(&self,
+                                             profile_id: &str)
+                                             -> Option<JsonValue> {
         self.aoe2net
             .leaderboard
             .get(profile_id)
@@ -541,12 +587,11 @@ impl MatchDataResponses {
     /// # Panics
     /// Will panic if data cannot be written or file can not be created in
     /// Filesystem
-    pub fn export_data_to_file(&self) {
-        let ron_config = PrettyConfig::new()
-            .with_depth_limit(8)
-            .with_separate_tuple_members(true)
-            .with_enumerate_arrays(true)
-            .with_indentor("\t".to_owned());
+    pub fn export_to_file(&self) {
+        let ron_config = PrettyConfig::new().with_depth_limit(8)
+                                            .with_separate_tuple_members(true)
+                                            .with_enumerate_arrays(true)
+                                            .with_indentor("\t".to_owned());
 
         // Open the file in writable mode with buffer.
         let file = fs::File::create("logs/match_data_responses.ron").unwrap();
@@ -576,114 +621,84 @@ impl MatchDataResponses {
     /// Function could panic if the [`dashmap::DashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
     #[allow(clippy::too_many_lines)]
-    pub async fn new_with_match_data(
-        par: MatchInfoRequest,
-        client: reqwest::Client,
-        in_memory_db: Arc<Mutex<InMemoryDb>>,
-        export_path: Option<PathBuf>,
-        root: Url,
-    ) -> Result<MatchDataResponses> {
-        let mut language: String =
-            (*STANDARD.get(&"language").unwrap()).to_string();
-        let mut game: String = (*STANDARD.get(&"game").unwrap()).to_string();
+    pub async fn with_match_data(par: MatchInfoRequest,
+                                 client: A2NClient<'static, reqwest::Client>,
+                                 in_memory_db: Arc<Mutex<InMemoryDb>>,
+                                 export_path: Option<PathBuf>,
+                                 _root: Url)
+                                 -> Result<MatchDataResponses> {
+        let language: String = par.language.map_or_else(
+            || (*STANDARD.get(&"language").unwrap()).to_string(),
+            |language| language,
+        );
 
-        let mut db_cloned: InMemoryDb;
+        let game: String =
+            par.game
+               .map_or_else(|| (*STANDARD.get(&"game").unwrap()).to_string(),
+                            |game| game);
+
+        #[allow(unused_assignments)]
+        let mut db_cloned = InMemoryDb::default();
         {
             // Just clone and drop the lock
             db_cloned = in_memory_db.lock().await.clone();
         }
-        // Set `language` to Query value if specified
-        if let Some(lang) = par.language {
-            language = lang;
-        }
-
-        // Set `game` to Query value if specified
-        if let Some(val) = par.game {
-            game = val;
-        }
 
         // Include github response
         let mut responses = MatchDataResponses {
-            db: db_cloned.retain_language(&language),
+            db: db_cloned.retain_only_requested_language(&language),
             ..MatchDataResponses::default()
         };
 
         match par.id_type.as_str() {
-            "steam_id" | "profile_id" => {
-                // GET `PlayerLastMatch` data
-                let match_data_response = util::build_api_request(
-                    client.clone(),
-                    root.clone(),
-                    "player/lastmatch",
-                    vec![
-                        ("game".to_string(), game.clone()),
-                        (par.id_type.clone(), par.id_number.clone()),
-                    ],
-                )
-                .execute::<serde_json::Value>()
-                .await;
+            "steam_id" => {
+                let req = GetLastMatchRequest::builder()
+                    .game(game.as_str())
+                    .steam_id(par.id_number.as_str())
+                    .build();
 
-                match match_data_response {
-                    Err(err) => match err {
-                        ApiRequestError::NotFoundResponse {
-                            root: _,
-                            endpoint: _,
-                            query: _,
-                        } => {
-                            return Err(
-                                ResponderError::UnrecordedPlayerDetected,
-                            )
-                        }
-                        _ => {
-                            return Err(ResponderError::OtherApiRequestError(
-                                err,
-                            ))
-                        }
-                    },
-                    Ok(value) => {
-                        responses.aoe2net.player_last_match = Some(value);
-                        // Get `leaderboard_id` for future requests
-                        responses.aoe2net.leaderboard_id =
-                            Some(responses.get_leaderboard_id_from_request(
-                                Aoe2netRequestType::LastMatch,
-                            )?);
+                responses.aoe2net.player_last_match =
+                    Some(client.req_get(req).await.unwrap().data.unwrap());
+                // Get `leaderboard_id` for future requests
+                responses.aoe2net.leaderboard_id =
+                    Some(responses.get_leaderboard_id_from_request(
+                        Aoe2netRequestType::LastMatch,
+                    )?);
 
-                        // Get all players from `LastMatch` response
-                        responses.aoe2net.players_temp = responses
-                            .parse_all_players::<Vec<aoe2net::Player>>(
-                                Aoe2netRequestType::LastMatch,
-                            )?;
-                    }
-                }
+                // Get all players from `LastMatch` response
+                responses.aoe2net.players_temp = responses
+                    .parse_players_into::<Vec<aoe2net_Player>>(
+                        Aoe2netRequestType::LastMatch,
+                    )?;
+            }
+            "profile_id" => {
+                let req = GetLastMatchRequest::builder()
+                    .game(game.as_str())
+                    .profile_id(par.id_number.as_str())
+                    .build();
 
-                if let Some(mut path) = export_path.clone() {
-                    path.push("aoe2net");
-                    util::export_to_json(
-                        &File {
-                            name: "last_match".to_string(),
-                            ext: FileFormat::Json,
-                        },
-                        &path,
-                        &responses
-                            .clone()
-                            .aoe2net
-                            .player_last_match
-                            .map_or(serde_json::Value::Null, |x| x),
-                    )
-                }
+                responses.aoe2net.player_last_match =
+                    Some(client.req_get(req).await.unwrap().data.unwrap());
+                // Get `leaderboard_id` for future requests
+                responses.aoe2net.leaderboard_id =
+                    Some(responses.get_leaderboard_id_from_request(
+                        Aoe2netRequestType::LastMatch,
+                    )?);
+
+                // Get all players from `LastMatch` response
+                responses.aoe2net.players_temp = responses
+                    .parse_players_into::<Vec<aoe2net_Player>>(
+                        Aoe2netRequestType::LastMatch,
+                    )?;
             }
             "match_id" => {
-                // GET `MatchID` data
-                responses.aoe2net.match_id = Some(
-                    util::build_api_request(
-                        client.clone(),
-                        root.clone(),
-                        "match",
-                        vec![(par.id_type.clone(), par.id_number.clone())],
-                    )
-                    .execute::<serde_json::Value>()
-                    .await?,
-                );
+                let req = GetMatchRequest::builder()
+                    .game(game.as_str())
+                    .match_id(par.id_number.as_str())
+                    .build();
+
+                responses.aoe2net.match_id =
+                    Some(client.req_get(req).await.unwrap().data.unwrap());
 
                 // Get `leaderboard_id` for future requests
                 responses.aoe2net.leaderboard_id =
@@ -693,89 +708,157 @@ impl MatchDataResponses {
 
                 // Get all players from `LastMatch` response
                 responses.aoe2net.players_temp = responses
-                    .parse_all_players::<Vec<aoe2net::Player>>(
+                    .parse_players_into::<Vec<aoe2net_Player>>(
                         Aoe2netRequestType::MatchId,
                     )?;
             }
-            _ => return Err(ResponderError::InvalidIdType(par.id_type)),
+            "uuid" => {
+                let req = GetMatchRequest::builder()
+                    .game(game.as_str())
+                    .uuid(uuid::Uuid::parse_str(par.id_number.as_str())?)
+                    .build();
+
+                responses.aoe2net.match_id =
+                    Some(client.req_get(req).await.unwrap().data.unwrap());
+                // Get `leaderboard_id` for future requests
+                responses.aoe2net.leaderboard_id =
+                    Some(responses.get_leaderboard_id_from_request(
+                        Aoe2netRequestType::MatchId,
+                    )?);
+
+                // Get all players from `LastMatch` response
+                responses.aoe2net.players_temp = responses
+                    .parse_players_into::<Vec<aoe2net_Player>>(
+                        Aoe2netRequestType::MatchId,
+                    )?;
+            }
+            _ => {
+                return Err(ResponderError::InvalidIdType(
+                    std::borrow::Cow::Owned(par.id_type),
+                ))
+            }
         }
 
+        if let Some(mut path) = export_path.clone() {
+            path.push("aoe2net");
+            util::export_to_json(&File { name: "last_match".to_string(),
+                                         ext: FileFormat::Json },
+                                 &path,
+                                 &responses.clone()
+                                           .aoe2net
+                                           .player_last_match
+                                           .map_or(JsonValue::Null, |x| x))
+        };
+
+        // TODO: This error handling still needed?
+        // match match_data_response {
+        //     Err(err) => match err {
+        //         ApiRequestError::NotFoundResponse {
+        //             root: _,
+        //             endpoint: _,
+        //             query: _,
+        //         } => return Err(ResponderError::LastMatchNotFound),
+        //         _ => {
+        //             return Err(ResponderError::OtherApiRequestError(
+        //                 err,
+        //             ))
+        //         }
+        //     },
+
+        let leaderboard_id = responses.aoe2net
+                                      .leaderboard_id
+                                      .clone()
+                                      .expect("Leaderboard ID must be set.");
+
         for player in &responses.aoe2net.players_temp {
-            // Get Rating `HistoryData` for each player
-            let req_rating = util::build_api_request(
-                client.clone(),
-                root.clone(),
-                "player/ratinghistory",
-                vec![
-                    ("game".to_string(), game.clone()),
-                    ("profile_id".to_string(), player.profile_id.to_string()),
-                    (
-                        "leaderboard_id".to_string(),
-                        responses.aoe2net.leaderboard_id.clone().unwrap(),
-                    ),
-                    ("count".to_string(), "1".to_string()),
-                ],
-            );
+            let profile_id = player.profile_id.to_string();
+
+            // Get `RatingHistory` data for each player
+            let req_rating = GetRatingHistoryRequest::builder()
+                .game(game.as_str())
+                .profile_id(profile_id.as_str())
+                .leaderboard_id(leaderboard_id.parse::<i32>()?)
+                .build();
 
             // GET `Leaderboard` data
-            let req_lead = util::build_api_request(
-                client.clone(),
-                root.clone(),
-                "leaderboard",
-                vec![
-                    ("game".to_string(), game.clone()),
-                    ("profile_id".to_string(), player.profile_id.to_string()),
-                    (
-                        "leaderboard_id".to_string(),
-                        responses.aoe2net.leaderboard_id.clone().unwrap(),
-                    ),
-                ],
-            );
+            let req_lead = GetLeaderboardRequest::builder()
+                .game(game.as_str())
+                .profile_id(profile_id.as_str())
+                .leaderboard_id(leaderboard_id.parse::<i32>()?)
+                .build();
 
-            let rating_response: serde_json::Value =
-                req_rating.execute().await?;
-            let leaderboard_response: serde_json::Value =
-                req_lead.execute().await?;
+            let rating_response: JsonValue =
+                client.req_get(req_rating).await.unwrap().data.unwrap();
+            let leaderboard_response: JsonValue =
+                client.req_get(req_lead).await.unwrap().data.unwrap();
+
+            // GET `Rating` data as recovery data
+            let leaderboard_recovery: Option<JsonValue> =
+                if leaderboard_response["count"] == 0 {
+                    let req_lead_rating = GetRatingRequest::builder()
+                        .game(game.as_str())
+                        .profile_id(profile_id.as_str())
+                        .leaderboard_id(leaderboard_id.parse::<i32>()?)
+                        .build();
+
+                    Some(client.req_get(req_lead_rating)
+                               .await
+                               .unwrap()
+                               .data
+                               .unwrap())
+                }
+                else {
+                    None
+                };
 
             if let Some(mut path) = export_path.clone() {
                 // TODO: Do requests just one time in export path
                 path.push("aoe2net");
 
-                util::export_to_json(
-                    &File {
-                        name: format!("{:?}", player.profile_id),
-                        ext: FileFormat::Json,
-                    },
-                    &{
-                        let mut p = path.clone();
-                        p.push("rating_history");
-                        p
-                    },
-                    &rating_response,
-                );
-                util::export_to_json(
-                    &File {
-                        name: format!("{:?}", player.profile_id),
-                        ext: FileFormat::Json,
-                    },
-                    &{
-                        let mut p = path.clone();
-                        p.push("leaderboard");
-                        p
-                    },
-                    &leaderboard_response,
-                );
+                if leaderboard_recovery.is_some() {
+                    util::export_to_json(&File { name: profile_id.clone(),
+                                                 ext: FileFormat::Json },
+                                         &{
+                                             let mut p = path.clone();
+                                             p.push("leaderboard");
+                                             p
+                                         },
+                                         &rating_response);
+                }
+
+                util::export_to_json(&File { name: profile_id.clone(),
+                                             ext: FileFormat::Json },
+                                     &{
+                                         let mut p = path.clone();
+                                         p.push("rating_history");
+                                         p
+                                     },
+                                     &rating_response);
+                util::export_to_json(&File { name: profile_id.clone(),
+                                             ext: FileFormat::Json },
+                                     &{
+                                         let mut p = path.clone();
+                                         p.push("leaderboard");
+                                         p
+                                     },
+                                     &leaderboard_response);
             }
 
-            responses
-                .aoe2net
-                .rating_history
-                .insert(player.profile_id.to_string(), rating_response);
+            responses.aoe2net
+                     .rating_history
+                     .insert(player.profile_id.to_string(), rating_response);
 
-            responses
-                .aoe2net
-                .leaderboard
-                .insert(player.profile_id.to_string(), leaderboard_response);
+            responses.aoe2net
+                     .leaderboard
+                     .insert(player.profile_id.to_string(),
+                             leaderboard_response);
+
+            if leaderboard_recovery.is_some() {
+                responses.aoe2net
+                         .leaderboard
+                         .insert(format!("{}_recovery", profile_id.as_str()),
+                                 leaderboard_recovery.unwrap());
+            }
         }
 
         Ok(responses)

@@ -41,7 +41,9 @@
     - [X] use crates error types for better `Error handling` e.g. `reqwest::Error`
     - [X] use `thiserror` in library part
     - [X] use `eyre` consistently for results with reports in binary part
-    - [X] use `.map_err` and return HTTP status codes
+    - [ ] **Q** use `.map_err` (e.g. return HTTP status codes, other errors)
+        - **A** We should return more warnings/errors in the `error message`
+        field for frontend error handling
     - [X] Handle errors that got bubbled up to the MatchInfoProcessor gracefully
         and return a maximum of valuable information on the MatchInfo and the
         errors to the client
@@ -49,8 +51,11 @@
         - [X] On `hard error`, no match_info but instead error status code (HTTP)
     - [X] handle `serde_json::Value::Null` errors better when parsing data from `aoe2.net`
 - [X] implement `todo!()`s
-- [ ] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
+- [X] don't overwrite `aoc_ref_data` if not able to parse it in thread, so we have
     at least one working version
+- [ ] collect all `SoftFail` errors within each request to our API, collect them
+at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
+    - [ ] idea: <https://github.com/routerify/routerify/blob/6380089be7b423ff1ab68605c36c5876e7c15b53/examples/share_data_and_state.rs>
 
 ### Testing
 
@@ -75,17 +80,41 @@ usage in test cases
         - **A:** We only parse `Players` of `last_match` into some losely-typed
         datastructure for easier handling, the rest is `serde_json::Value` and
         parsing on the run
-    - [ ] New players without ranking
-    - [ ] Deranked players
+    - [X] last_match == 404
+    - [ ] New players without ranking (as deranked, but less than 10 games played)
+    - [X] Deranked players (have an empty `leaderboard` entry)
+        - then we should use `ratinghistory` for the last data and `rank=DR`
     - [ ] Coop games
     - [ ] Game Type except RM (0) and DM (2)
-    - [ ] FFA with teams set to ’-1’
+    - [X] FFA with teams set to ’-1’
 - [X] Write functionality to save a set of JSON responses (also our own) to a file
 to use them inside the integration tests and be able to update frequently
     - [X] Parse requests and use `wiremock` for HTTP-mocking and test requests
     made by the `api_handler`
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
+
+### Fixes
+
+- [X] Fix character escaping in e.g. `"name": "\"[RUS-F]GriN\""`
+- [ ] Make error message more  understandable for frontend:
+
+    ```sh
+    "GenericResponderError":
+    "Other ApiRequestError: HTTP-Client experienced an error: error decoding response
+    body: EOF while parsing a value at line 1 column 0."
+    ```
+
+    probably from
+
+    ```sh
+    http: error: ConnectionError: ('Connection aborted.', RemoteDisconnected('
+    Remote end closed connection without response')) while doing a GET request 
+    to URL: http://127.0.0.1:8000/matchinfo?id_type=profile_id&id_number=224786&language=en&game=aoe2de
+    ```
+
+- [ ] Investigate HTTPie errors for more edge cases
+- [X] in case `team == -1` start setting from Team 1/2 not from the back (7/8)
 
 ### Refactoring
 
@@ -96,9 +125,9 @@ from `ron` file for ease of testing/exporting
     for `integration` testing
 - [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 - [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
 objects, etc.)
+    - [ ] Create API client struct that wraps `ApiRequests` and `ApiResponses`
     - [ ] Also think about the openAPI parsing and request generating logics
     for the future
     - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
@@ -106,15 +135,27 @@ objects, etc.)
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
-- [X] structured logging: use `tracing` crate in addition to `log` and refactor
+- [X] structured logging: use `tracing` crate instead of `log` and refactor
 accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing
 - [X] Use a concurrent hashmap instead of a HashMap: <https://crates.io/crates/dashmap>
+- [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
+- [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
+to satisfy the borrow checker
+- [ ] check where enums in parameters are more applicable (no stringly typed apis)
+- [ ] no `self` on `with_` alternative constructors
+- [ ] having a struct for exporting/mocking/maintenance to spare parameters and get
+get rid of unnecessary boilerplate
+- [ ] make use of conversion traits: `fn foo<P: Into<PathBuf>>(p: P)`
+- [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
+- [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
+- [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 
 ### Documentation
 
-- [X] Create good documentation
+- [X] Create good base documentation
+- [ ] Add more documentation
 
 ### Performance
 

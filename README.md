@@ -39,7 +39,14 @@ Because everything is redownloaded it's not that sure.
 to download a set of responses that are serialized into JSON-files into the corresponding
 folder.
 
-Then run `cargo test`/`just test` to run our test suite.
+### Running tests
+
+We are using the `bunyan` CLI to prettify the outputted logs.
+The original `bunyan` requires NPM, but you can install a Rust-port with
+`cargo install bunyan`.
+
+Then run `TEST_LOG=true cargo test | bunyan`/`TEST_LOG=true just test | bunyan`
+to run our test suite.
 
 ## Documentation
 

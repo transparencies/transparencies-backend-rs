@@ -5,9 +5,15 @@ use serde::{
     Serialize,
 };
 
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           PartialEq,
+           PartialOrd,
+           Eq,
+           Ord,
+           Hash,
+           Serialize,
+           Deserialize)]
 pub struct Platforms {
     pub id: String,
     pub match_url: String,
