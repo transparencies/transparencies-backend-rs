@@ -1,8 +1,6 @@
 //! Implementation side of the core http
 //! client logic of the application
 
-use std::time::Duration;
-
 use api_client::{
     client::Client,
     error::ClientRequestError,
@@ -14,15 +12,6 @@ use api_client::{
 };
 
 use derive_getters::Getters;
-
-/// Our app name as USERAGENT for the clients
-pub(crate) static APP_USER_AGENT: &str =
-    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
-
-/// Timeout for http-client requests
-pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
-/// Timeout for http-connections
-pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Datastructure storing our different [`ApiClient`]s
 #[derive(Getters, Debug, Clone)]

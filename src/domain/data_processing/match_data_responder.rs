@@ -640,7 +640,7 @@ impl MatchDataResponses {
         client: A2NClient<'static, reqwest::Client>,
         in_memory_db: Arc<Mutex<InMemoryDb>>,
         export_path: Option<PathBuf>,
-        root: Url,
+        _root: Url,
     ) -> Result<MatchDataResponses> {
         let language: String = if let Some(language) = par.language {
             language

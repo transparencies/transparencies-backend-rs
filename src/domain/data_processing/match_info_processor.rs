@@ -365,7 +365,7 @@ impl MatchInfoProcessor {
         }
         else {
             return Err(ProcessingError::LeaderboardNotFound(
-                req_player.profile_id,
+                req_player.profile_id.to_string().parse::<u64>()?,
             ));
         };
 
@@ -389,7 +389,9 @@ impl MatchInfoProcessor {
             }
         }
 
-        Err(ProcessingError::NotRankedLeaderboard(req_player.profile_id))
+        Err(ProcessingError::NotRankedLeaderboard(
+            req_player.profile_id.to_string().parse::<u64>()?,
+        ))
     }
 
     /// Lookup a corresponding player's `rating`
@@ -414,7 +416,7 @@ impl MatchInfoProcessor {
         }
         else {
             return Err(ProcessingError::LookupRatingNotFound(
-                req_player.profile_id,
+                req_player.profile_id.to_string().parse::<u64>()?,
             ));
         };
 

@@ -16,7 +16,6 @@ use crate::{
     },
 };
 
-use api_client::client::Client;
 use tokio::sync::Mutex;
 use warp::Filter;
 
