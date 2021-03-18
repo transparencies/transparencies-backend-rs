@@ -4,11 +4,11 @@
 
 use aoe2net::{
     endpoints::{
-        last_match::*,
-        leaderboard::*,
-        r#match::*,
-        rating::*,
-        rating_history::*,
+        last_match::GetLastMatchRequest,
+        leaderboard::GetLeaderboardRequest,
+        r#match::GetMatchRequest,
+        rating::GetRatingRequest,
+        rating_history::GetRatingHistoryRequest,
     },
     types::{
         api::Player as aoe2net_Player,
@@ -642,19 +642,15 @@ impl MatchDataResponses {
         export_path: Option<PathBuf>,
         _root: Url,
     ) -> Result<MatchDataResponses> {
-        let language: String = if let Some(language) = par.language {
-            language
-        }
-        else {
-            (*STANDARD.get(&"language").unwrap()).to_string()
-        };
+        let language: String = par.language.map_or_else(
+            || (*STANDARD.get(&"language").unwrap()).to_string(),
+            |language| language,
+        );
 
-        let game: String = if let Some(game) = par.game {
-            game
-        }
-        else {
-            (*STANDARD.get(&"game").unwrap()).to_string()
-        };
+        let game: String = par.game.map_or_else(
+            || (*STANDARD.get(&"game").unwrap()).to_string(),
+            |game| game,
+        );
 
         #[allow(unused_assignments)]
         let mut db_cloned = InMemoryDb::default();
@@ -817,7 +813,7 @@ impl MatchDataResponses {
 
             // GET `Rating` data as recovery data
             let leaderboard_recovery: Option<JsonValue> =
-                if leaderboard_response["count"].to_string() == 0.to_string() {
+                if leaderboard_response["count"] == 0 {
                     let req_lead_rating = GetRatingRequest::builder()
                         .game(game.as_str())
                         .profile_id(player.profile_id.as_str())

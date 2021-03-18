@@ -49,6 +49,14 @@ impl<C: Client<'static>> ApiClient<'static, C> {
     }
 }
 
+impl<C: Client<'static>> Default for ApiClient<'static, C>
+where C: Clone + Default
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a, C: Client<'a>> A2NClient<'a, C> {
     /// Create a new client with an existing client
     #[must_use]
@@ -68,7 +76,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
         A2NClient::with_client(client)
     }
 
-    /// Retrieve a clone of the [`HttpClient`][crate::HttpClient] inside this
+    /// Retrieve a clone of the [`HttpClient`][`crate::HttpClient`] inside this
     /// [`HelixClient`]
     pub fn clone_client(&self) -> C
     where C: Clone {

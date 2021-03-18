@@ -368,7 +368,7 @@ impl MatchInfoProcessor {
                 req_player.profile_id.to_string().parse::<u64>()?,
             ));
         };
-
+        #[allow(clippy::cmp_owned)]
         if looked_up_leaderboard["count"].to_string() >= 1.to_string() {
             return Ok((
                 RecoveredRating::Original,

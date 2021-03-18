@@ -47,7 +47,7 @@ use crate::domain::{
     util,
 };
 
-use aoe2net::endpoints::strings::*;
+use aoe2net::endpoints::strings::GetApiStringsRequest;
 
 use serde_json::Value as JsonValue;
 
@@ -88,13 +88,11 @@ pub async fn get_static_data_inside_thread(
         .build()
         .unwrap();
 
-    let background_client_clone = background_client.clone();
-
     tokio::spawn(async move {
         loop {
             match preload_data(
-                Some(background_client_clone.clone()),
-                Some(background_client_clone.clone()),
+                Some(background_client.clone()),
+                Some(background_client.clone()),
                 in_memory_db_clone.clone(),
                 github_root.clone(),
                 aoe2_net_root.clone(),
@@ -260,9 +258,9 @@ pub async fn preload_aoe2_net_data(
 ///
 /// # Errors
 // TODO
-async fn assemble_languages_to_dashmap<'req>(
+async fn assemble_languages_to_dashmap(
     api_client: reqwest::Client,
-    language_requests: Vec<(String, GetApiStringsRequest<'req>)>,
+    language_requests: Vec<(String, GetApiStringsRequest<'_>)>,
     export_path: Option<PathBuf>,
 ) -> Result<DashMap<String, JsonValue>, ClientRequestError<reqwest::Error>> {
     let responses: DashMap<String, JsonValue> =
@@ -296,8 +294,8 @@ fn build_language_requests(_root: &Url) -> Vec<(String, GetApiStringsRequest)> {
     let mut language_requests = Vec::with_capacity(LANGUAGE_STRINGS.len());
 
     // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
-    for game in (*GAME_STRINGS).iter() {
-        for language in (*LANGUAGE_STRINGS).iter() {
+    for game in &(*GAME_STRINGS) {
+        for language in &(*LANGUAGE_STRINGS) {
             language_requests.push((
                 (*language).to_string(),
                 GetApiStringsRequest::builder()

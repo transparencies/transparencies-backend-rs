@@ -45,6 +45,7 @@ pub struct GetMatchHistoryRequest<'a> {
 }
 
 impl<'a> GetMatchHistoryRequest<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         game: &'a str,
         leaderboard_id: i32,

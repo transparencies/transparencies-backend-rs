@@ -79,7 +79,7 @@ async fn main() -> Result<(), Report> {
     );
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
-    let api_clients = ApiClient::default();
+    // let api_clients = ApiClient::default();
     let match_info_request =
         MatchInfoRequest::with_folder(export_path.clone().unwrap());
 

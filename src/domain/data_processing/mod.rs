@@ -74,73 +74,66 @@ pub async fn build_result(
     .instrument(query_span)
     .await;
 
-    #[allow(unused_assignments)]
-    let mut result = MatchInfoResult::default();
-
     match responses {
-        Err(err) => match err {
-            ResponderError::LastMatchNotFound => {
+        Err(err) => {
+            if let ResponderError::LastMatchNotFound = err {
                 error!("Failed with {:?}", err);
-                result = MatchInfoResult::builder()
+                MatchInfoResult::builder()
                     .error_message(ErrorMessageToFrontend::HardFail(
                         std::borrow::Cow::Owned(format!(
                             "MatchInfo processing failed: {}",
                             err
                         )),
                     ))
-                    .build();
+                    .build()
             }
-            _ => {
+            else {
                 error!("Failed with {:?}", err);
-                result = MatchInfoResult::builder()
+                MatchInfoResult::builder()
                     .error_message(
                         ErrorMessageToFrontend::GenericResponderError(
                             std::borrow::Cow::Owned(format!("{}", err)),
                         ),
                     )
-                    .build();
+                    .build()
             }
-        },
+        }
         Ok(response) => {
             // Process the Responses
             let processed_result =
-                MatchInfoProcessor::with_response(response).process();
-
+                MatchInfoProcessor::with_response(response).process().map_err(|err| {
+                    
             // Handle all the errors and make sure, we always return a
             // `MatchInfoResult`
-            if let Err(err) = processed_result {
-                match err {
-                    ProcessingError::NotRankedLeaderboard(_) => {
-                        error!("Failed with {:?}", err);
-                        result = MatchInfoResult::builder()
-                            .error_message(ErrorMessageToFrontend::HardFail(
-                                std::borrow::Cow::Owned(format!(
-                                    "MatchInfo processing failed: {}",
-                                    err
-                                )),
-                            ))
-                            .build();
-                    }
-                    _ => {
-                        error!("Failed with {:?}", err);
-                        result = MatchInfoResult::builder()
+                    if let ProcessingError::NotRankedLeaderboard(_) = err {
+                    error!("Failed with {:?}", err);
+                    MatchInfoResult::builder()
+                        .error_message(ErrorMessageToFrontend::HardFail(
+                            std::borrow::Cow::Owned(format!(
+                                "MatchInfo processing failed: {}",
+                                err
+                            )),
+                        ))
+                        .build()
+                }
+                else {
+                    error!("Failed with {:?}", err);
+                    MatchInfoResult::builder()
                             .error_message(ErrorMessageToFrontend::HardFail(std::borrow::Cow::Owned(format!(
                                 "MatchInfo processing failed for {:?}:{:?} with {}",
                                 par.id_type,
                                 par.id_number,
                                 err.to_string()
                             ))))
-                            .build();
-                    }
+                            .build()
                 }
-            }
-            else {
-                result = processed_result
+                });
+
+                processed_result
                     .unwrap()
                     .assemble()
-                    .expect("MatchInfoResult assembly failed.");
-            }
+                    .expect("MatchInfoResult assembly failed.")
+
         }
     }
-    result
 }

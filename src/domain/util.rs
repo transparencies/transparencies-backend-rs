@@ -14,7 +14,6 @@ use serde_json::Value as JsonValue;
 
 use crate::domain::types::{
     requests::FileFormat,
-    ApiRequest,
     File,
     GithubFileRequest,
 };
@@ -29,22 +28,6 @@ pub(crate) fn build_github_request(
     GithubFileRequest::builder()
         .client(git_client)
         .url(url)
-        .build()
-}
-
-/// Assembles a `GET` request for an API
-/// Refactoring: Use this function
-pub(crate) fn build_api_request(
-    api_client: reqwest::Client,
-    root: Url,
-    endpoint: &str,
-    query: Vec<(String, String)>,
-) -> ApiRequest {
-    ApiRequest::builder()
-        .client(api_client)
-        .root(root)
-        .endpoint(endpoint)
-        .query(query)
         .build()
 }
 
