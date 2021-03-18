@@ -42,6 +42,28 @@ pub struct GetRatingHistoryRequest<'a> {
     pub profile_id: Option<&'a str>,
 }
 
+impl<'a> GetRatingHistoryRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        leaderboard_id: &'a str,
+        start: &'a str,
+        count: &'a str,
+        search: Option<&'a str>,
+        steam_id: Option<&'a str>,
+        profile_id: Option<&'a str>,
+    ) -> GetRatingHistoryRequest<'a> {
+        GetRatingHistoryRequest::builder()
+            .game(game)
+            .leaderboard_id(leaderboard_id)
+            .start(start)
+            .count(count)
+            .search(search)
+            .steam_id(steam_id)
+            .profile_id(profile_id)
+            .build()
+    }
+}
+
 impl<'a> Request for GetRatingHistoryRequest<'a> {
     type Response = Option<JsonValue>;
 

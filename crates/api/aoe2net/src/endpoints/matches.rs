@@ -34,6 +34,20 @@ pub struct GetMatchesRequest<'a> {
     pub since: Option<&'a str>,
 }
 
+impl<'a> GetMatchesRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        count: &'a str,
+        since: Option<&'a str>,
+    ) -> GetMatchesRequest<'a> {
+        GetMatchesRequest::builder()
+            .game(game)
+            .count(count)
+            .since(since)
+            .build()
+    }
+}
+
 impl<'a> Request for GetMatchesRequest<'a> {
     type Response = Option<JsonValue>;
 

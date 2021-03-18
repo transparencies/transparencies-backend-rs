@@ -30,6 +30,12 @@ pub struct GetStatsPlayersRequest<'a> {
     pub game: &'a str,
 }
 
+impl<'a> GetStatsPlayersRequest<'a> {
+    pub fn new(game: &'a str) -> GetStatsPlayersRequest<'a> {
+        GetStatsPlayersRequest::builder().game(game).build()
+    }
+}
+
 impl<'a> Request for GetStatsPlayersRequest<'a> {
     type Response = Option<JsonValue>;
 

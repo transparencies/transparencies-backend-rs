@@ -44,6 +44,30 @@ pub struct GetMatchHistoryRequest<'a> {
     pub profile_ids: Option<Vec<&'a str>>,
 }
 
+impl<'a> GetMatchHistoryRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        leaderboard_id: &'a str,
+        start: &'a str,
+        count: &'a str,
+        steam_id: Option<&'a str>,
+        profile_id: Option<&'a str>,
+        steam_ids: Option<Vec<&'a str>>,
+        profile_ids: Option<Vec<&'a str>>,
+    ) -> GetMatchHistoryRequest<'a> {
+        GetMatchHistoryRequest::builder()
+            .game(game)
+            .leaderboard_id(leaderboard_id)
+            .start(start)
+            .count(count)
+            .steam_id(steam_id)
+            .profile_id(profile_id)
+            .steam_ids(steam_ids)
+            .profile_ids(profile_ids)
+            .build()
+    }
+}
+
 impl<'a> Request for GetMatchHistoryRequest<'a> {
     type Response = Option<JsonValue>;
 

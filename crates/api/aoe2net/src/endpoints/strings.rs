@@ -32,6 +32,18 @@ pub struct GetApiStringsRequest<'a> {
     pub language: &'a str,
 }
 
+impl<'a> GetApiStringsRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        language: &'a str,
+    ) -> GetApiStringsRequest<'a> {
+        GetApiStringsRequest::builder()
+            .game(game)
+            .language(language)
+            .build()
+    }
+}
+
 impl<'a> Request for GetApiStringsRequest<'a> {
     type Response = Option<JsonValue>;
 

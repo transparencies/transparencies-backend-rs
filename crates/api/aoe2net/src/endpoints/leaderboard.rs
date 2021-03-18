@@ -42,6 +42,28 @@ pub struct GetLeaderboardRequest<'a> {
     pub profile_id: Option<&'a str>,
 }
 
+impl<'a> GetLeaderboardRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        leaderboard_id: &'a str,
+        start: &'a str,
+        count: &'a str,
+        search: Option<&'a str>,
+        steam_id: Option<&'a str>,
+        profile_id: Option<&'a str>,
+    ) -> GetLeaderboardRequest<'a> {
+        GetLeaderboardRequest::builder()
+            .game(game)
+            .leaderboard_id(leaderboard_id)
+            .start(start)
+            .count(count)
+            .search(search)
+            .steam_id(steam_id)
+            .profile_id(profile_id)
+            .build()
+    }
+}
+
 impl<'a> Request for GetLeaderboardRequest<'a> {
     type Response = Option<JsonValue>;
 

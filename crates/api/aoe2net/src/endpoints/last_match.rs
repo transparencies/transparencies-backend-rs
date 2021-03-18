@@ -34,6 +34,20 @@ pub struct GetLastMatchRequest<'a> {
     pub profile_id: Option<&'a str>,
 }
 
+impl<'a> GetLastMatchRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        steam_id: Option<&'a str>,
+        profile_id: Option<&'a str>,
+    ) -> GetLastMatchRequest<'a> {
+        GetLastMatchRequest::builder()
+            .game(game)
+            .steam_id(steam_id)
+            .profile_id(profile_id)
+            .build()
+    }
+}
+
 impl<'a> Request for GetLastMatchRequest<'a> {
     type Response = Option<JsonValue>;
 

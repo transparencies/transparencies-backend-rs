@@ -34,6 +34,20 @@ pub struct GetMatchRequest<'a> {
     pub match_id: Option<&'a str>,
 }
 
+impl<'a> GetMatchRequest<'a> {
+    pub fn new(
+        game: &'a str,
+        uuid: Option<&'a str>,
+        match_id: Option<&'a str>,
+    ) -> GetMatchRequest<'a> {
+        GetMatchRequest::builder()
+            .game(game)
+            .uuid(uuid)
+            .match_id(match_id)
+            .build()
+    }
+}
+
 impl<'a> Request for GetMatchRequest<'a> {
     type Response = Option<JsonValue>;
 

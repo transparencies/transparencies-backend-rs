@@ -30,6 +30,12 @@ pub struct GetLobbiesRequest<'a> {
     pub game: Option<&'a str>,
 }
 
+impl<'a> GetLobbiesRequest<'a> {
+    pub fn new(game: Option<&'a str>) -> GetLobbiesRequest<'a> {
+        GetLobbiesRequest::builder().game(game).build()
+    }
+}
+
 impl<'a> Request for GetLobbiesRequest<'a> {
     type Response = Option<JsonValue>;
 
