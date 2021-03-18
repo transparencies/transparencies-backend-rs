@@ -102,7 +102,7 @@ pub async fn build_result(
             // Process the Responses
             let processed_result =
                 MatchInfoProcessor::with_response(response).process().map_err(|err| {
-                    
+
             // Handle all the errors and make sure, we always return a
             // `MatchInfoResult`
                     if let ProcessingError::NotRankedLeaderboard(_) = err {
@@ -129,11 +129,10 @@ pub async fn build_result(
                 }
                 });
 
-                processed_result
-                    .unwrap()
-                    .assemble()
-                    .expect("MatchInfoResult assembly failed.")
-
+            processed_result
+                .unwrap()
+                .assemble()
+                .expect("MatchInfoResult assembly failed.")
         }
     }
 }
