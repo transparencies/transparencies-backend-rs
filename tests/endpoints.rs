@@ -9,11 +9,10 @@ use warp::{
 async fn health_check_works() {
     let api = filters::health_check();
 
-    let resp = request()
-        .method("GET")
-        .path("/health_check")
-        .reply(&api)
-        .await;
+    let resp = request().method("GET")
+                        .path("/health_check")
+                        .reply(&api)
+                        .await;
 
     assert_eq!(resp.status(), StatusCode::OK);
 }

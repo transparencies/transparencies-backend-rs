@@ -1,27 +1,6 @@
 //! Implementation side of the core http
 //! client logic of the application
 
-use crate::domain::types::{
-    error::{
-        ApiRequestError,
-        FileRequestError,
-    },
-    requests::{
-        ApiRequest,
-        File,
-        FileFormat,
-        GithubFileRequest,
-    },
-};
-use http::StatusCode;
-use url::Url;
-
-use crate::{
-    APP_USER_AGENT,
-    CLIENT_CONNECTION_TIMEOUT,
-    CLIENT_REQUEST_TIMEOUT,
-};
-
 use api_client::{
     client::Client,
     error::ClientRequestError,
@@ -31,13 +10,32 @@ use api_client::{
     },
     response::Response,
 };
-
 use derive_getters::Getters;
+use http::StatusCode;
+use url::Url;
+
+use crate::{
+    domain::types::{
+        error::{
+            ApiRequestError,
+            FileRequestError,
+        },
+        requests::{
+            ApiRequest,
+            File,
+            FileFormat,
+            GithubFileRequest,
+        },
+    },
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
+};
 
 /// Datastructure storing our different [`ApiClient`]s
 #[derive(Getters, Debug, Clone)]
 pub struct ApiClient<'a, C>
-where C: Client<'a>
+    where C: Client<'a>,
 {
     /// Client for aoe2net requests
     pub aoe2net: A2NClient<'a, C>,
@@ -45,14 +43,13 @@ where C: Client<'a>
 
 #[derive(Clone, Debug)]
 pub struct A2NClient<'a, C>
-where C: Client<'a>
+    where C: Client<'a>,
 {
     client: C,
     _pd: std::marker::PhantomData<&'a ()>, // TODO: Implement rate limiter...
 }
 
-impl<'a, C> Default for A2NClient<'a, C>
-where C: Client<'a> + Default
+impl<'a, C> Default for A2NClient<'a, C> where C: Client<'a> + Default,
 {
     fn default() -> A2NClient<'a, C> {
         A2NClient::new()
@@ -63,15 +60,13 @@ impl<C: Client<'static>> ApiClient<'static, C> {
     /// Create a new [`ApiClient`]
     #[must_use]
     pub fn new() -> ApiClient<'static, C>
-    where C: Clone + Default {
-        ApiClient {
-            aoe2net: A2NClient::new(),
-        }
+        where C: Clone + Default, {
+        ApiClient { aoe2net: A2NClient::new() }
     }
 }
 
 impl<C: Client<'static>> Default for ApiClient<'static, C>
-where C: Clone + Default
+    where C: Clone + Default,
 {
     fn default() -> Self {
         Self::new()
@@ -82,17 +77,15 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     /// Create a new client with an existing client
     #[must_use]
     pub fn with_client(client: C) -> A2NClient<'a, C> {
-        A2NClient {
-            client,
-            _pd: std::marker::PhantomData::default(),
-        }
+        A2NClient { client,
+                    _pd: std::marker::PhantomData::default() }
     }
 
     /// Create a new [`HelixClient`] with a default
     /// [`HttpClient`][`crate::HttpClient`]
     #[must_use]
     pub fn new() -> A2NClient<'a, C>
-    where C: Default + Client<'a> {
+        where C: Default + Client<'a>, {
         let client = C::default();
         A2NClient::with_client(client)
     }
@@ -100,7 +93,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     /// Retrieve a clone of the [`HttpClient`][`crate::HttpClient`] inside this
     /// [`HelixClient`]
     pub fn clone_client(&self) -> C
-    where C: Clone {
+        where C: Clone, {
         self.client.clone()
     }
 
@@ -110,19 +103,17 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     // TODO
     pub async fn req_get<R, D>(
         &'a self,
-        request: R,
-    ) -> Result<Response<R, D>, ClientRequestError<<C as Client<'a>>::Error>>
-    where
-        R: Request<Response = D> + Request + RequestGet,
-        D: serde::de::DeserializeOwned + PartialEq,
+        request: R)
+        -> Result<Response<R, D>, ClientRequestError<<C as Client<'a>>::Error>>
+        where R: Request<Response = D> + Request + RequestGet,
+              D: serde::de::DeserializeOwned + PartialEq,
     {
         let req = request.create_request()?;
         let uri = req.uri().clone();
-        let response = self
-            .client
-            .req(req)
-            .await
-            .map_err(ClientRequestError::RequestError)?;
+        let response = self.client
+                           .req(req)
+                           .await
+                           .map_err(ClientRequestError::RequestError)?;
         <R>::parse_response(Some(request), &uri, response).map_err(Into::into)
     }
 
@@ -252,18 +243,16 @@ impl Default for FileFormat {
 
 impl Default for File {
     fn default() -> Self {
-        File::builder()
-            .name(String::new())
-            .ext(FileFormat::default())
-            .build()
+        File::builder().name(String::new())
+                       .ext(FileFormat::default())
+                       .build()
     }
 }
 
 impl std::fmt::Display for File {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
+    fn fmt(&self,
+           f: &mut std::fmt::Formatter<'_>)
+           -> std::fmt::Result {
         write!(f, "{}.{}", self.name(), self.ext().as_ref().to_lowercase())
     }
 }
@@ -307,12 +296,11 @@ impl GithubFileRequest {
 
 impl Default for ApiRequest {
     fn default() -> Self {
-        ApiRequest::builder()
-            .client(reqwest::Client::default())
-            .root(Url::parse("https://aoe2.net/api").unwrap())
-            .endpoint(String::new())
-            .query(Vec::new())
-            .build()
+        ApiRequest::builder().client(reqwest::Client::default())
+                             .root(Url::parse("https://aoe2.net/api").unwrap())
+                             .endpoint(String::new())
+                             .query(Vec::new())
+                             .build()
     }
 }
 
@@ -323,13 +311,13 @@ impl ApiRequest {
     ///
     /// see [`reqwest::Error`]
     pub async fn execute<R>(&self) -> Result<R, ApiRequestError>
-    where R: for<'de> serde::Deserialize<'de> {
-        let response = self
-            .client()
-            .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
-            .query(&self.query())
-            .send()
-            .await?;
+        where R: for<'de> serde::Deserialize<'de>, {
+        let response =
+            self.client()
+                .get(&format!("{}/{}", &self.root().as_str(), &self.endpoint()))
+                .query(&self.query())
+                .send()
+                .await?;
 
         match response.status() {
             StatusCode::OK => Ok(response.json().await?),

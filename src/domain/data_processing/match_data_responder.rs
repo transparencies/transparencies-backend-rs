@@ -2,6 +2,14 @@
 //! Beware, there is a close connection to the [`super::MatchInfoProcessor`]
 //! in many places
 
+use std::{
+    fs,
+    io::BufWriter,
+    path::PathBuf,
+    result,
+    sync::Arc,
+};
+
 use aoe2net::{
     endpoints::{
         last_match::GetLastMatchRequest,
@@ -19,26 +27,6 @@ use aoe2net::{
         },
     },
 };
-
-use crate::domain::{
-    api_handler::client::A2NClient,
-    types::{
-        api::{
-            MatchInfoRequest,
-            Rating,
-            Server,
-        },
-        error::ResponderError,
-        File,
-        FileFormat,
-        InMemoryDb,
-        MatchDataResponses,
-    },
-    util,
-};
-
-use url::Url;
-
 use ron::ser::{
     to_writer_pretty,
     PrettyConfig,
@@ -47,20 +35,32 @@ use serde_json::{
     json,
     Value as JsonValue,
 };
-use std::{
-    fs,
-    io::BufWriter,
-    path::PathBuf,
-    result,
-    sync::Arc,
-};
 use tokio::sync::Mutex;
 use tracing::{
     debug,
     trace,
 };
+use url::Url;
 
-use crate::STANDARD;
+use crate::{
+    domain::{
+        api_handler::client::A2NClient,
+        types::{
+            api::{
+                MatchInfoRequest,
+                Rating,
+                Server,
+            },
+            error::ResponderError,
+            File,
+            FileFormat,
+            InMemoryDb,
+            MatchDataResponses,
+        },
+        util,
+    },
+    STANDARD,
+};
 
 type Result<T> = result::Result<T, ResponderError>;
 
@@ -69,10 +69,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `leaderboard_id` could not be found
-    pub fn get_leaderboard_id_from_request(
-        &mut self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<String> {
+    pub fn get_leaderboard_id_from_request(&mut self,
+                                           req_type: Aoe2netRequestType)
+                                           -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -105,12 +104,10 @@ impl MatchDataResponses {
     /// Will return an error if either the `players array` can not be found
     /// or will `panic!` if the deserialisation failed or the parsing of the
     /// `Player` struct failed
-    pub fn parse_players_into<T>(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<T>
-    where
-        T: for<'de> serde::Deserialize<'de>,
+    pub fn parse_players_into<T>(&self,
+                                 req_type: Aoe2netRequestType)
+                                 -> Result<T>
+        where T: for<'de> serde::Deserialize<'de>,
     {
         match req_type {
             Aoe2netRequestType::LastMatch => {
@@ -162,10 +159,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_finished_time(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<String> {
+    pub fn get_finished_time(&self,
+                             req_type: Aoe2netRequestType)
+                             -> Result<String> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -197,10 +193,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_id_for_rating_type(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_rating_type(&self,
+                                  req_type: Aoe2netRequestType)
+                                  -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -239,9 +234,9 @@ impl MatchDataResponses {
     /// empty player name that is taken if the `looked_up_player` doesn't
     /// give any value
     #[must_use]
-    pub fn get_country_code(
-        looked_up_leaderboard: &(RecoveredRating, JsonValue)
-    ) -> Option<String> {
+    pub fn get_country_code(looked_up_leaderboard: &(RecoveredRating,
+                              JsonValue))
+                            -> Option<String> {
         let (recover, value) = looked_up_leaderboard;
 
         if *recover == RecoveredRating::Original {
@@ -268,10 +263,10 @@ impl MatchDataResponses {
     /// # Errors
     /// Function will throw errors in cases the deserialisation and conversion
     /// to the corresponding types is not successful
-    pub fn create_rating(
-        looked_up_rating: &JsonValue,
-        looked_up_leaderboard: &(RecoveredRating, JsonValue),
-    ) -> Result<Rating> {
+    pub fn create_rating(looked_up_rating: &JsonValue,
+                         looked_up_leaderboard: &(RecoveredRating,
+                           JsonValue))
+                         -> Result<Rating> {
         let player_rating = match looked_up_leaderboard {
             (RecoveredRating::Original, leaderboard) => Rating::builder()
                 .mmr(serde_json::from_str::<u32>(&serde_json::to_string(
@@ -341,10 +336,8 @@ impl MatchDataResponses {
     pub fn get_translation_for_language(&mut self) -> Result<JsonValue> {
         let mut translation: Option<JsonValue> = None;
 
-        trace!(
-            "Length of self.db.aoe2net_languages is: {:?}",
-            self.db.aoe2net_languages.len()
-        );
+        trace!("Length of self.db.aoe2net_languages is: {:?}",
+               self.db.aoe2net_languages.len());
 
         if self.db.aoe2net_languages.len() == 1 {
             for (language, translation_value) in
@@ -377,11 +370,10 @@ impl MatchDataResponses {
     /// # Panics
     /// Panics if the conversion to a string failed
     // TODO: Get rid of panic and handle gracefully
-    pub fn lookup_string_for_id(
-        &self,
-        first: &str,
-        id: usize,
-    ) -> Result<String> {
+    pub fn lookup_string_for_id(&self,
+                                first: &str,
+                                id: usize)
+                                -> Result<String> {
         trace!("Getting translated string in {:?} with id: {:?}", first, id);
         let language =
             if let Ok(lang) = self.clone().get_translation_for_language() {
@@ -427,10 +419,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_id_for_map_type(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_map_type(&self,
+                               req_type: Aoe2netRequestType)
+                               -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -466,10 +457,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_id_for_game_type(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<usize> {
+    pub fn get_id_for_game_type(&self,
+                                req_type: Aoe2netRequestType)
+                                -> Result<usize> {
         match req_type {
             Aoe2netRequestType::LastMatch => {
                 self.aoe2net.player_last_match.as_ref().map_or_else(
@@ -504,10 +494,9 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_server_location(
-        &self,
-        req_type: Aoe2netRequestType,
-    ) -> Result<Server> {
+    pub fn get_server_location(&self,
+                               req_type: Aoe2netRequestType)
+                               -> Result<Server> {
         let mut server = String::new();
 
         match req_type {
@@ -558,10 +547,9 @@ impl MatchDataResponses {
     /// Doesn't throw any errors, but returns an Option type that is `None` if
     /// the profile ID couldn't be found in the index
     #[must_use]
-    pub fn lookup_player_rating_for_profile_id(
-        &self,
-        profile_id: &str,
-    ) -> Option<JsonValue> {
+    pub fn lookup_player_rating_for_profile_id(&self,
+                                               profile_id: &str)
+                                               -> Option<JsonValue> {
         self.aoe2net
             .rating_history
             .get(profile_id)
@@ -580,10 +568,9 @@ impl MatchDataResponses {
     /// Doesn't throw any errors, but returns an Option type that is `None` if
     /// the profile ID couldn't be found in the index
     #[must_use]
-    pub fn lookup_leaderboard_for_profile_id(
-        &self,
-        profile_id: &str,
-    ) -> Option<JsonValue> {
+    pub fn lookup_leaderboard_for_profile_id(&self,
+                                             profile_id: &str)
+                                             -> Option<JsonValue> {
         self.aoe2net
             .leaderboard
             .get(profile_id)
@@ -601,11 +588,10 @@ impl MatchDataResponses {
     /// Will panic if data cannot be written or file can not be created in
     /// Filesystem
     pub fn export_to_file(&self) {
-        let ron_config = PrettyConfig::new()
-            .with_depth_limit(8)
-            .with_separate_tuple_members(true)
-            .with_enumerate_arrays(true)
-            .with_indentor("\t".to_owned());
+        let ron_config = PrettyConfig::new().with_depth_limit(8)
+                                            .with_separate_tuple_members(true)
+                                            .with_enumerate_arrays(true)
+                                            .with_indentor("\t".to_owned());
 
         // Open the file in writable mode with buffer.
         let file = fs::File::create("logs/match_data_responses.ron").unwrap();
@@ -635,22 +621,21 @@ impl MatchDataResponses {
     /// Function could panic if the [`dashmap::DashMap`] of static
     /// global variable [`static@crate::STANDARD`] delivers `None`
     #[allow(clippy::too_many_lines)]
-    pub async fn with_match_data(
-        par: MatchInfoRequest,
-        client: A2NClient<'static, reqwest::Client>,
-        in_memory_db: Arc<Mutex<InMemoryDb>>,
-        export_path: Option<PathBuf>,
-        _root: Url,
-    ) -> Result<MatchDataResponses> {
+    pub async fn with_match_data(par: MatchInfoRequest,
+                                 client: A2NClient<'static, reqwest::Client>,
+                                 in_memory_db: Arc<Mutex<InMemoryDb>>,
+                                 export_path: Option<PathBuf>,
+                                 _root: Url)
+                                 -> Result<MatchDataResponses> {
         let language: String = par.language.map_or_else(
             || (*STANDARD.get(&"language").unwrap()).to_string(),
             |language| language,
         );
 
-        let game: String = par.game.map_or_else(
-            || (*STANDARD.get(&"game").unwrap()).to_string(),
-            |game| game,
-        );
+        let game: String =
+            par.game
+               .map_or_else(|| (*STANDARD.get(&"game").unwrap()).to_string(),
+                            |game| game);
 
         #[allow(unused_assignments)]
         let mut db_cloned = InMemoryDb::default();
@@ -756,18 +741,13 @@ impl MatchDataResponses {
 
         if let Some(mut path) = export_path.clone() {
             path.push("aoe2net");
-            util::export_to_json(
-                &File {
-                    name: "last_match".to_string(),
-                    ext: FileFormat::Json,
-                },
-                &path,
-                &responses
-                    .clone()
-                    .aoe2net
-                    .player_last_match
-                    .map_or(JsonValue::Null, |x| x),
-            )
+            util::export_to_json(&File { name: "last_match".to_string(),
+                                         ext: FileFormat::Json },
+                                 &path,
+                                 &responses.clone()
+                                           .aoe2net
+                                           .player_last_match
+                                           .map_or(JsonValue::Null, |x| x))
         };
 
         // TODO: This error handling still needed?
@@ -785,11 +765,10 @@ impl MatchDataResponses {
         //         }
         //     },
 
-        let leaderboard_id = responses
-            .aoe2net
-            .leaderboard_id
-            .clone()
-            .expect("Leaderboard ID must be set.");
+        let leaderboard_id = responses.aoe2net
+                                      .leaderboard_id
+                                      .clone()
+                                      .expect("Leaderboard ID must be set.");
 
         for player in &responses.aoe2net.players_temp {
             let profile_id = player.profile_id.to_string();
@@ -822,14 +801,11 @@ impl MatchDataResponses {
                         .leaderboard_id(leaderboard_id.parse::<i32>()?)
                         .build();
 
-                    Some(
-                        client
-                            .req_get(req_lead_rating)
-                            .await
-                            .unwrap()
-                            .data
-                            .unwrap(),
-                    )
+                    Some(client.req_get(req_lead_rating)
+                               .await
+                               .unwrap()
+                               .data
+                               .unwrap())
                 }
                 else {
                     None
@@ -840,61 +816,48 @@ impl MatchDataResponses {
                 path.push("aoe2net");
 
                 if leaderboard_recovery.is_some() {
-                    util::export_to_json(
-                        &File {
-                            name: profile_id.clone(),
-                            ext: FileFormat::Json,
-                        },
-                        &{
-                            let mut p = path.clone();
-                            p.push("leaderboard");
-                            p
-                        },
-                        &rating_response,
-                    );
+                    util::export_to_json(&File { name: profile_id.clone(),
+                                                 ext: FileFormat::Json },
+                                         &{
+                                             let mut p = path.clone();
+                                             p.push("leaderboard");
+                                             p
+                                         },
+                                         &rating_response);
                 }
 
-                util::export_to_json(
-                    &File {
-                        name: profile_id.clone(),
-                        ext: FileFormat::Json,
-                    },
-                    &{
-                        let mut p = path.clone();
-                        p.push("rating_history");
-                        p
-                    },
-                    &rating_response,
-                );
-                util::export_to_json(
-                    &File {
-                        name: profile_id.clone(),
-                        ext: FileFormat::Json,
-                    },
-                    &{
-                        let mut p = path.clone();
-                        p.push("leaderboard");
-                        p
-                    },
-                    &leaderboard_response,
-                );
+                util::export_to_json(&File { name: profile_id.clone(),
+                                             ext: FileFormat::Json },
+                                     &{
+                                         let mut p = path.clone();
+                                         p.push("rating_history");
+                                         p
+                                     },
+                                     &rating_response);
+                util::export_to_json(&File { name: profile_id.clone(),
+                                             ext: FileFormat::Json },
+                                     &{
+                                         let mut p = path.clone();
+                                         p.push("leaderboard");
+                                         p
+                                     },
+                                     &leaderboard_response);
             }
 
-            responses
-                .aoe2net
-                .rating_history
-                .insert(player.profile_id.to_string(), rating_response);
+            responses.aoe2net
+                     .rating_history
+                     .insert(player.profile_id.to_string(), rating_response);
 
-            responses
-                .aoe2net
-                .leaderboard
-                .insert(player.profile_id.to_string(), leaderboard_response);
+            responses.aoe2net
+                     .leaderboard
+                     .insert(player.profile_id.to_string(),
+                             leaderboard_response);
 
             if leaderboard_recovery.is_some() {
-                responses.aoe2net.leaderboard.insert(
-                    format!("{}_recovery", profile_id.as_str()),
-                    leaderboard_recovery.unwrap(),
-                );
+                responses.aoe2net
+                         .leaderboard
+                         .insert(format!("{}_recovery", profile_id.as_str()),
+                                 leaderboard_recovery.unwrap());
             }
         }
 

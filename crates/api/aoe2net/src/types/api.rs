@@ -4,23 +4,20 @@ use serde::{
     Deserialize,
     Serialize,
 };
-
 use serde_json::Value as JsonValue;
 
 /// Convenience datastructure for the `RatingHistory` endpoint to
 /// easily parse the data into our struct
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    PartialOrd,
-    Eq,
-    Ord,
-    Hash,
-    Serialize,
-    Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           Default,
+           PartialEq,
+           PartialOrd,
+           Eq,
+           Ord,
+           Hash,
+           Serialize,
+           Deserialize)]
 pub struct RatingHistory {
     pub drops: i64,
     pub num_losses: i64,

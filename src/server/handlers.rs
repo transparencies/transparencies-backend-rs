@@ -1,5 +1,13 @@
 //! API handlers, the ends of each filter chain
 
+use std::{
+    convert::Infallible,
+    sync::Arc,
+};
+
+use tokio::sync::Mutex;
+use url::Url;
+
 use crate::domain::{
     api_handler::client::A2NClient,
     data_processing::build_result,
@@ -8,20 +16,15 @@ use crate::domain::{
         InMemoryDb,
     },
 };
-use std::{
-    convert::Infallible,
-    sync::Arc,
-};
-use tokio::sync::Mutex;
-
-use url::Url;
 
 /// Small `health_check` function to return 200 on `health_check` endpoint
 ///
 /// # Errors
 // TODO
 pub async fn return_health_check_to_client(
-) -> Result<impl warp::Reply, Infallible> {
+    )
+    -> Result<impl warp::Reply, Infallible>
+{
     Ok(warp::reply())
 }
 
@@ -45,19 +48,16 @@ pub async fn return_health_check_to_client(
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
     aoe_net_client: A2NClient<'static, reqwest::Client>,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-) -> Result<impl warp::Reply, Infallible> {
+    in_memory_db: Arc<Mutex<InMemoryDb>>)
+    -> Result<impl warp::Reply, Infallible> {
     // API root for aoe2net
     let root = Url::parse("https://aoe2.net/api").unwrap();
 
-    let processed_match_info = build_result(
-        opts.clone(),
-        aoe_net_client,
-        root,
-        in_memory_db.clone(),
-        None,
-    )
-    .await;
+    let processed_match_info = build_result(opts.clone(),
+                                            aoe_net_client,
+                                            root,
+                                            in_memory_db.clone(),
+                                            None).await;
 
     Ok(warp::reply::json(&processed_match_info))
 }

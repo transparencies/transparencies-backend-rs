@@ -6,9 +6,15 @@ use ::serde::{
 };
 
 /// A player from `aoc-reference data`
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           PartialEq,
+           PartialOrd,
+           Eq,
+           Ord,
+           Hash,
+           Serialize,
+           Deserialize)]
 pub struct Player {
     /// Most known Name
     pub name: String,
@@ -37,9 +43,15 @@ pub struct Player {
     pub youtube: Option<String>,
 }
 
-#[derive(
-    Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           PartialEq,
+           PartialOrd,
+           Eq,
+           Ord,
+           Hash,
+           Serialize,
+           Deserialize)]
 pub struct Platforms {
     #[serde(default)]
     pub de: Vec<String>,

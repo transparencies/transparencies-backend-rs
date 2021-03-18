@@ -27,19 +27,19 @@ use tracing_tree::HierarchicalLayer;
 /// We need to explicitly call out that the returned subscriber is
 /// `Send` and `Sync` to make it possible to pass it to `init_subscriber`
 /// later on.
-pub fn get_subscriber(
-    name: String,
-    env_filter: String,
-) -> impl Subscriber + Send + Sync {
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new(env_filter));
+pub fn get_subscriber(name: String,
+                      env_filter: String)
+                      -> impl Subscriber + Send + Sync {
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                                             EnvFilter::new(env_filter)
+                                         });
     let formatting_layer = BunyanFormattingLayer::new(name, std::io::stdout);
-    Registry::default()
-        .with(HierarchicalLayer::new(2).with_thread_ids(true))
-        .with(ErrorLayer::default())
-        .with(env_filter)
-        .with(JsonStorageLayer)
-        .with(formatting_layer)
+    Registry::default().with(HierarchicalLayer::new(2).with_thread_ids(true))
+                       .with(ErrorLayer::default())
+                       .with(env_filter)
+                       .with(JsonStorageLayer)
+                       .with(formatting_layer)
 }
 
 /// Register a subscriber as global default to process span data.

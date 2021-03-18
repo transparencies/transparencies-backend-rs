@@ -1,8 +1,3 @@
-use reqwest::get;
-
-use dashmap::DashMap;
-use serde_json::Value as JsonValue;
-
 use std::{
     self,
     fs,
@@ -10,10 +5,11 @@ use std::{
     sync::Arc,
 };
 
-use url::Url;
-
+use dashmap::DashMap;
 // Internal Configuration
 use pretty_assertions::assert_eq;
+use reqwest::get;
+use serde_json::Value as JsonValue;
 use tokio::sync::Mutex;
 use transparencies_backend_rs::{
     self,
@@ -42,6 +38,7 @@ use transparencies_backend_rs::{
     CLIENT_CONNECTION_TIMEOUT,
     CLIENT_REQUEST_TIMEOUT,
 };
+use url::Url;
 use wiremock::{
     matchers::method,
     Mock,
@@ -62,18 +59,13 @@ init_subscriber(subscriber);
 async fn matchinfo_pipeline_works() {
     let current_dir = std::env::current_dir().unwrap();
 
-    let test_cases = TestCases::default()
-        .add_case(
-            [
-                &format!("{}", current_dir.display()),
-                "tests",
-                "matchinfo-integration",
-                "standard",
-            ]
-            .iter()
-            .collect(),
-        )
-        .unwrap();
+    let test_cases =
+        TestCases::default().add_case([&format!("{}", current_dir.display()),
+                                       "tests",
+                                       "matchinfo-integration",
+                                       "standard"].iter()
+                                                  .collect())
+                            .unwrap();
 
     mock_test_match_info_result(test_cases).await
 }
@@ -106,13 +98,11 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     // Start a background HTTP server on a random local port
     let mock_server = MockServer::start().await;
 
-    let aoe2net_api_roots: Vec<&str> = vec![
-        "/api/strings",
-        "/api/player/lastmatch",
-        "/api/leaderboard",
-        "/api/player/ratinghistory",
-        "/SiegeEngineers/aoc-reference-data/master/data/",
-    ];
+    let aoe2net_api_roots: Vec<&str> = vec!["/api/strings",
+                                            "/api/player/lastmatch",
+                                            "/api/leaderboard",
+                                            "/api/player/ratinghistory",
+                                            "/SiegeEngineers/aoc-reference-data/master/data/",];
 
     // Preloaded data
     let language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>> =
@@ -130,14 +120,14 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let mock_client = reqwest::Client::builder()
-        .user_agent(*APP_USER_AGENT)
-        .timeout(*CLIENT_REQUEST_TIMEOUT)
-        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
-        .use_rustls_tls()
-        .https_only(false)
-        .build()
-        .unwrap();
+    let mock_client =
+        reqwest::Client::builder().user_agent(*APP_USER_AGENT)
+                                  .timeout(*CLIENT_REQUEST_TIMEOUT)
+                                  .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+                                  .use_rustls_tls()
+                                  .https_only(false)
+                                  .build()
+                                  .unwrap();
 
     let a2n_client = A2NClient::with_client(mock_client.clone());
 
@@ -159,61 +149,48 @@ async fn mock_test_match_info_result(test_cases: TestCases) {
     for mut test_case in test_cases.0 {
         // each test_case could be as well run in
         // a thread from here on
-        load_responses_from_fs(
-            &mut test_case,
-            aoe2net_mock_responses_clone.clone(),
-            language_mock_responses_clone.clone(),
-            github_mock_responses_clone.clone(),
-        )
-        .await
-        .unwrap();
+        load_responses_from_fs(&mut test_case,
+                               aoe2net_mock_responses_clone.clone(),
+                               language_mock_responses_clone.clone(),
+                               github_mock_responses_clone.clone()).await
+                                                                   .unwrap();
 
-        mount_mocks(
-            &aoe2net_api_roots,
-            test_case.profile_ids.clone(),
-            test_case.last_match(),
-            &mock_server,
-            aoe2net_mock_responses_clone.clone(),
-            language_mock_responses_clone.clone(),
-            github_mock_responses_clone.clone(),
-        )
-        .await;
+        mount_mocks(&aoe2net_api_roots,
+                    test_case.profile_ids.clone(),
+                    test_case.last_match(),
+                    &mock_server,
+                    aoe2net_mock_responses_clone.clone(),
+                    language_mock_responses_clone.clone(),
+                    github_mock_responses_clone.clone()).await;
 
         if ran_once == false {
-            preload_data(
-                Some(mock_client.clone()),
-                Some(mock_client.clone()),
-                in_memory_db_clone.clone(),
-                github_root.clone(),
-                aoe2_net_root.clone(),
-                None,
-                true,
-            )
-            .await
-            .expect("Preloading data failed.");
+            preload_data(Some(mock_client.clone()),
+                         Some(mock_client.clone()),
+                         in_memory_db_clone.clone(),
+                         github_root.clone(),
+                         aoe2_net_root.clone(),
+                         None,
+                         true).await
+                              .expect("Preloading data failed.");
 
             ran_once = true;
         }
 
-        let result = build_result(
-            test_case.parsed_request,
-            a2n_client.clone(),
-            aoe2_net_root.to_owned(),
-            in_memory_db_clone.clone(),
-            None,
-        )
-        .await;
+        let result = build_result(test_case.parsed_request,
+                                  a2n_client.clone(),
+                                  aoe2_net_root.to_owned(),
+                                  in_memory_db_clone.clone(),
+                                  None).await;
 
         assert_eq!(test_case.parsed_result, result);
     }
 }
 
-async fn load_responses_from_fs(
-    test_case: &mut TestCase,
-    aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-    language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-    github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-) -> Result<(), TestCaseError> {
+async fn load_responses_from_fs(test_case: &mut TestCase,
+                                aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+                                language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
+                                github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>)
+                                -> Result<(), TestCaseError> {
     for entry in fs::read_dir(test_case.resource_dir()).unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
@@ -246,36 +223,33 @@ async fn load_responses_from_fs(
                                         fs::File::open(very_new_path).unwrap(),
                                     ))
                                     .unwrap();
-                                match new_path
-                                    .file_name()
-                                    .unwrap()
-                                    .to_str()
-                                    .unwrap()
+                                match new_path.file_name()
+                                              .unwrap()
+                                              .to_str()
+                                              .unwrap()
                                 {
                                     "rating_history" => {
                                         let guard =
                                             aoe2net_mock_responses.lock().await;
-                                        guard.insert(
-                                            format!("rh_{}", file_name),
-                                            val,
-                                        );
-                                    }
+                                        guard.insert(format!("rh_{}",
+                                                             file_name),
+                                                     val);
+                                    },
                                     "leaderboard" => {
                                         let guard =
                                             aoe2net_mock_responses.lock().await;
-                                        guard.insert(
-                                            format!("ldb_{}", file_name),
-                                            val,
-                                        );
-                                    }
-                                    _ => {}
+                                        guard.insert(format!("ldb_{}",
+                                                             file_name),
+                                                     val);
+                                    },
+                                    _ => {},
                                 }
                             }
-                        }
-                        _ => {}
+                        },
+                        _ => {},
                     }
                 }
-            }
+            },
             "languages" => {
                 path.clone().push("/languages/");
                 for new_entry in fs::read_dir(path).unwrap() {
@@ -292,7 +266,7 @@ async fn load_responses_from_fs(
                         guard.insert(file_name, val);
                     }
                 }
-            }
+            },
             "ref-data" => {
                 // println!("Folder: {:?}", file_name);
                 path.clone().push("/ref-data/");
@@ -311,23 +285,24 @@ async fn load_responses_from_fs(
                         guard.insert(file_name, val);
                     }
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
     Ok(())
 }
 
-async fn mount_mocks(
-    aoe2net_api_roots: &Vec<&str>,
-    profile_ids: Vec<String>,
-    last_match: &JsonValue,
-    mock_server: &MockServer,
-    aoe2net_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-    language_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-    github_mock_responses: Arc<Mutex<DashMap<String, JsonValue>>>,
-) {
+async fn mount_mocks(aoe2net_api_roots: &Vec<&str>,
+                     profile_ids: Vec<String>,
+                     last_match: &JsonValue,
+                     mock_server: &MockServer,
+                     aoe2net_mock_responses: Arc<Mutex<DashMap<String,
+                                       JsonValue>>>,
+                     language_mock_responses: Arc<Mutex<DashMap<String,
+                                       JsonValue>>>,
+                     github_mock_responses: Arc<Mutex<DashMap<String,
+                                       JsonValue>>>) {
     for root in aoe2net_api_roots.iter() {
         let url_string = &format!("{}", *root);
         match *root {
@@ -348,7 +323,7 @@ async fn mount_mocks(
                         .mount(mock_server)
                         .await;
                 }
-            }
+            },
             "/api/leaderboard" => {
                 // "/api/leaderboard?game=aoe2de&profile_id=196240&
                 // leaderboard_id=3"
@@ -358,9 +333,10 @@ async fn mount_mocks(
                     {
                         let guard = aoe2net_mock_responses.lock().await;
 
-                        json = guard
-                            .get(&format!("ldb_{}", profile_id))
-                            .map_or(JsonValue::Null, |val| val.value().clone());
+                        json = guard.get(&format!("ldb_{}", profile_id))
+                                    .map_or(JsonValue::Null, |val| {
+                                        val.value().clone()
+                                    });
                     }
                     Mock::given(method("GET"))
                         .and(wiremock::matchers::path(url_string.to_string()))
@@ -380,7 +356,7 @@ async fn mount_mocks(
                         .mount(mock_server)
                         .await;
                 }
-            }
+            },
             "/api/player/ratinghistory" => {
                 // "/api/player/ratinghistory?game=aoe2de&profile_id=196240&
                 // leaderboard_id=3&count=1"
@@ -390,9 +366,10 @@ async fn mount_mocks(
                     {
                         let guard = aoe2net_mock_responses.lock().await;
 
-                        json = guard
-                            .get(&format!("rh_{}", profile_id))
-                            .map_or(JsonValue::Null, |val| val.value().clone());
+                        json = guard.get(&format!("rh_{}", profile_id))
+                                    .map_or(JsonValue::Null, |val| {
+                                        val.value().clone()
+                                    });
                     }
 
                     Mock::given(method("GET"))
@@ -417,7 +394,7 @@ async fn mount_mocks(
                         .mount(mock_server)
                         .await;
                 }
-            }
+            },
             "/api/strings" => {
                 // Language mocking
                 #[allow(unused_assignments)]
@@ -446,7 +423,7 @@ async fn mount_mocks(
                         .mount(mock_server)
                         .await;
                 }
-            }
+            },
             "/SiegeEngineers/aoc-reference-data/master/data/" => {
                 // Github FileRequest Mock
                 // https://raw.githubusercontent.com/SiegeEngineers/aoc-reference-data/master/data/
@@ -455,9 +432,10 @@ async fn mount_mocks(
                     let mut json = JsonValue::default();
                     {
                         let guard = github_mock_responses.lock().await;
-                        json = guard
-                            .get(&format!("{}", file.name()))
-                            .map_or(JsonValue::Null, |val| val.value().clone());
+                        json = guard.get(&format!("{}", file.name()))
+                                    .map_or(JsonValue::Null, |val| {
+                                        val.value().clone()
+                                    });
                     }
 
                     let url_string = &format!("{}{}", root.clone(), file);
@@ -469,8 +447,8 @@ async fn mount_mocks(
                         .mount(mock_server)
                         .await;
                 }
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 }

@@ -3,6 +3,20 @@
 mod match_data_responder;
 pub mod match_info_processor;
 
+use std::{
+    path::PathBuf,
+    sync::Arc,
+};
+
+use tokio::{
+    self,
+    sync::Mutex,
+};
+use tracing::error;
+use tracing_futures::Instrument;
+use url::Url;
+use uuid::Uuid;
+
 use crate::domain::{
     api_handler::client::A2NClient,
     data_processing::match_info_processor::MatchInfoProcessor,
@@ -13,31 +27,13 @@ use crate::domain::{
         },
         error::{
             ErrorMessageToFrontend,
+            ProcessingError,
             ResponderError,
         },
+        InMemoryDb,
         MatchDataResponses,
     },
 };
-
-use tracing::error;
-use tracing_futures::Instrument;
-
-use std::{
-    path::PathBuf,
-    sync::Arc,
-};
-use tokio::{
-    self,
-    sync::Mutex,
-};
-
-use crate::domain::types::{
-    error::ProcessingError,
-    InMemoryDb,
-};
-
-use url::Url;
-use uuid::Uuid;
 
 /// Entry point for processing part of `matchinfo` endpoint
 ///
@@ -52,27 +48,24 @@ id_type = %par.id_type,
 id_number = %par.id_number
 )
 )]
-pub async fn build_result(
-    par: MatchInfoRequest,
-    client: A2NClient<'static, reqwest::Client>,
-    root: Url,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    export_path: Option<PathBuf>,
-) -> MatchInfoResult {
+pub async fn build_result(par: MatchInfoRequest,
+                          client: A2NClient<'static, reqwest::Client>,
+                          root: Url,
+                          in_memory_db: Arc<Mutex<InMemoryDb>>,
+                          export_path: Option<PathBuf>)
+                          -> MatchInfoResult {
     // We do not call `.enter` on query_span!
     // `.instrument` takes care of it at the right moments
     // in the query future lifetime
     let query_span = tracing::info_span!("Querying for data from APIs...");
 
-    let responses = MatchDataResponses::with_match_data(
-        par.clone(),
-        client,
-        in_memory_db,
-        export_path,
-        root,
-    )
-    .instrument(query_span)
-    .await;
+    let responses =
+        MatchDataResponses::with_match_data(par.clone(),
+                                            client,
+                                            in_memory_db,
+                                            export_path,
+                                            root).instrument(query_span)
+                                                 .await;
 
     match responses {
         Err(err) => {
@@ -97,7 +90,7 @@ pub async fn build_result(
                     )
                     .build()
             }
-        }
+        },
         Ok(response) => {
             // Process the Responses
             let processed_result =
@@ -129,10 +122,9 @@ pub async fn build_result(
                 }
                 });
 
-            processed_result
-                .unwrap()
-                .assemble()
-                .expect("MatchInfoResult assembly failed.")
-        }
+            processed_result.unwrap()
+                            .assemble()
+                            .expect("MatchInfoResult assembly failed.")
+        },
     }
 }

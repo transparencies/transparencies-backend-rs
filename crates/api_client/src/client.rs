@@ -1,11 +1,12 @@
 //! Implementation side of the core http
 //! client logic of the application
 
-use reqwest::Client as ReqwestClient;
 use std::{
     error::Error,
     future::Future,
 };
+
+use reqwest::Client as ReqwestClient;
 
 /// A boxed future, mimics `futures::future::BoxFuture`
 pub type BoxedFuture<'a, T> =
@@ -21,19 +22,17 @@ pub trait Client<'a>: Send + 'a {
     /// Error returned by the client
     type Error: Error + Send + Sync + 'static;
     /// Send a request
-    fn req(
-        &'a self,
-        request: Req,
-    ) -> BoxedFuture<'a, Result<Response, <Self as Client>::Error>>;
+    fn req(&'a self,
+           request: Req)
+           -> BoxedFuture<'a, Result<Response, <Self as Client>::Error>>;
 }
 
 impl<'a> Client<'a> for ReqwestClient {
     type Error = reqwest::Error;
 
-    fn req(
-        &'a self,
-        request: Req,
-    ) -> BoxedFuture<'static, Result<Response, Self::Error>> {
+    fn req(&'a self,
+           request: Req)
+           -> BoxedFuture<'static, Result<Response, Self::Error>> {
         // Reqwest plays really nice here and has a try_from on `http::Request`
         // -> `reqwest::Request`
         use std::convert::TryFrom;
@@ -234,10 +233,9 @@ pub struct DummyHttpClient;
 impl<'a> Client<'a> for DummyHttpClient {
     type Error = DummyHttpClient;
 
-    fn req(
-        &'a self,
-        _: Req,
-    ) -> BoxedFuture<'a, Result<Response, Self::Error>> {
+    fn req(&'a self,
+           _: Req)
+           -> BoxedFuture<'a, Result<Response, Self::Error>> {
         Box::pin(async { Err(DummyHttpClient) })
     }
 }

@@ -4,6 +4,13 @@ use std::{
     path::PathBuf,
 };
 
+use derive_getters::Getters;
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use serde_json::Value as JsonValue;
+
 use crate::domain::types::{
     api::{
         MatchInfoRequest,
@@ -11,13 +18,6 @@ use crate::domain::types::{
     },
     error::TestCaseError,
 };
-use serde::{
-    Deserialize,
-    Serialize,
-};
-use serde_json::Value as JsonValue;
-
-use derive_getters::Getters;
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct TestCases(pub Vec<TestCase>);
@@ -27,10 +27,9 @@ impl TestCases {
     ///
     /// # Errors
     // TODO
-    pub fn add_case(
-        mut self,
-        root_dir: PathBuf,
-    ) -> Result<Self, TestCaseError> {
+    pub fn add_case(mut self,
+                    root_dir: PathBuf)
+                    -> Result<Self, TestCaseError> {
         self.0
             .push(TestCase::with_root_dir(root_dir).parse_from_root_dir()?);
         Ok(self)
@@ -49,14 +48,12 @@ pub struct TestCase {
 impl TestCase {
     #[must_use]
     pub fn with_root_dir(dir: PathBuf) -> Self {
-        Self {
-            // resource_dir: PathBuf::from(dir),
-            resource_dir: dir,
-            parsed_request: MatchInfoRequest::default(),
-            parsed_result: MatchInfoResult::default(),
-            profile_ids: Vec::with_capacity(8),
-            last_match: JsonValue::default(),
-        }
+        Self { // resource_dir: PathBuf::from(dir),
+               resource_dir: dir,
+               parsed_request: MatchInfoRequest::default(),
+               parsed_result: MatchInfoResult::default(),
+               profile_ids: Vec::with_capacity(8),
+               last_match: JsonValue::default() }
     }
 
     /// Create a [`MatchInfoResult`]from a parsed `RON` file

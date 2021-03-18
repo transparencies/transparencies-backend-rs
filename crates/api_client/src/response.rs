@@ -1,15 +1,14 @@
-use crate::request::Request;
-
 use serde::Deserialize;
+
+use crate::request::Request;
 
 /// A cursor is a pointer to the current "page" in the twitch api pagination
 pub type Cursor = String;
 /// Response retrieved from endpoint. Data is the type in [`Request::Response`]
 #[derive(PartialEq, Debug)]
 pub struct Response<R, D>
-where
-    R: Request<Response = D>,
-    D: serde::de::DeserializeOwned + PartialEq,
+    where R: Request<Response = D>,
+          D: serde::de::DeserializeOwned + PartialEq,
 {
     /// Twitch's response field for `data`.
     pub data: D,
@@ -27,10 +26,8 @@ pub trait Paginated: Request {
     /// # Notes
     ///
     /// Pass [`Option::None`] if no cursor is found.
-    fn set_pagination(
-        &mut self,
-        cursor: Option<Cursor>,
-    );
+    fn set_pagination(&mut self,
+                      cursor: Option<Cursor>);
 }
 
 /// A cursor for pagination. This is needed because of how pagination is represented in the [New Twitch API](https://dev.twitch.tv/docs/api)
@@ -49,9 +46,8 @@ pub struct InnerResponse<D> {
 }
 
 impl<R, D, T> Response<R, D>
-where
-    R: Request<Response = D>,
-    D: IntoIterator<Item = T> + PartialEq + serde::de::DeserializeOwned,
+    where R: Request<Response = D>,
+          D: IntoIterator<Item = T> + PartialEq + serde::de::DeserializeOwned,
 {
     /// Get first result of this response.
     pub fn first(self) -> Option<T> {

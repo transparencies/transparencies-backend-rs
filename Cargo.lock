@@ -253,6 +253,17 @@ checksum = "19b076e143e1d9538dde65da30f8481c2a6c44040edb8e02b9bf1351edb92ce3"
 dependencies = [
  "lazy_static",
  "nom",
+ "serde 1.0.124",
+]
+
+[[package]]
+name = "config"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b1b9d958c2b1368a663f05538fc1b5975adce1e19f435acceae987aceeeb369"
+dependencies = [
+ "lazy_static",
+ "nom",
  "rust-ini",
  "serde 1.0.124",
  "serde-hjson",
@@ -373,7 +384,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d126179d86aee4556e54f5f3c6bf6d9884e7cc52cef82f77ee6f90a7747616d"
 dependencies = [
  "async-trait",
- "config",
+ "config 0.10.1",
  "crossbeam-queue",
  "num_cpus",
  "serde 1.0.124",
@@ -408,9 +419,9 @@ dependencies = [
 
 [[package]]
 name = "displaydoc"
-version = "0.1.7"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adc2ab4d5a16117f9029e9a6b5e4e79f4c67f6519bc134210d4d4a04ba31f41b"
+checksum = "f98e1bbbcbb1b2646d6e900da42974b641eb784851adcd4f0ae4c07c8bc7b42b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -925,16 +936,6 @@ name = "libc"
 version = "0.2.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "538c092e5586f4cdd7dd8078c4a79220e3e168880218124dcbce860f0ea938c6"
-
-[[package]]
-name = "linked-hash-map"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d262045c5b87c0861b3f004610afd0e2c851e2908d08b6c870cbb9d5f494ecd"
-dependencies = [
- "serde 0.8.23",
- "serde_test",
-]
 
 [[package]]
 name = "linked-hash-map"
@@ -1687,7 +1688,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a3a4e0ea8a88553209f6cc6cfe8724ecad22e1acf372793c27d995290fe74f8"
 dependencies = [
  "lazy_static",
- "linked-hash-map 0.3.0",
  "num-traits 0.1.43",
  "regex",
  "serde 0.8.23",
@@ -1728,15 +1728,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_test"
-version = "0.8.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "110b3dbdf8607ec493c22d5d947753282f3bae73c0f56d322af1e8c78e4c23d5"
-dependencies = [
- "serde 0.8.23",
-]
-
-[[package]]
 name = "serde_urlencoded"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1755,7 +1746,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15654ed4ab61726bf918a39cb8d98a2e2995b002387807fa6ba58fdf7f59bb23"
 dependencies = [
  "dtoa",
- "linked-hash-map 0.5.4",
+ "linked-hash-map",
  "serde 1.0.124",
  "yaml-rust",
 ]
@@ -2240,7 +2231,7 @@ dependencies = [
  "aoe2net",
  "api-client",
  "bytes",
- "config",
+ "config 0.11.0",
  "dashmap",
  "derive-getters",
  "displaydoc",
@@ -2420,9 +2411,9 @@ checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "version_check"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
+checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 
 [[package]]
 name = "waker-fn"
@@ -2646,5 +2637,5 @@ version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
 dependencies = [
- "linked-hash-map 0.5.4",
+ "linked-hash-map",
 ]

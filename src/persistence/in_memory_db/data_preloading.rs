@@ -1,23 +1,15 @@
 //! Everything around preloading data in another thread for future use within
 //! our in-memory DB implemented by `Arc<Mutex<T>>`
-use api_client::error::ClientRequestError;
-use dashmap::DashMap;
-
-// STATICS USED
-use crate::{
-    domain::api_handler::client::A2NClient,
-    APP_USER_AGENT,
-    CLIENT_CONNECTION_TIMEOUT,
-    CLIENT_REQUEST_TIMEOUT,
-    GAME_STRINGS,
-    LANGUAGE_STRINGS,
-};
-
 use std::{
     path::PathBuf,
     sync::Arc,
     time::Duration,
 };
+
+use aoe2net::endpoints::strings::GetApiStringsRequest;
+use api_client::error::ClientRequestError;
+use dashmap::DashMap;
+use serde_json::Value as JsonValue;
 use tokio::{
     sync::Mutex,
     time,
@@ -26,30 +18,35 @@ use tracing::warn;
 use url::Url;
 use uuid::Uuid;
 
-use crate::domain::{
-    types::{
-        aoc_ref::{
-            AoePlatforms,
-            AoePlayers,
-            AoeTeams,
+// STATICS USED
+use crate::{
+    domain::{
+        api_handler::client::A2NClient,
+        types::{
+            aoc_ref::{
+                AoePlatforms,
+                AoePlayers,
+                AoeTeams,
+            },
+            error::{
+                ApiRequestError,
+                FileRequestError,
+            },
+            requests::{
+                File,
+                FileFormat,
+                GithubFileRequest,
+            },
+            InMemoryDb,
         },
-        error::{
-            ApiRequestError,
-            FileRequestError,
-        },
-        requests::{
-            File,
-            FileFormat,
-            GithubFileRequest,
-        },
-        InMemoryDb,
+        util,
     },
-    util,
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
+    GAME_STRINGS,
+    LANGUAGE_STRINGS,
 };
-
-use aoe2net::endpoints::strings::GetApiStringsRequest;
-
-use serde_json::Value as JsonValue;
 
 /// Gets all of our static data in a separated thread
 ///
@@ -74,40 +71,33 @@ use serde_json::Value as JsonValue;
 ///
 /// # Panics
 /// This function shouldn't panic.
-pub async fn get_static_data_inside_thread(
-    in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
-    github_root: Url,
-    aoe2_net_root: Url,
-) {
-    let background_client = reqwest::Client::builder()
-        .user_agent(*APP_USER_AGENT)
-        .timeout(*CLIENT_REQUEST_TIMEOUT)
-        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
-        .use_rustls_tls()
-        .https_only(true)
-        .build()
-        .unwrap();
+pub async fn get_static_data_inside_thread(in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
+                                           github_root: Url,
+                                           aoe2_net_root: Url) {
+    let background_client =
+        reqwest::Client::builder().user_agent(*APP_USER_AGENT)
+                                  .timeout(*CLIENT_REQUEST_TIMEOUT)
+                                  .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+                                  .use_rustls_tls()
+                                  .https_only(true)
+                                  .build()
+                                  .unwrap();
 
     tokio::spawn(async move {
         loop {
-            match preload_data(
-                Some(background_client.clone()),
-                Some(background_client.clone()),
-                in_memory_db_clone.clone(),
-                github_root.clone(),
-                aoe2_net_root.clone(),
-                None,
-                false,
-            )
-            .await
+            match preload_data(Some(background_client.clone()),
+                               Some(background_client.clone()),
+                               in_memory_db_clone.clone(),
+                               github_root.clone(),
+                               aoe2_net_root.clone(),
+                               None,
+                               false).await
             {
-                Ok(_) => {}
+                Ok(_) => {},
                 Err(e) => {
-                    warn!(
-                        "Threaded data pulling experienced an error: {:#?}",
-                        e
-                    );
-                }
+                    warn!("Threaded data pulling experienced an error: {:#?}",
+                          e);
+                },
             }
 
             time::sleep(Duration::from_secs(600)).await;
@@ -125,6 +115,7 @@ pub async fn get_static_data_inside_thread(
 /// #[tokio::main]
 /// async fn main() {
 ///     use std::sync::Arc;
+///
 ///     use tokio::sync::Mutex;
 ///     use transparencies_backend_rs::{
 ///         domain::types::{
@@ -142,17 +133,14 @@ pub async fn get_static_data_inside_thread(
 ///         Url::parse("https://raw.githubusercontent.com").unwrap();
 ///     let aoe2_net_url = Url::parse("https://aoe2.net/api").unwrap();
 ///
-///     preload_data(
-///         Some(request_client.clone()),
-///         Some(request_client.clone()),
-///         in_memory_db.clone(),
-///         github_url,
-///         aoe2_net_url,
-///         None,
-///         false,
-///     )
-///     .await
-///     .unwrap();
+///     preload_data(Some(request_client.clone()),
+///                  Some(request_client.clone()),
+///                  in_memory_db.clone(),
+///                  github_url,
+///                  aoe2_net_url,
+///                  None,
+///                  false).await
+///                        .unwrap();
 /// }
 /// ```
 ///
@@ -167,27 +155,24 @@ task_id = %Uuid::new_v4(),
 mocking_enabled = %mocking,
 )
 )]
-pub async fn preload_data(
-    api_client: Option<reqwest::Client>,
-    git_client: Option<reqwest::Client>,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    github_root: Url,
-    aoe2_net_root: Url,
-    export_path: Option<PathBuf>,
-    mocking: bool,
-) -> Result<(), ApiRequestError> {
-    preload_aoc_ref_data(
-        git_client.map_or(reqwest::Client::default(), |client| client),
-        in_memory_db.clone(),
-        github_root,
-        export_path.clone().map(|mut path| {
-            path.push("ref-data");
-            path
-        }),
-        mocking,
-    )
-    .await
-    .expect("Unable to preload files from Github");
+pub async fn preload_data(api_client: Option<reqwest::Client>,
+                          git_client: Option<reqwest::Client>,
+                          in_memory_db: Arc<Mutex<InMemoryDb>>,
+                          github_root: Url,
+                          aoe2_net_root: Url,
+                          export_path: Option<PathBuf>,
+                          mocking: bool)
+                          -> Result<(), ApiRequestError> {
+    preload_aoc_ref_data(git_client.map_or(reqwest::Client::default(),
+                                           |client| client),
+                         in_memory_db.clone(),
+                         github_root,
+                         export_path.clone().map(|mut path| {
+                                                path.push("ref-data");
+                                                path
+                                            }),
+                         mocking).await
+                                 .expect("Unable to preload files from Github");
 
     index_aoc_ref_data(in_memory_db.clone()).await;
 
@@ -215,13 +200,13 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
     {
         let mut guard = in_memory_db.lock().await;
         guard.github_file_content.index().map_err(|errs| {
-            errs.into_iter().map(|err| {
+                                             errs.into_iter().map(|err| {
                 warn!(
                     "Indexing of player aliases threw an error: {:#?}\n",
                     err
                 );
             })
-        });
+                                         });
     }
 }
 
@@ -231,20 +216,16 @@ async fn index_aoc_ref_data(in_memory_db: Arc<Mutex<InMemoryDb>>) {
 // TODO
 /// # Panics
 // TODO
-pub async fn preload_aoe2_net_data(
-    api_client: reqwest::Client,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    root: Url,
-    export_path: Option<PathBuf>,
-) -> Result<(), ApiRequestError> {
+pub async fn preload_aoe2_net_data(api_client: reqwest::Client,
+                                   in_memory_db: Arc<Mutex<InMemoryDb>>,
+                                   root: Url,
+                                   export_path: Option<PathBuf>)
+                                   -> Result<(), ApiRequestError> {
     let language_requests = build_language_requests(&root);
 
-    let responses = assemble_languages_to_dashmap(
-        api_client,
-        language_requests,
-        export_path,
-    )
-    .await?;
+    let responses = assemble_languages_to_dashmap(api_client,
+                                                  language_requests,
+                                                  export_path).await?;
 
     {
         let mut guard = in_memory_db.lock().await;
@@ -262,8 +243,8 @@ pub async fn preload_aoe2_net_data(
 async fn assemble_languages_to_dashmap(
     api_client: reqwest::Client,
     language_requests: Vec<(String, GetApiStringsRequest<'_>)>,
-    export_path: Option<PathBuf>,
-) -> Result<DashMap<String, JsonValue>, ClientRequestError<reqwest::Error>> {
+    export_path: Option<PathBuf>)
+    -> Result<DashMap<String, JsonValue>, ClientRequestError<reqwest::Error>> {
     let responses: DashMap<String, JsonValue> =
         DashMap::with_capacity(LANGUAGE_STRINGS.len());
 
@@ -276,14 +257,10 @@ async fn assemble_languages_to_dashmap(
         responses.insert(req_name.to_string(), data.clone());
 
         if export_path.is_some() {
-            util::export_to_json(
-                &File {
-                    name: req_name.to_string(),
-                    ext: FileFormat::Json,
-                },
-                &export_path.clone().unwrap(),
-                &data,
-            )
+            util::export_to_json(&File { name: req_name.to_string(),
+                                         ext: FileFormat::Json },
+                                 &export_path.clone().unwrap(),
+                                 &data)
         }
     }
 
@@ -316,13 +293,12 @@ fn build_language_requests(_root: &Url) -> Vec<(String, GetApiStringsRequest)> {
 // TODO
 /// # Panics
 // TODO
-pub async fn preload_aoc_ref_data(
-    git_client: reqwest::Client,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    root: Url,
-    export_path: Option<PathBuf>,
-    mocking: bool,
-) -> Result<(), FileRequestError> {
+pub async fn preload_aoc_ref_data(git_client: reqwest::Client,
+                                  in_memory_db: Arc<Mutex<InMemoryDb>>,
+                                  root: Url,
+                                  export_path: Option<PathBuf>,
+                                  mocking: bool)
+                                  -> Result<(), FileRequestError> {
     let files = get_github_file_list();
 
     let mut ref_data_repository = root.clone();
@@ -336,15 +312,12 @@ pub async fn preload_aoc_ref_data(
 
         let response: String = req.execute().await?.text().await?;
 
-        assemble_data_to_db(
-            file,
-            in_memory_db.clone(),
-            response,
-            req,
-            export_path.clone(),
-            mocking,
-        )
-        .await?;
+        assemble_data_to_db(file,
+                            in_memory_db.clone(),
+                            response,
+                            req,
+                            export_path.clone(),
+                            mocking).await?;
     }
 
     Ok(())
@@ -352,14 +325,13 @@ pub async fn preload_aoc_ref_data(
 
 /// Parses the responses from a `request::Response` type and writes the Result
 /// into the in-memory database
-async fn assemble_data_to_db(
-    file: File,
-    in_memory_db: Arc<Mutex<InMemoryDb>>,
-    response: String,
-    req: GithubFileRequest,
-    export_path: Option<PathBuf>,
-    mocking: bool,
-) -> Result<(), FileRequestError> {
+async fn assemble_data_to_db(file: File,
+                             in_memory_db: Arc<Mutex<InMemoryDb>>,
+                             response: String,
+                             req: GithubFileRequest,
+                             export_path: Option<PathBuf>,
+                             mocking: bool)
+                             -> Result<(), FileRequestError> {
     match file.ext() {
         FileFormat::Json => match file.name().as_str() {
             "platforms" => {
@@ -446,18 +418,10 @@ async fn assemble_data_to_db(
 /// Create a list of files that need to be downloaded from github repository
 #[must_use]
 pub fn get_github_file_list() -> Vec<File> {
-    vec![
-        File {
-            name: "platforms".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "teams".to_string(),
-            ext: FileFormat::Json,
-        },
-        File {
-            name: "players".to_string(),
-            ext: FileFormat::Yaml,
-        },
-    ]
+    vec![File { name: "platforms".to_string(),
+                ext: FileFormat::Json },
+         File { name: "teams".to_string(),
+                ext: FileFormat::Json },
+         File { name: "players".to_string(),
+                ext: FileFormat::Yaml },]
 }

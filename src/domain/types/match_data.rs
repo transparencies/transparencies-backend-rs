@@ -1,10 +1,8 @@
 //! Wrapper structs for usages within the in-memory DB
 
+use aoe2net::types::api::Player as aoe2net_Player;
 use dashmap::DashMap;
 use serde::Serialize;
-
-use aoe2net::types::api::Player as aoe2net_Player;
-
 use serde_json::Value as JsonValue;
 
 use super::InMemoryDb;

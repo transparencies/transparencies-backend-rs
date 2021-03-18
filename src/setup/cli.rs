@@ -36,10 +36,8 @@ impl CommandLineSetting for ExportCommandLineSettings {
 
 /// `StructOpt`'s struct for parsing commandline input
 #[derive(StructOpt, Debug, serde::Deserialize)]
-#[structopt(
-    name = "transparencies-backend-rs",
-    about = "Backend for dynamic stream overlays"
-)]
+#[structopt(name = "transparencies-backend-rs",
+            about = "Backend for dynamic stream overlays")]
 pub struct CommandLineSettings {
     // A flag, true if used in the command line. Note doc comment will
     // be used for the help message of the flag. The name of the
@@ -49,10 +47,8 @@ pub struct CommandLineSettings {
     pub debug: bool,
 
     /// Log file path
-    #[structopt(
-        long = "log-file",
-        default_value = "./logs/transparencies.log"
-    )]
+    #[structopt(long = "log-file",
+                default_value = "./logs/transparencies.log")]
     pub log_file_path: String,
 
     /// Log level
@@ -76,10 +72,8 @@ pub struct ExportCommandLineSettings {
     pub debug: bool,
 
     /// Log file path
-    #[structopt(
-        long = "log-file",
-        default_value = "./logs/export-test-data.log"
-    )]
+    #[structopt(long = "log-file",
+                default_value = "./logs/export-test-data.log")]
     pub log_file_path: String,
 
     /// Log level
@@ -92,10 +86,8 @@ pub struct ExportCommandLineSettings {
     pub verbose: u8,
 
     /// Test case export path, relative to executable
-    #[structopt(
-        short = "t",
-        long = "test-case-folder",
-        default_value = "./tests/matchinfo-integration/test_case_template"
-    )]
+    #[structopt(short = "t",
+                long = "test-case-folder",
+                default_value = "./tests/matchinfo-integration/test_case_template")]
     pub test_case_export_path: String,
 }

@@ -5,18 +5,21 @@
 
 extern crate transparencies_backend_rs;
 
-use warp::Filter;
+// Threads
+use std::{
+    net::IpAddr,
+    sync::Arc,
+};
 
+#[cfg(not(debug_assertions))]
+use human_panic::setup_panic;
+use stable_eyre::eyre::{
+    Report,
+    Result,
+};
 // CLI
 use structopt::StructOpt;
-
-// Threads
-use std::sync::Arc;
-
 use tokio::sync::Mutex;
-
-use std::net::IpAddr;
-
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
@@ -34,16 +37,8 @@ use transparencies_backend_rs::{
     CLIENT_CONNECTION_TIMEOUT,
     CLIENT_REQUEST_TIMEOUT,
 };
-
-use stable_eyre::eyre::{
-    Report,
-    Result,
-};
-
 use url::Url;
-
-#[cfg(not(debug_assertions))]
-use human_panic::setup_panic;
+use warp::Filter;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -75,24 +70,21 @@ async fn main() -> Result<(), Report> {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let client = reqwest::Client::builder()
-        .user_agent(*APP_USER_AGENT)
-        .timeout(*CLIENT_REQUEST_TIMEOUT)
-        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
-        .use_rustls_tls()
-        .https_only(true)
-        .build()
-        .unwrap();
+    let client =
+        reqwest::Client::builder().user_agent(*APP_USER_AGENT)
+                                  .timeout(*CLIENT_REQUEST_TIMEOUT)
+                                  .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+                                  .use_rustls_tls()
+                                  .https_only(true)
+                                  .build()
+                                  .unwrap();
 
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
 
-    get_static_data_inside_thread(
-        in_memory_db_clone,
-        github_root,
-        aoe2_net_root,
-    )
-    .await;
+    get_static_data_inside_thread(in_memory_db_clone,
+                                  github_root,
+                                  aoe2_net_root).await;
 
     let a2n_client = A2NClient::with_client(client);
 

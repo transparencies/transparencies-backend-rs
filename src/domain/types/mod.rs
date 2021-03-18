@@ -8,15 +8,15 @@ pub mod match_data;
 pub mod requests;
 pub mod testing;
 
+use dashmap::DashMap;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
+use serde::Serialize;
+use serde_json::Value as JsonValue;
 use tracing::trace;
 
 use self::aoc_ref::RefDataLists;
 use crate::STANDARD;
-use dashmap::DashMap;
-use serde::Serialize;
-use serde_json::Value as JsonValue;
 
 /// The "Database" we use, which is in-memory for lookup of
 /// player names and other "more" static content
@@ -35,34 +35,27 @@ impl InMemoryDb {
     /// # Panics
     /// Could panic if the [`dashmap::DashMap`] in [`static@crate::STANDARD`] is
     /// returning None
-    pub fn retain_only_requested_language(
-        &mut self,
-        language: &str,
-    ) -> Self {
+    pub fn retain_only_requested_language(&mut self,
+                                          language: &str)
+                                          -> Self {
         trace!("Checking DashMap for language: {:?}", language);
         if self.aoe2net_languages.contains_key(language) {
-            trace!(
-                "Cleaning DashMap of other languages than language: {:?} ...",
-                language
-            );
+            trace!("Cleaning DashMap of other languages than language: {:?} ...",
+                   language);
             self.aoe2net_languages.retain(|lang, _| lang == language);
         }
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
             let std_language = *(STANDARD.get(&"language").unwrap());
-            trace!(
-                "Cleaning DashMap of other languages than language: {:?} ...",
-                std_language
-            );
+            trace!("Cleaning DashMap of other languages than language: {:?} ...",
+                   std_language);
 
             self.aoe2net_languages
                 .retain(|lang, _| lang == std_language);
         }
 
-        Self {
-            aoe2net_languages: self.aoe2net_languages.clone(),
-            github_file_content: self.github_file_content.clone(),
-        }
+        Self { aoe2net_languages: self.aoe2net_languages.clone(),
+               github_file_content: self.github_file_content.clone() }
     }
 }

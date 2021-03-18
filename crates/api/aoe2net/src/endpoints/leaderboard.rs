@@ -1,16 +1,5 @@
 use std::convert::TryInto;
 
-/// Query Parameters for [Get Leaderboard](super::get_leaderboard)
-///
-/// [`leaderboard`](https://aoe2.net/#api)
-// TODO
-use serde_json::Value as JsonValue;
-
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
 use api_client::{
     error::*,
     request::{
@@ -19,10 +8,22 @@ use api_client::{
     },
     response::Response,
 };
+use serde::{
+    Deserialize,
+    Serialize,
+};
+/// Query Parameters for [Get Leaderboard](super::get_leaderboard)
+///
+/// [`leaderboard`](https://aoe2.net/#api)
+// TODO
+use serde_json::Value as JsonValue;
 
-#[derive(
-    PartialEq, typed_builder::TypedBuilder, Deserialize, Serialize, Clone, Debug,
-)]
+#[derive(PartialEq,
+           typed_builder::TypedBuilder,
+           Deserialize,
+           Serialize,
+           Clone,
+           Debug)]
 #[non_exhaustive]
 pub struct GetLeaderboardRequest<'a> {
     /// ID of the channel
@@ -43,24 +44,22 @@ pub struct GetLeaderboardRequest<'a> {
 }
 
 impl<'a> GetLeaderboardRequest<'a> {
-    pub fn new(
-        game: &'a str,
-        leaderboard_id: i32,
-        start: i32,
-        count: i32,
-        search: Option<&'a str>,
-        steam_id: Option<&'a str>,
-        profile_id: Option<&'a str>,
-    ) -> GetLeaderboardRequest<'a> {
-        GetLeaderboardRequest::builder()
-            .game(game)
-            .leaderboard_id(leaderboard_id)
-            .start(start)
-            .count(count)
-            .search(search)
-            .steam_id(steam_id)
-            .profile_id(profile_id)
-            .build()
+    pub fn new(game: &'a str,
+               leaderboard_id: i32,
+               start: i32,
+               count: i32,
+               search: Option<&'a str>,
+               steam_id: Option<&'a str>,
+               profile_id: Option<&'a str>)
+               -> GetLeaderboardRequest<'a> {
+        GetLeaderboardRequest::builder().game(game)
+                                        .leaderboard_id(leaderboard_id)
+                                        .start(start)
+                                        .count(count)
+                                        .search(search)
+                                        .steam_id(steam_id)
+                                        .profile_id(profile_id)
+                                        .build()
     }
 }
 
@@ -75,24 +74,20 @@ impl<'a> RequestGet for GetLeaderboardRequest<'a> {
     fn parse_response(
         request: Option<Self>,
         uri: &http::Uri,
-        response: http::Response<Vec<u8>>,
-    ) -> Result<Response<Self, Option<JsonValue>>, ApiRequestGetError>
-    where
-        Self: Sized,
+        response: http::Response<Vec<u8>>)
+        -> Result<Response<Self, Option<JsonValue>>, ApiRequestGetError>
+        where Self: Sized,
     {
         let text = std::str::from_utf8(&response.body()).map_err(|e| {
-            ApiRequestGetError::Utf8Error(
-                response.body().clone(),
-                e,
-                uri.clone(),
-            )
-        })?;
+                       ApiRequestGetError::Utf8Error(response.body().clone(),
+                                                     e,
+                                                     uri.clone())
+                   })?;
 
-        if let Ok(ApiRequestError {
-            error,
-            status,
-            message,
-        }) = serde_json::from_str::<ApiRequestError>(&text)
+        if let Ok(ApiRequestError { error,
+                                    status,
+                                    message, }) =
+            serde_json::from_str::<ApiRequestError>(&text)
         {
             return Err(ApiRequestGetError::Error {
                 error,
@@ -104,17 +99,15 @@ impl<'a> RequestGet for GetLeaderboardRequest<'a> {
             });
         }
         let response: JsonValue = serde_json::from_str(&text).map_err(|e| {
-            ApiRequestGetError::DeserializeError(
+                                      ApiRequestGetError::DeserializeError(
                 text.to_string(),
                 e,
                 uri.clone(),
             )
-        })?;
-        Ok(Response {
-            data: response.into(),
-            pagination: None,
-            // pagination: response.pagination.cursor,
-            request,
-        })
+                                  })?;
+        Ok(Response { data: response.into(),
+                      pagination: None,
+                      // pagination: response.pagination.cursor,
+                      request })
     }
 }

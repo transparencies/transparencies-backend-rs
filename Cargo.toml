@@ -77,7 +77,7 @@ api-client = { path = "crates/api_client", version = "*" }
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
 thiserror = "1.0.24"
-displaydoc = "0.1.7"
+displaydoc = "0.2.0"
 
 # Tracing/Logging
 tracing-log = "0.1.2"
@@ -92,7 +92,7 @@ tracing-error = "0.1.2"
 structopt = "0.3.21"
 
 # Configuration
-config = "0.10.1"
+config = "0.11.0"
 lazy_static = "1.4.0"
 
 # config_struct = "0.5"

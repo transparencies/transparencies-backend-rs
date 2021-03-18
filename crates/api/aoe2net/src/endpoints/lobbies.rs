@@ -1,16 +1,5 @@
 use std::convert::TryInto;
 
-/// Query Parameters for [Get Lobbies](super::get_lobbies)
-///
-/// [`lobbies`](https://aoe2.net/#api)
-// TODO
-use serde_json::Value as JsonValue;
-
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
 use api_client::{
     error::*,
     request::{
@@ -19,10 +8,22 @@ use api_client::{
     },
     response::Response,
 };
+use serde::{
+    Deserialize,
+    Serialize,
+};
+/// Query Parameters for [Get Lobbies](super::get_lobbies)
+///
+/// [`lobbies`](https://aoe2.net/#api)
+// TODO
+use serde_json::Value as JsonValue;
 
-#[derive(
-    PartialEq, typed_builder::TypedBuilder, Deserialize, Serialize, Clone, Debug,
-)]
+#[derive(PartialEq,
+           typed_builder::TypedBuilder,
+           Deserialize,
+           Serialize,
+           Clone,
+           Debug)]
 #[non_exhaustive]
 pub struct GetLobbiesRequest<'a> {
     /// ID of the channel
@@ -47,24 +48,20 @@ impl<'a> RequestGet for GetLobbiesRequest<'a> {
     fn parse_response(
         request: Option<Self>,
         uri: &http::Uri,
-        response: http::Response<Vec<u8>>,
-    ) -> Result<Response<Self, Option<JsonValue>>, ApiRequestGetError>
-    where
-        Self: Sized,
+        response: http::Response<Vec<u8>>)
+        -> Result<Response<Self, Option<JsonValue>>, ApiRequestGetError>
+        where Self: Sized,
     {
         let text = std::str::from_utf8(&response.body()).map_err(|e| {
-            ApiRequestGetError::Utf8Error(
-                response.body().clone(),
-                e,
-                uri.clone(),
-            )
-        })?;
+                       ApiRequestGetError::Utf8Error(response.body().clone(),
+                                                     e,
+                                                     uri.clone())
+                   })?;
 
-        if let Ok(ApiRequestError {
-            error,
-            status,
-            message,
-        }) = serde_json::from_str::<ApiRequestError>(&text)
+        if let Ok(ApiRequestError { error,
+                                    status,
+                                    message, }) =
+            serde_json::from_str::<ApiRequestError>(&text)
         {
             return Err(ApiRequestGetError::Error {
                 error,
@@ -76,17 +73,15 @@ impl<'a> RequestGet for GetLobbiesRequest<'a> {
             });
         }
         let response: JsonValue = serde_json::from_str(&text).map_err(|e| {
-            ApiRequestGetError::DeserializeError(
+                                      ApiRequestGetError::DeserializeError(
                 text.to_string(),
                 e,
                 uri.clone(),
             )
-        })?;
-        Ok(Response {
-            data: response.into(),
-            pagination: None,
-            // pagination: response.pagination.cursor,
-            request,
-        })
+                                  })?;
+        Ok(Response { data: response.into(),
+                      pagination: None,
+                      // pagination: response.pagination.cursor,
+                      request })
     }
 }

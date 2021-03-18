@@ -3,16 +3,6 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
-
-use derive_getters::Getters;
-use serde::{
-    Deserialize,
-    Serialize,
-};
 use std::{
     fs,
     io::{
@@ -23,6 +13,16 @@ use std::{
         Path,
         PathBuf,
     },
+};
+
+use derive_getters::Getters;
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+use serde::{
+    Deserialize,
+    Serialize,
 };
 use typed_builder::TypedBuilder;
 
@@ -107,9 +107,13 @@ impl Default for Server {
 
 /// Head struct to assemble `MatchInfo` into and save `error_messages` within to
 /// delegate to the frontend
-#[derive(
-    Clone, Debug, TypedBuilder, Default, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           TypedBuilder,
+           Default,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct MatchInfoResult {
     /// Contains all the data about the players and the match
     #[builder(default=None, setter(strip_option))]
@@ -125,10 +129,8 @@ pub struct MatchInfoResult {
 impl MatchInfoResult {
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            match_info: None,
-            error_message: None,
-        }
+        Self { match_info: None,
+               error_message: None }
     }
 
     /// Create a [`MatchInfoResult`]from a parsed `RON` file
@@ -149,17 +151,14 @@ impl MatchInfoResult {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn export_to_file<P>(
-        &self,
-        path: P,
-    ) where
-        P: Into<PathBuf> + AsRef<Path>,
+    pub fn export_to_file<P>(&self,
+                             path: P)
+        where P: Into<PathBuf> + AsRef<Path>,
     {
-        let ron_config = PrettyConfig::new()
-            .with_depth_limit(8)
-            .with_separate_tuple_members(true)
-            .with_enumerate_arrays(true)
-            .with_indentor("\t".to_owned());
+        let ron_config = PrettyConfig::new().with_depth_limit(8)
+                                            .with_separate_tuple_members(true)
+                                            .with_enumerate_arrays(true)
+                                            .with_indentor("\t".to_owned());
 
         let mut assembly_path = PathBuf::new();
         assembly_path.push(path);
@@ -178,9 +177,13 @@ impl MatchInfoResult {
 /// Basic information needed in the `MatchInfo`
 /// Used to aggregate all the other data inside
 /// a single struct
-#[derive(
-    Clone, Debug, Default, TypedBuilder, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           Default,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct MatchInfo {
     /// TODO: If it's matchmaking or custom lobby games, what is the difference
     /// to rating_type? Look into translation file
@@ -204,16 +207,14 @@ pub struct MatchInfo {
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Players(pub Vec<PlayerRaw>);
 
-#[derive(
-    Clone,
-    TypedBuilder,
-    Default,
-    Getters,
-    Debug,
-    PartialEq,
-    Serialize,
-    Deserialize,
-)]
+#[derive(Clone,
+           TypedBuilder,
+           Default,
+           Getters,
+           Debug,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct PlayerRaw {
     rating: Rating,
     player_number: i64,
@@ -230,9 +231,13 @@ pub struct Teams(pub Vec<TeamRaw>);
 
 /// A single Team used for Builder pattern and later
 /// for assemblance of the Teams(T) wrapper
-#[derive(
-    Clone, Debug, Default, TypedBuilder, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Debug,
+           Default,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct TeamRaw {
     players: Players,
     team_number: i64,
@@ -241,9 +246,13 @@ pub struct TeamRaw {
 }
 
 /// Rating part of the our `matchinfo` endpoint
-#[derive(
-    Clone, Default, Debug, TypedBuilder, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           Default,
+           Debug,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,

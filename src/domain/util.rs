@@ -11,6 +11,7 @@ use std::{
 };
 
 use serde_json::Value as JsonValue;
+use url::Url;
 
 use crate::domain::types::{
     requests::FileFormat,
@@ -18,17 +19,13 @@ use crate::domain::types::{
     GithubFileRequest,
 };
 
-use url::Url;
-
 /// Assembles a request for a file in a Github repository
-pub(crate) fn build_github_request(
-    git_client: reqwest::Client,
-    url: Url,
-) -> GithubFileRequest {
-    GithubFileRequest::builder()
-        .client(git_client)
-        .url(url)
-        .build()
+pub(crate) fn build_github_request(git_client: reqwest::Client,
+                                   url: Url)
+                                   -> GithubFileRequest {
+    GithubFileRequest::builder().client(git_client)
+                                .url(url)
+                                .build()
 }
 
 /// Parses the [`serde_json::Value`] into a given `type T`
@@ -36,9 +33,8 @@ pub(crate) fn build_github_request(
 // [`ResponderError`], [`ProcessingError`]
 #[allow(dead_code, clippy::unnecessary_wraps)]
 pub(crate) fn parse_into<T, E>(val: &JsonValue) -> Result<T, E>
-where
-    T: for<'de> serde::Deserialize<'de>,
-    E: Error,
+    where T: for<'de> serde::Deserialize<'de>,
+          E: Error,
 {
     Ok(serde_json::from_str::<T>(
         &serde_json::to_string(&val).expect("Serialisation to String failed."),
@@ -58,19 +54,15 @@ where
 /// # Panics
 /// Will panic if data cannot be written or file can not be created in
 /// Filesystem
-pub(crate) fn export_to_json(
-    file: &File,
-    path: &Path,
-    data: &serde_json::Value,
-) {
+pub(crate) fn export_to_json(file: &File,
+                             path: &Path,
+                             data: &serde_json::Value) {
     let json_file = if file.ext().is_json() {
         file.clone()
     }
     else {
-        File {
-            name: (file.name()).to_string(),
-            ext: FileFormat::Json,
-        }
+        File { name: (file.name()).to_string(),
+               ext: FileFormat::Json }
     };
     let mut assembly_path = PathBuf::new();
     assembly_path.push(path);

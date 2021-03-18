@@ -2,9 +2,7 @@
 //! Beware, there is a close connection to the [`MatchDataResponses`]
 //! in many places
 
-use tracing::trace;
-
-use serde_json::Value as JsonValue;
+use std::result;
 
 use aoe2net::types::{
     api::Player as aoe2net_Player,
@@ -13,6 +11,9 @@ use aoe2net::types::{
         RecoveredRating,
     },
 };
+use serde::Serialize;
+use serde_json::Value as JsonValue;
+use tracing::trace;
 
 use crate::domain::{
     data_processing::MatchDataResponses,
@@ -34,10 +35,6 @@ use crate::domain::{
     util,
 };
 
-use std::result;
-
-use serde::Serialize;
-
 // Error handling
 type ProcessingErrorStrings = Vec<String>;
 
@@ -52,10 +49,9 @@ impl Rating {
             self.win_rate = Some(100_f32);
         }
         else {
-            self.win_rate = Some(
-                (self.wins as f32 / (self.wins as f32 + self.losses as f32))
-                    * 100_f32,
-            );
+            self.win_rate = Some((self.wins as f32
+                                  / (self.wins as f32 + self.losses as f32))
+                                 * 100_f32);
         }
     }
 }
@@ -80,14 +76,12 @@ impl MatchInfoProcessor {
     ///   `self.responses`
     #[must_use]
     pub fn with_response(responses: MatchDataResponses) -> Self {
-        Self {
-            responses,
-            match_info: None,
-            players: None,
-            teams: None,
-            result: None,
-            errors: None,
-        }
+        Self { responses,
+               match_info: None,
+               players: None,
+               teams: None,
+               result: None,
+               errors: None }
     }
 
     /// Process all given information and set up this datastructure to be
@@ -116,12 +110,10 @@ impl MatchInfoProcessor {
 
         trace!("Creating vector for player information.");
         // Create the vector for the player information
-        let amount_of_successfully_processed_players = self
-            .process_all_players(
-                players_vec,
-                &mut players_raw,
-                &mut diff_team,
-            )?;
+        let amount_of_successfully_processed_players =
+            self.process_all_players(players_vec,
+                                     &mut players_raw,
+                                     &mut diff_team)?;
         trace!("Successfully created vector for player information.");
 
         trace!("Creating different teams vectors.");
@@ -131,17 +123,16 @@ impl MatchInfoProcessor {
         trace!("Successfully created different teams vectors.");
 
         trace!("Calculating match size ...");
-        let match_size = match (
-            amount_of_successfully_processed_players,
-            amount_of_successfully_processed_teams,
-        ) {
+        let match_size = match (amount_of_successfully_processed_players,
+                                amount_of_successfully_processed_teams)
+        {
             (2, 2) => MatchSize::G1v1,
             (4, 2) => MatchSize::G2v2,
             (6, 2) => MatchSize::G3v3,
             (8, 2) => MatchSize::G4v4,
             (6, 3) => MatchSize::G2v2v2,
             (8, 4) => MatchSize::G2v2v2v2,
-            (_, _) => MatchSize::Custom,
+            (..) => MatchSize::Custom,
         };
         trace!("Successfully calculated match size: {:?}", match_size);
 
@@ -155,18 +146,18 @@ impl MatchInfoProcessor {
 
         trace!("Translate map type ...");
         let translated_last_match_map_type =
-            &self.responses.lookup_string_for_id(
-                "map_type",
-                self.responses.get_id_for_map_type(req_type)?,
-            )?;
+            &self.responses
+                 .lookup_string_for_id("map_type",
+                                       self.responses
+                                           .get_id_for_map_type(req_type)?)?;
         trace!("Successfully translated map type.");
 
         trace!("Translate into game type from match type...");
         let translated_last_match_match_type =
-            &self.responses.lookup_string_for_id(
-                "game_type",
-                self.responses.get_id_for_game_type(req_type)?,
-            )?;
+            &self.responses
+                 .lookup_string_for_id("game_type",
+                                       self.responses
+                                           .get_id_for_game_type(req_type)?)?;
         trace!("Successfully translated game type.");
 
         trace!("Getting match status ...");
@@ -193,19 +184,17 @@ impl MatchInfoProcessor {
             .build();
 
         // Wrap MatchInfo with converted Errors into MatchInfoResult
-        let match_info_result = MatchInfoResult::builder()
-            .match_info(match_info_raw.clone())
-            .build();
+        let match_info_result =
+            MatchInfoResult::builder().match_info(match_info_raw.clone())
+                                      .build();
         trace!("Successfully assembled information to MatchInfo and MatchInfoResult.");
 
-        Ok(Self {
-            responses: self.responses.clone(),
-            match_info: Some(match_info_raw),
-            players: Some(Players(players_raw)),
-            teams: Some(Teams(teams_raw)),
-            result: Some(match_info_result),
-            errors: None,
-        })
+        Ok(Self { responses: self.responses.clone(),
+                  match_info: Some(match_info_raw),
+                  players: Some(Players(players_raw)),
+                  teams: Some(Teams(teams_raw)),
+                  result: Some(match_info_result),
+                  errors: None })
     }
 
     /// Process all the players given in a `Last_Match` response
@@ -221,12 +210,11 @@ impl MatchInfoProcessor {
     /// # Errors
     /// Errors are bubbled up into the processing stage of
     /// [`MatchInfoProcessor`]
-    fn process_all_players(
-        &mut self,
-        players_vec: &[aoe2net_Player],
-        players_raw: &mut Vec<PlayerRaw>,
-        diff_team: &mut Vec<i64>,
-    ) -> Result<usize> {
+    fn process_all_players(&mut self,
+                           players_vec: &[aoe2net_Player],
+                           players_raw: &mut Vec<PlayerRaw>,
+                           diff_team: &mut Vec<i64>)
+                           -> Result<usize> {
         trace!("Processing all players ...");
         let player_amount = players_vec.len();
         for req_player in players_vec.iter() {
@@ -253,11 +241,10 @@ impl MatchInfoProcessor {
     /// # Errors
     /// Errors are bubbled up into the processing stage of
     /// [`MatchInfoProcessor`]
-    fn assemble_player_to_vec(
-        &mut self,
-        req_player: &aoe2net_Player,
-        players_processing: &mut Vec<PlayerRaw>,
-    ) -> Result<()> {
+    fn assemble_player_to_vec(&mut self,
+                              req_player: &aoe2net_Player,
+                              players_processing: &mut Vec<PlayerRaw>)
+                              -> Result<()> {
         // Lookups
         trace!("Looking up alias ...");
         let looked_up_alias = self.lookup_alias(req_player);
@@ -273,35 +260,29 @@ impl MatchInfoProcessor {
 
         trace!("Getting requested player ...");
         let requested_player_boolean = self.get_requested_player(req_player);
-        trace!(
-            "Successfully got requested player: {:#?}",
-            requested_player_boolean
-        );
+        trace!("Successfully got requested player: {:#?}",
+               requested_player_boolean);
 
         trace!("Getting player's rating ...");
-        let mut player_rating = MatchDataResponses::create_rating(
-            &looked_up_rating,
-            &looked_up_leaderboard,
-        )?;
-        trace!(
-            "Successfully got requested player's rating: {:?}",
-            player_rating
-        );
+        let mut player_rating =
+            MatchDataResponses::create_rating(&looked_up_rating,
+                                              &looked_up_leaderboard)?;
+        trace!("Successfully got requested player's rating: {:?}",
+               player_rating);
 
         trace!("Getting player country ...");
         let player_country =
             MatchDataResponses::get_country_code(&looked_up_leaderboard);
-        trace!(
-            "Successfully got requested player's country: {:?}",
-            player_country
-        );
+        trace!("Successfully got requested player's country: {:?}",
+               player_country);
 
         trace!("Getting player civilisation translation ...");
         let translated_civilisation_string =
-            &self.responses.lookup_string_for_id(
-                "civ",
-                req_player.civ.to_string().parse::<usize>()?,
-            )?;
+            &self.responses
+                 .lookup_string_for_id("civ",
+                                       req_player.civ
+                                                 .to_string()
+                                                 .parse::<usize>()?)?;
         trace!("Successfully translated player civilisation.");
 
         trace!("Calculating player win rate ...");
@@ -309,14 +290,13 @@ impl MatchInfoProcessor {
         trace!("Successfully calculated player win rate.");
 
         trace!("Building player struct ...");
-        let player_built = build_player(
-            player_rating,
-            player_country,
-            req_player,
-            &looked_up_alias,
-            translated_civilisation_string.to_string(),
-            requested_player_boolean,
-        )?;
+        let player_built =
+            build_player(player_rating,
+                         player_country,
+                         req_player,
+                         &looked_up_alias,
+                         translated_civilisation_string.to_string(),
+                         requested_player_boolean)?;
         trace!("Successfully built player struct.");
 
         players_processing.push(player_built);
@@ -330,18 +310,18 @@ impl MatchInfoProcessor {
     /// # Arguments
     /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
     ///   all information we got from the `last_match` response
-    fn get_requested_player(
-        &self,
-        req_player: &aoe2net_Player,
-    ) -> bool {
-        self.responses.aoe2net.player_last_match.as_ref().map_or(
-            false,
-            |player_last_match| {
+    fn get_requested_player(&self,
+                            req_player: &aoe2net_Player)
+                            -> bool {
+        self.responses
+            .aoe2net
+            .player_last_match
+            .as_ref()
+            .map_or(false, |player_last_match| {
                 util::remove_escaping(
                     player_last_match["profile_id"].to_string(),
                 ) == util::remove_escaping(req_player.profile_id.to_string())
-            },
-        )
+            })
     }
 
     /// Lookup a corresponding player in the `leaderboard` response
@@ -353,14 +333,14 @@ impl MatchInfoProcessor {
     /// # Errors
     /// This function will error out if the Leaderboard [`serde_json::Value`]
     /// could not be found
-    fn lookup_leaderboard(
-        &mut self,
-        req_player: &aoe2net_Player,
-    ) -> Result<(RecoveredRating, JsonValue)> {
+    fn lookup_leaderboard(&mut self,
+                          req_player: &aoe2net_Player)
+                          -> Result<(RecoveredRating, JsonValue)> {
         let looked_up_leaderboard = if let Some(looked_up_leaderboard) =
-            self.responses.lookup_leaderboard_for_profile_id(
-                &(req_player.profile_id.to_string()),
-            ) {
+            self.responses
+                .lookup_leaderboard_for_profile_id(&(req_player.profile_id
+                                                               .to_string()))
+        {
             looked_up_leaderboard
         }
         else {
@@ -370,28 +350,26 @@ impl MatchInfoProcessor {
         };
         #[allow(clippy::cmp_owned)]
         if looked_up_leaderboard["count"].to_string() >= 1.to_string() {
-            return Ok((
-                RecoveredRating::Original,
-                looked_up_leaderboard["leaderboard"][0].clone(),
-            ));
+            return Ok((RecoveredRating::Original,
+                       looked_up_leaderboard["leaderboard"][0].clone()));
         }
         else if looked_up_leaderboard["count"].to_string() == 0.to_string() {
             // Try to recover
             if let Some(looked_up_leaderboard) =
                 self.responses.lookup_leaderboard_for_profile_id(
-                    &(format!(
-                        "{}_recovery",
-                        &req_player.profile_id.to_string()
-                    )),
+                                                                 &(format!(
+                    "{}_recovery",
+                    &req_player.profile_id.to_string()
+                )),
                 )
             {
                 return Ok((RecoveredRating::Recovered, looked_up_leaderboard));
             }
         }
 
-        Err(ProcessingError::NotRankedLeaderboard(
-            req_player.profile_id.to_string().parse::<u64>()?,
-        ))
+        Err(ProcessingError::NotRankedLeaderboard(req_player.profile_id
+                                                            .to_string()
+                                                            .parse::<u64>()?))
     }
 
     /// Lookup a corresponding player's `rating`
@@ -403,15 +381,15 @@ impl MatchInfoProcessor {
     /// # Errors
     /// This function will error out if the rating [`serde_json::Value`]
     /// could not be found
-    fn lookup_rating(
-        &mut self,
-        req_player: &aoe2net_Player,
-    ) -> Result<JsonValue> {
+    fn lookup_rating(&mut self,
+                     req_player: &aoe2net_Player)
+                     -> Result<JsonValue> {
         trace!("Looking up rating for player: {:?}", req_player.profile_id);
         let looked_up_rating = if let Some(looked_up_rating) =
-            self.responses.lookup_player_rating_for_profile_id(
-                &(req_player.profile_id.to_string()),
-            ) {
+            self.responses
+                .lookup_player_rating_for_profile_id(&(req_player.profile_id
+                                                                 .to_string()))
+        {
             looked_up_rating
         }
         else {
@@ -431,17 +409,15 @@ impl MatchInfoProcessor {
     /// # Arguments
     /// * `req_player` - holding a reference to [`aoe2net_Player`] that contains
     ///   all information we got from the `last_match` response
-    fn lookup_alias(
-        &mut self,
-        req_player: &aoe2net_Player,
-    ) -> Option<aoc_ref::players::Player> {
+    fn lookup_alias(&mut self,
+                    req_player: &aoe2net_Player)
+                    -> Option<aoc_ref::players::Player> {
         // Lookup profile id in alias list
         self.responses
             .db
             .github_file_content
-            .lookup_player_alias_for_profile_id(
-                &(req_player.profile_id.to_string()),
-            )
+            .lookup_player_alias_for_profile_id(&(req_player.profile_id
+                                                            .to_string()))
     }
 
     /// Creates a [`MatchInfoResult`]
@@ -471,11 +447,10 @@ impl MatchInfoProcessor {
 ///
 /// # Errors
 /// Errors are bubbled up into the processing stage of [`MatchInfoProcessor`]
-fn assemble_teams(
-    mut diff_team: Vec<i64>,
-    players_raw: &[PlayerRaw],
-    teams_raw: &mut Vec<TeamRaw>,
-) -> usize {
+fn assemble_teams(mut diff_team: Vec<i64>,
+                  players_raw: &[PlayerRaw],
+                  teams_raw: &mut Vec<TeamRaw>)
+                  -> usize {
     trace!("Sorting amount of teams vector ...");
     diff_team.sort_unstable();
     trace!("Finished sorting amount of teams vector.");
@@ -522,10 +497,10 @@ fn assemble_teams(
             }
         }
         else {
-            let single_team = TeamRaw::builder()
-                .team_number(team)
-                .players(Players(player_vec_helper.clone()))
-                .build();
+            let single_team =
+                TeamRaw::builder().team_number(team)
+                                  .players(Players(player_vec_helper.clone()))
+                                  .build();
             teams_raw.push(single_team);
         }
     }
@@ -550,14 +525,13 @@ fn assemble_teams(
 ///   players civilisation
 /// * `requested` - a Boolean that show if the player we are currently building
 ///   is the player the request on our API was made for
-fn build_player(
-    player_rating: Rating,
-    player_country: Option<String>,
-    req_player: &aoe2net_Player,
-    looked_up_alias: &Option<aoc_ref::players::Player>,
-    translated_civilisation_string: String,
-    requested: bool,
-) -> Result<PlayerRaw> {
+fn build_player(player_rating: Rating,
+                player_country: Option<String>,
+                req_player: &aoe2net_Player,
+                looked_up_alias: &Option<aoc_ref::players::Player>,
+                translated_civilisation_string: String,
+                requested: bool)
+                -> Result<PlayerRaw> {
     let player_raw = PlayerRaw::builder()
         .rating(player_rating)
         .player_number(req_player.color.to_string().parse::<i64>()?)

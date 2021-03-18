@@ -4,7 +4,10 @@ use std::{
     num::ParseIntError,
 };
 
-use displaydoc::Display;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use thiserror::Error;
 
 use crate::domain::types::{
@@ -12,12 +15,13 @@ use crate::domain::types::{
     GithubFileRequest,
 };
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
-#[derive(Error, Display, Debug, Serialize, Clone, PartialEq, Deserialize)]
+#[derive(Error,
+           displaydoc::Display,
+           Debug,
+           Serialize,
+           Clone,
+           PartialEq,
+           Deserialize)]
 pub enum ErrorMessageToFrontend {
     /// Generic error from the Responder: {0}
     GenericResponderError(Cow<'static, str>),
@@ -30,7 +34,7 @@ pub enum ErrorMessageToFrontend {
 }
 
 /// Error type for the `MatchInfoProcessor`
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum ProcessingError {
     /// No candidate for civilisation found.
     CivilisationError,
@@ -55,7 +59,7 @@ pub enum ProcessingError {
 }
 
 /// Error type for the `MatchInfoResponder`
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum ResponderError {
     /// Request {req:?} with {name:?} is not matching any response name.
     RequestNotMatching {
@@ -74,11 +78,13 @@ pub enum ResponderError {
     SerdeStringConversion(#[from] serde_json::Error),
     /// Haven't found a translation for {0}: {1}
     TranslationFailed(String, usize),
-    /// Couldn't get the value of the translation string: {0} at given index
-    /// {1}
+    /** Couldn't get the value of the translation string: {0} at given index
+     * {1}
+     */
     TranslationPosError(String, usize),
-    /// Couldn't get the value of the translation string, because it has
-    /// already been moved.
+    /** Couldn't get the value of the translation string, because it has
+     * already been moved.
+     */
     TranslationHasBeenMoved,
     /// Other ApiRequestError: {0}.
     OtherApiRequestError(#[from] ApiRequestError),
@@ -98,7 +104,7 @@ pub enum ResponderError {
 }
 
 /// Error type for a `FileRequest`
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum FileRequestError {
     /// Request {req:?} with {name:?} is not matching any response name.
     RequestNotMatching {
@@ -118,7 +124,7 @@ pub enum FileRequestError {
 }
 
 /// Error type for an [`ApiRequest`]
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum ApiRequestError {
     /// Request {req:?} with {name:?} is not matching any response name.
     RequestNotMatching {
@@ -130,9 +136,8 @@ pub enum ApiRequestError {
     /// HTTP-Client experienced an error: {0}
     HttpClientError(#[from] reqwest::Error),
     /// ApiClient experienced an error: {0}
-    ApiClientError(
-        #[from] api_client::error::ClientRequestError<reqwest::Error>,
-    ),
+    ApiClientError(#[from]
+                   api_client::error::ClientRequestError<reqwest::Error>),
     /// HTTP-Client error with status code: {0}
     HttpClientErrorWithStatusCode(http::StatusCode),
     /// Response NotFound: {root:?}/{endpoint:?} with {query:?}
@@ -144,7 +149,7 @@ pub enum ApiRequestError {
 }
 
 /// Error type for an [`ApiRequest`]
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum TestCaseError {
     /// RON-Parsing failed.
     RonParsing(#[from] ron::de::Error),
@@ -155,10 +160,11 @@ pub enum TestCaseError {
 }
 
 /// Error type for the Indexing functionality
-#[derive(Error, Display, Debug)]
+#[derive(Error, displaydoc::Display, Debug)]
 pub enum IndexingError {
-    /// Player {name:?} with Profile ID {profile_id:?} does already exist in
-    /// the index at position {pos:?}, doublette is {doublette:?}.
+    /** Player {name:?} with Profile ID {profile_id:?} does already exist in
+     * the index at position {pos:?}, doublette is {doublet:?}.
+     */
     PlayerAlreadyExisting {
         /// Player name
         name: String,

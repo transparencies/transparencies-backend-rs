@@ -1,12 +1,11 @@
 //! Helper datastructures to easily handle some stuff more easily
 
+use derive_getters::Getters;
+use displaydoc::Display;
 use serde::{
     Deserialize,
     Serialize,
 };
-
-use derive_getters::Getters;
-use displaydoc::Display;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum RecoveredRating {
@@ -14,18 +13,16 @@ pub enum RecoveredRating {
     Original,
 }
 
-#[derive(
-    Default,
-    Clone,
-    Debug,
-    Getters,
-    PartialEq,
-    PartialOrd,
-    Ord,
-    Eq,
-    Serialize,
-    Deserialize,
-)]
+#[derive(Default,
+           Clone,
+           Debug,
+           Getters,
+           PartialEq,
+           PartialOrd,
+           Ord,
+           Eq,
+           Serialize,
+           Deserialize)]
 pub struct Aoe2netStringObj {
     id: usize,
     string: String,

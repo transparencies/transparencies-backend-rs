@@ -1,17 +1,5 @@
 //! Our API root module
 pub mod match_info_response;
-pub use match_info_response::*;
-
-use serde::{
-    Deserialize,
-    Serialize,
-};
-
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
-
 use std::{
     fs,
     io::{
@@ -22,6 +10,16 @@ use std::{
         Path,
         PathBuf,
     },
+};
+
+pub use match_info_response::*;
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+use serde::{
+    Deserialize,
+    Serialize,
 };
 
 /// Datastructure for an incoming `request` on our api
@@ -47,7 +45,7 @@ impl MatchInfoRequest {
     /// file
     #[must_use]
     pub fn with_file<P>(path: P) -> Self
-    where P: Into<PathBuf> + AsRef<Path> {
+        where P: Into<PathBuf> + AsRef<Path>, {
         let file = fs::File::open(path).expect("file should open read only");
         let reader = BufReader::new(file);
         ron::de::from_reader::<_, Self>(reader).unwrap()
@@ -74,15 +72,12 @@ impl MatchInfoRequest {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn export_to_file(
-        &self,
-        path: PathBuf,
-    ) {
-        let ron_config = PrettyConfig::new()
-            .with_depth_limit(8)
-            .with_separate_tuple_members(true)
-            .with_enumerate_arrays(true)
-            .with_indentor("\t".to_owned());
+    pub fn export_to_file(&self,
+                          path: PathBuf) {
+        let ron_config = PrettyConfig::new().with_depth_limit(8)
+                                            .with_separate_tuple_members(true)
+                                            .with_enumerate_arrays(true)
+                                            .with_indentor("\t".to_owned());
 
         let mut assembly_path = PathBuf::new();
         assembly_path.push(path);

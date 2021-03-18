@@ -62,8 +62,9 @@ pub enum InvalidUri {
 /// Could not parse GET response
 #[derive(thiserror::Error, Debug, displaydoc::Display)]
 pub enum ApiRequestGetError {
-    /// helix returned error {status:?} - {error}: {message:?} when calling
-    /// `GET {uri}`
+    /** API returned error {status:?} - {error}: {message:?} when calling
+     * `GET {uri}`
+     */
     Error {
         /// Error message related to status code
         error: String,
@@ -76,8 +77,9 @@ pub enum ApiRequestGetError {
     },
     /// could not parse response as utf8 when calling `GET {2}`
     Utf8Error(Vec<u8>, #[source] std::str::Utf8Error, http::Uri),
-    /// deserialization failed when processing request response calling `GET
-    /// {2}` with response: {0:?}
+    /** deserialization failed when processing request response calling `GET
+     * {2}` with response: {0:?}
+     */
     DeserializeError(String, #[source] serde_json::Error, http::Uri),
     // FIXME: Only used in webhooks parse_payload
     /// could not get URI for request
@@ -98,8 +100,9 @@ pub enum ApiRequestGetError {
 /// Could not parse PUT response
 #[derive(thiserror::Error, Debug, displaydoc::Display)]
 pub enum ApiRequestPutError {
-    /// helix returned error {status:?} - {error}: {message:?} when calling
-    /// `PUT {uri}`
+    /** API returned error {status:?} - {error}: {message:?} when calling
+     * `PUT {uri}`
+     */
     Error {
         /// Error message related to status code
         error: String,
@@ -112,16 +115,18 @@ pub enum ApiRequestPutError {
     },
     /// could not parse response as utf8 when calling `PUT {2}`
     Utf8Error(Vec<u8>, #[source] std::str::Utf8Error, http::Uri),
-    /// deserialization failed when processing request response calling `PUT
-    /// {2}` with response: {0:?}
+    /** deserialization failed when processing request response calling `PUT
+     * {2}` with response: {0:?}
+     */
     DeserializeError(String, #[source] serde_json::Error, http::Uri),
 }
 
 /// Could not parse POST response
 #[derive(thiserror::Error, Debug, displaydoc::Display)]
 pub enum ApiRequestPostError {
-    /// helix returned error {status:?} - {error}: {message:?} when calling
-    /// `POST {uri}` with a body
+    /** API returned error {status:?} - {error}: {message:?} when calling
+     * `POST {uri}` with a body
+     */
     Error {
         /// Error message related to status code
         error: String,
@@ -136,13 +141,15 @@ pub enum ApiRequestPostError {
     },
     /// could not parse response as utf8 when calling `POST {2}`
     Utf8Error(Vec<u8>, #[source] std::str::Utf8Error, http::Uri),
-    /// deserialization failed when processing request response calling `POST
-    /// {2}` with response: {0:?}
+    /** deserialization failed when processing request response calling
+     * `POST {2}` with response: {0:?}
+     */
     DeserializeError(String, #[source] serde_json::Error, http::Uri),
 }
 
-/// helix returned error {status:?}: {message:?} when calling `PATCH {uri}` with
-/// a body
+/** API returned error {status:?}: {message:?} when calling `PATCH {uri}`
+ * with a body
+ */
 #[derive(thiserror::Error, Debug, displaydoc::Display)]
 pub struct ApiRequestPatchError {
     /// Status code of error, usually 400-499
@@ -158,8 +165,9 @@ pub struct ApiRequestPatchError {
 /// Could not parse DELETE response
 #[derive(thiserror::Error, Debug, displaydoc::Display)]
 pub enum ApiRequestDeleteError {
-    /// helix returned error {status:?}- {error}: {message:?} when calling
-    /// `DELETE {uri}`
+    /** API returned error {status:?}- {error}: {message:?} when calling
+     * `DELETE {uri}`
+     */
     Error {
         /// Error message related to status code
         error: String,
