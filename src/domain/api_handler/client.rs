@@ -131,7 +131,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     //     R: Request<Response = D> + Request + RequestPost<Body = B>,
     //     B: serde::Serialize,
     //     D: serde::de::DeserializeOwned + PartialEq,
-    //     T: TwitchToken + ?Sized,
+    //     T: Token + ?Sized,
     // {
     //     let req = request.create_request(
     //         body,
@@ -162,7 +162,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     //             Error = std::borrow::Cow<'static, str>,
     //         > + serde::de::DeserializeOwned
     //         + PartialEq,
-    //     T: TwitchToken + ?Sized,
+    //     T: Token + ?Sized,
     // {
     //     let req = request.create_request(
     //         body,
@@ -191,7 +191,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     //             Error = std::borrow::Cow<'static, str>,
     //         > + serde::de::DeserializeOwned
     //         + PartialEq,
-    //     T: TwitchToken + ?Sized,
+    //     T: Token + ?Sized,
     // {
     //     let req = request.create_request(
     //         token.token().secret(),
@@ -219,7 +219,7 @@ impl<'a, C: Client<'a>> A2NClient<'a, C> {
     //             Error = std::borrow::Cow<'static, str>,
     //         > + serde::de::DeserializeOwned
     //         + PartialEq,
-    //     T: TwitchToken + ?Sized,
+    //     T: Token + ?Sized,
     // {
     //     let req = request.create_request(
     //         token.token().secret(),

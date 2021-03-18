@@ -70,7 +70,7 @@ pub enum ApiRequestGetError {
         error: String,
         /// Status code of error, usually 400-499
         status: http::StatusCode,
-        /// Error message from Twitch
+        /// Error message from API
         message: String,
         /// URI to the endpoint
         uri: http::Uri,
@@ -108,7 +108,7 @@ pub enum ApiRequestPutError {
         error: String,
         /// Status code of error, usually 400-499
         status: http::StatusCode,
-        /// Error message from Twitch
+        /// Error message from API
         message: String,
         /// URI to the endpoint
         uri: http::Uri,
@@ -132,7 +132,7 @@ pub enum ApiRequestPostError {
         error: String,
         /// Status code of error, usually 400-499
         status: http::StatusCode,
-        /// Error message from Twitch
+        /// Error message from API
         message: String,
         /// URI to the endpoint
         uri: http::Uri,
@@ -154,7 +154,7 @@ pub enum ApiRequestPostError {
 pub struct ApiRequestPatchError {
     /// Status code of error, usually 400-499
     status: http::StatusCode,
-    /// Error message from Twitch
+    /// Error message from API
     message: String,
     /// URI to the endpoint
     uri: http::Uri,
@@ -173,7 +173,7 @@ pub enum ApiRequestDeleteError {
         error: String,
         /// Status code of error, usually 400-499
         status: http::StatusCode,
-        /// Error message from Twitch
+        /// Error message from API
         message: String,
         /// URI to the endpoint
         uri: http::Uri,

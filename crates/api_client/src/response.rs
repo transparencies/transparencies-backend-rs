@@ -10,7 +10,7 @@ pub struct Response<R, D>
     where R: Request<Response = D>,
           D: serde::de::DeserializeOwned + PartialEq,
 {
-    /// Twitch's response field for `data`.
+    /// API response field for `data`.
     pub data: D,
     /// A cursor value, to be used in a subsequent request to specify the
     /// starting point of the next set of results.
@@ -30,7 +30,7 @@ pub trait Paginated: Request {
                       cursor: Option<Cursor>);
 }
 
-/// A cursor for pagination. This is needed because of how pagination is represented in the [New Twitch API](https://dev.twitch.tv/docs/api)
+/// A cursor for pagination.
 #[derive(PartialEq, Deserialize, Debug, Clone, Default)]
 pub struct Pagination {
     #[serde(default)]
@@ -64,7 +64,7 @@ impl<R, D, T> Response<R, D>
 //     pub async fn get_next<'a, C: Client<'a>>(
 //         self,
 //         client: &'a dyn Client<'a, Error = C>,
-//         // token: &impl TwitchToken,
+//         // token: &impl Token,
 //     ) -> Result<
 //         Option<Response<R, D>>,
 //         ClientRequestError<<C as Client<'a>>::Error>,
