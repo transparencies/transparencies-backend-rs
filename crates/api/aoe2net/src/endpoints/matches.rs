@@ -26,10 +26,10 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetMatchesRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
-    #[builder(setter(into))]
-    pub count: &'a str,
+    #[builder(default = 1, setter(into))]
+    pub count: usize,
     #[builder(default = None, setter(into))]
     pub since: Option<&'a str>,
 }
@@ -37,7 +37,7 @@ pub struct GetMatchesRequest<'a> {
 impl<'a> GetMatchesRequest<'a> {
     pub fn new(
         game: &'a str,
-        count: &'a str,
+        count: usize,
         since: Option<&'a str>,
     ) -> GetMatchesRequest<'a> {
         GetMatchesRequest::builder()

@@ -20,16 +20,18 @@ use api_client::{
     response::Response,
 };
 
+use uuid::Uuid;
+
 #[derive(
     PartialEq, typed_builder::TypedBuilder, Deserialize, Serialize, Clone, Debug,
 )]
 #[non_exhaustive]
 pub struct GetMatchRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(default = None, setter(into))]
-    pub uuid: Option<&'a str>,
+    pub uuid: Option<Uuid>,
     #[builder(default = None, setter(into))]
     pub match_id: Option<&'a str>,
 }
@@ -37,7 +39,7 @@ pub struct GetMatchRequest<'a> {
 impl<'a> GetMatchRequest<'a> {
     pub fn new(
         game: &'a str,
-        uuid: Option<&'a str>,
+        uuid: Option<Uuid>,
         match_id: Option<&'a str>,
     ) -> GetMatchRequest<'a> {
         GetMatchRequest::builder()

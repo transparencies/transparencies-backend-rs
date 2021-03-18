@@ -26,12 +26,12 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetLobbiesRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
-    pub game: Option<&'a str>,
+    #[builder(default = "aoe2de", setter(into))]
+    pub game: &'a str,
 }
 
 impl<'a> GetLobbiesRequest<'a> {
-    pub fn new(game: Option<&'a str>) -> GetLobbiesRequest<'a> {
+    pub fn new(game: &'a str) -> GetLobbiesRequest<'a> {
         GetLobbiesRequest::builder().game(game).build()
     }
 }

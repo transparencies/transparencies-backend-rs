@@ -26,7 +26,7 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetLastMatchRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(default = None, setter(into))]
     pub steam_id: Option<&'a str>,

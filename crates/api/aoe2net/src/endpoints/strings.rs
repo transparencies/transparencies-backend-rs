@@ -26,9 +26,9 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetApiStringsRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
-    #[builder(setter(into))]
+    #[builder(default = "en", setter(into))]
     pub language: &'a str,
 }
 

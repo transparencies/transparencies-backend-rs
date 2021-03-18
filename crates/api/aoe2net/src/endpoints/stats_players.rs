@@ -26,7 +26,7 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetStatsPlayersRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
 }
 

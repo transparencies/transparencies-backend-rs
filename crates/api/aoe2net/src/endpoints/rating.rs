@@ -26,14 +26,14 @@ use api_client::{
 #[non_exhaustive]
 pub struct GetRatingRequest<'a> {
     /// ID of the channel
-    #[builder(setter(into))]
+    #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(setter(into))]
     pub leaderboard_id: &'a str,
-    #[builder(setter(into))]
-    pub start: &'a str,
-    #[builder(setter(into))]
-    pub count: &'a str,
+    #[builder(default = 1, setter(into))]
+    pub start: usize,
+    #[builder(default = 1, setter(into))]
+    pub count: usize,
     #[builder(default = None, setter(into))]
     pub search: Option<&'a str>,
     #[builder(default = None, setter(into))]
@@ -46,8 +46,8 @@ impl<'a> GetRatingRequest<'a> {
     pub fn new(
         game: &'a str,
         leaderboard_id: &'a str,
-        start: &'a str,
-        count: &'a str,
+        start: usize,
+        count: usize,
         search: Option<&'a str>,
         steam_id: Option<&'a str>,
         profile_id: Option<&'a str>,

@@ -25,13 +25,15 @@ async fn main() {
 
     let client = A2NClient::with_client(base_client);
 
-    let req = GetLeaderboardRequest::builder()
-        .game("aoe2de")
-        .profile_id("196240")
-        .leaderboard_id("3")
-        .start("1")
-        .count("1")
-        .build();
+    let req = GetLeaderboardRequest::new(
+        "aoe2de",
+        "3",
+        "1",
+        "1",
+        None,
+        None,
+        Some("196240"),
+    );
 
     let response = client.req_get(req).await;
 
