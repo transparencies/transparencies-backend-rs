@@ -157,7 +157,7 @@ impl MatchInfoProcessor {
         let translated_last_match_map_type =
             &self.responses.lookup_string_for_id(
                 "map_type",
-                self.responses.get_map_type_id(req_type)?,
+                self.responses.get_id_for_map_type(req_type)?,
             )?;
         trace!("Successfully translated map type.");
 
@@ -165,7 +165,7 @@ impl MatchInfoProcessor {
         let translated_last_match_match_type =
             &self.responses.lookup_string_for_id(
                 "game_type",
-                self.responses.get_game_type_id(req_type)?,
+                self.responses.get_id_for_game_type(req_type)?,
             )?;
         trace!("Successfully translated game type.");
 

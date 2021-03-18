@@ -427,7 +427,7 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_map_type_id(
+    pub fn get_id_for_map_type(
         &self,
         req_type: Aoe2netRequestType,
     ) -> Result<usize> {
@@ -466,7 +466,7 @@ impl MatchDataResponses {
     ///
     /// # Errors
     /// Will return an error if the `last_match` could not be found
-    pub fn get_game_type_id(
+    pub fn get_id_for_game_type(
         &self,
         req_type: Aoe2netRequestType,
     ) -> Result<usize> {
