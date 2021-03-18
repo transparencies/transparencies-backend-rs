@@ -29,11 +29,11 @@ pub struct GetLeaderboardRequest<'a> {
     #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(setter(into))]
-    pub leaderboard_id: usize,
+    pub leaderboard_id: i32,
     #[builder(default = 1, setter(into))]
-    pub start: usize,
+    pub start: i32,
     #[builder(default = 1, setter(into))]
-    pub count: usize,
+    pub count: i32,
     #[builder(default = None, setter(into))]
     pub search: Option<&'a str>,
     #[builder(default = None, setter(into))]
@@ -45,9 +45,9 @@ pub struct GetLeaderboardRequest<'a> {
 impl<'a> GetLeaderboardRequest<'a> {
     pub fn new(
         game: &'a str,
-        leaderboard_id: usize,
-        start: usize,
-        count: usize,
+        leaderboard_id: i32,
+        start: i32,
+        count: i32,
         search: Option<&'a str>,
         steam_id: Option<&'a str>,
         profile_id: Option<&'a str>,

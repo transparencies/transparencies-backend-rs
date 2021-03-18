@@ -29,7 +29,7 @@ pub struct GetMatchesRequest<'a> {
     #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(default = 1, setter(into))]
-    pub count: usize,
+    pub count: i32,
     #[builder(default = None, setter(into))]
     pub since: Option<&'a str>,
 }
@@ -37,7 +37,7 @@ pub struct GetMatchesRequest<'a> {
 impl<'a> GetMatchesRequest<'a> {
     pub fn new(
         game: &'a str,
-        count: usize,
+        count: i32,
         since: Option<&'a str>,
     ) -> GetMatchesRequest<'a> {
         GetMatchesRequest::builder()
