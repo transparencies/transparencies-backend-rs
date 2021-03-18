@@ -842,7 +842,7 @@ impl MatchDataResponses {
                 if leaderboard_recovery.is_some() {
                     util::export_to_json(
                         &File {
-                            name: format!("{:?}_recovery", player.profile_id),
+                            name: profile_id.clone(),
                             ext: FileFormat::Json,
                         },
                         &{
@@ -856,7 +856,7 @@ impl MatchDataResponses {
 
                 util::export_to_json(
                     &File {
-                        name: format!("{:?}", player.profile_id),
+                        name: profile_id.clone(),
                         ext: FileFormat::Json,
                     },
                     &{
@@ -868,7 +868,7 @@ impl MatchDataResponses {
                 );
                 util::export_to_json(
                     &File {
-                        name: format!("{:?}", player.profile_id),
+                        name: profile_id.clone(),
                         ext: FileFormat::Json,
                     },
                     &{
@@ -892,7 +892,7 @@ impl MatchDataResponses {
 
             if leaderboard_recovery.is_some() {
                 responses.aoe2net.leaderboard.insert(
-                    format!("{}_recovery", &player.profile_id.to_string()),
+                    format!("{}_recovery", profile_id.as_str()),
                     leaderboard_recovery.unwrap(),
                 );
             }
