@@ -26,7 +26,7 @@ async fn main() {
     let client = A2NClient::with_client(base_client);
 
     let req = GetLeaderboardRequest::builder()
-        .leaderboard_id("3")
+        .leaderboard_id(3)
         .profile_id("196240")
         .build();
 
