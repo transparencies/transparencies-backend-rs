@@ -29,7 +29,7 @@ pub struct GetRatingRequest<'a> {
     #[builder(default = "aoe2de", setter(into))]
     pub game: &'a str,
     #[builder(setter(into))]
-    pub leaderboard_id: &'a str,
+    pub leaderboard_id: usize,
     #[builder(default = 1, setter(into))]
     pub start: usize,
     #[builder(default = 1, setter(into))]
@@ -45,7 +45,7 @@ pub struct GetRatingRequest<'a> {
 impl<'a> GetRatingRequest<'a> {
     pub fn new(
         game: &'a str,
-        leaderboard_id: &'a str,
+        leaderboard_id: usize,
         start: usize,
         count: usize,
         search: Option<&'a str>,
