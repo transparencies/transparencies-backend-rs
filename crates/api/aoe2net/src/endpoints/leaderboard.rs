@@ -87,7 +87,7 @@ impl<'a> RequestGet for GetLeaderboardRequest<'a> {
                 uri.clone(),
             )
         })?;
-        // eprintln!("\n\nmessage is ------------ {} ------------", text);
+
         if let Ok(ApiRequestError {
             error,
             status,

@@ -92,7 +92,7 @@ impl<'a> RequestGet for GetMatchHistoryRequest<'a> {
                 uri.clone(),
             )
         })?;
-        // eprintln!("\n\nmessage is ------------ {} ------------", text);
+
         if let Ok(ApiRequestError {
             error,
             status,

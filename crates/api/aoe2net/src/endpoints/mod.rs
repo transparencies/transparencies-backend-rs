@@ -1,3 +1,6 @@
+//! Aoe2.net API endpoints
+//! Use together with the `api-client`
+
 pub mod last_match;
 pub mod leaderboard;
 pub mod lobbies;

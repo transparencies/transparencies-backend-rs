@@ -1,3 +1,7 @@
+//! Rust API crate for aoe2.net
+//!
+//! Check the [api-documentation](https://aoe2.net/#api) for more information.
+
 pub mod endpoints;
 pub mod types;
 

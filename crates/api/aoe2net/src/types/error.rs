@@ -1,3 +1,5 @@
+//! Error types (incomplete)
+
 use displaydoc::Display;
 use thiserror::Error;
 

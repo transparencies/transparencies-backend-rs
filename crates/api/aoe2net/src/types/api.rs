@@ -1,4 +1,4 @@
-//! Datastructures used to deal with the aoe2net API
+//! Datastructures of the aoe2net API (incomplete)
 
 use serde::{
     Deserialize,

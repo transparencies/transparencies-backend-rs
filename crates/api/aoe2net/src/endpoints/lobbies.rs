@@ -59,7 +59,7 @@ impl<'a> RequestGet for GetLobbiesRequest<'a> {
                 uri.clone(),
             )
         })?;
-        // eprintln!("\n\nmessage is ------------ {} ------------", text);
+
         if let Ok(ApiRequestError {
             error,
             status,

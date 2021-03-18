@@ -1,5 +1,5 @@
-/// Helper datastructure to easily parse parts of array
-/// from aoe2net
+//! Helper datastructures to easily handle some stuff more easily
+
 use serde::{
     Deserialize,
     Serialize,
