@@ -792,17 +792,19 @@ impl MatchDataResponses {
             .expect("Leaderboard ID must be set.");
 
         for player in &responses.aoe2net.players_temp {
+            let profile_id = player.profile_id.to_string();
+
             // Get `RatingHistory` data for each player
             let req_rating = GetRatingHistoryRequest::builder()
                 .game(game.as_str())
-                .profile_id(player.profile_id.as_str())
+                .profile_id(profile_id.as_str())
                 .leaderboard_id(leaderboard_id.parse::<i32>()?)
                 .build();
 
             // GET `Leaderboard` data
             let req_lead = GetLeaderboardRequest::builder()
                 .game(game.as_str())
-                .profile_id(player.profile_id.as_str())
+                .profile_id(profile_id.as_str())
                 .leaderboard_id(leaderboard_id.parse::<i32>()?)
                 .build();
 
@@ -816,7 +818,7 @@ impl MatchDataResponses {
                 if leaderboard_response["count"] == 0 {
                     let req_lead_rating = GetRatingRequest::builder()
                         .game(game.as_str())
-                        .profile_id(player.profile_id.as_str())
+                        .profile_id(profile_id.as_str())
                         .leaderboard_id(leaderboard_id.parse::<i32>()?)
                         .build();
 
