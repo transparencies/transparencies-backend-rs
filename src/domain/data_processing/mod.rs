@@ -4,6 +4,7 @@ mod match_data_responder;
 pub mod match_info_processor;
 
 use crate::domain::{
+    api_handler::client_new::A2NClient,
     data_processing::match_info_processor::MatchInfoProcessor,
     types::{
         api::{
@@ -53,7 +54,7 @@ id_number = %par.id_number
 )]
 pub async fn build_result(
     par: MatchInfoRequest,
-    client: reqwest::Client,
+    client: A2NClient<'static, reqwest::Client>,
     root: Url,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
     export_path: Option<PathBuf>,

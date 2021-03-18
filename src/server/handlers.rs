@@ -1,6 +1,7 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::{
+    api_handler::client_new::A2NClient,
     data_processing::build_result,
     types::{
         api::MatchInfoRequest,
@@ -43,7 +44,7 @@ pub async fn return_health_check_to_client(
 #[allow(clippy::let_unit_value)]
 pub async fn return_matchinfo_to_client(
     opts: MatchInfoRequest,
-    aoe_net_client: reqwest::Client,
+    aoe_net_client: A2NClient<'static, reqwest::Client>,
     in_memory_db: Arc<Mutex<InMemoryDb>>,
 ) -> Result<impl warp::Reply, Infallible> {
     // API root for aoe2net
@@ -51,7 +52,7 @@ pub async fn return_matchinfo_to_client(
 
     let processed_match_info = build_result(
         opts.clone(),
-        aoe_net_client.clone(),
+        aoe_net_client,
         root,
         in_memory_db.clone(),
         None,

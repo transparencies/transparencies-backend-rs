@@ -44,7 +44,7 @@ pub struct Player {
     #[serde(skip)]
     pub games: JsonValue,
     pub name: JsonValue,
-    pub profile_id: u64,
+    pub profile_id: JsonValue,
     pub rating: JsonValue,
     #[serde(skip)]
     pub rating_change: JsonValue,

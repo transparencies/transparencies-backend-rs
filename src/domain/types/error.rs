@@ -88,11 +88,13 @@ pub enum ResponderError {
     InvalidIdType(Cow<'static, str>),
     /// Invalid RequestType: {0}
     InvalidReqType(String),
-    /* /// Unsupported
-     * NotSupported {
-     *     /// Location where this was triggered
-     *     location: &'static std::panic::Location<'static>,
-     * }, */
+    // /// Unsupported
+    // NotSupported {
+    //     /// Location where this was triggered
+    //     location: &'static std::panic::Location<'static>,
+    // },
+    /// UUID parsing failed: {0}
+    ParsingError(#[from] uuid::Error),
 }
 
 /// Error type for a `FileRequest`

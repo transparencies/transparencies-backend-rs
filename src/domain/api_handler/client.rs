@@ -7,7 +7,6 @@ use crate::domain::types::{
         FileRequestError,
     },
     requests::{
-        ApiClient,
         ApiRequest,
         File,
         FileFormat,
@@ -15,17 +14,13 @@ use crate::domain::types::{
     },
 };
 use http::StatusCode;
-use std::time::Duration;
 use url::Url;
 
-/// Our app name as USERAGENT for the clients
-pub(crate) static APP_USER_AGENT: &str =
-    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
-
-/// Timeout for http-client requests
-pub(crate) static CLIENT_REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
-/// Timeout for http-connections
-pub(crate) static CLIENT_CONNECTION_TIMEOUT: Duration = Duration::from_secs(5);
+use crate::{
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
+};
 
 impl Default for FileFormat {
     fn default() -> Self {
@@ -58,69 +53,14 @@ impl File {
     }
 }
 
-impl Default for ApiClient {
-    fn default() -> Self {
-        Self {
-            aoe2net: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(CLIENT_REQUEST_TIMEOUT)
-                .connect_timeout(Duration::from_secs(60))
-                .use_rustls_tls()
-                .https_only(true)
-                .build()
-                .unwrap(),
-            github: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(CLIENT_REQUEST_TIMEOUT)
-                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
-                .use_rustls_tls()
-                .https_only(true)
-                .build()
-                .unwrap(),
-        }
-    }
-}
-
-impl ApiClient {
-    /// Builds a new [`ApiClient`] with setting HTTPs to enabled/disabled
-    ///
-    /// # Arguments
-    /// * `enabled` - `True` = HTTPs enabled, `False` = HTTPs disabled
-    ///
-    /// # Panics
-    /// This function panics if [`reqwest::Client`] can not be build.
-    #[inline]
-    #[must_use]
-    pub fn with_https(enabled: bool) -> Self {
-        Self {
-            aoe2net: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(CLIENT_REQUEST_TIMEOUT)
-                .connect_timeout(Duration::from_secs(60))
-                .use_rustls_tls()
-                .https_only(enabled)
-                .build()
-                .unwrap(),
-            github: reqwest::Client::builder()
-                .user_agent(APP_USER_AGENT)
-                .timeout(CLIENT_REQUEST_TIMEOUT)
-                .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
-                .use_rustls_tls()
-                .https_only(enabled)
-                .build()
-                .unwrap(),
-        }
-    }
-}
-
 impl Default for GithubFileRequest {
     fn default() -> Self {
         GithubFileRequest::builder()
             .client(
                 reqwest::Client::builder()
-                    .user_agent(APP_USER_AGENT)
-                    .timeout(CLIENT_REQUEST_TIMEOUT)
-                    .connect_timeout(CLIENT_CONNECTION_TIMEOUT)
+                    .user_agent(*APP_USER_AGENT)
+                    .timeout(*CLIENT_REQUEST_TIMEOUT)
+                    .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
                     .use_rustls_tls()
                     .https_only(true)
                     .build()

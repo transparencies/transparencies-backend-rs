@@ -19,9 +19,9 @@ use std::net::IpAddr;
 
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::types::{
-        requests::ApiClient,
-        InMemoryDb,
+    domain::{
+        api_handler::client_new::A2NClient,
+        types::InMemoryDb,
     },
     persistence::in_memory_db::data_preloading::get_static_data_inside_thread,
     server::filters,
@@ -30,6 +30,9 @@ use transparencies_backend_rs::{
         configuration::get_configuration,
         startup::set_up_logging,
     },
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
 };
 
 use stable_eyre::eyre::{
@@ -72,7 +75,14 @@ async fn main() -> Result<(), Report> {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let api_clients = ApiClient::default();
+    let client = reqwest::Client::builder()
+        .user_agent(*APP_USER_AGENT)
+        .timeout(*CLIENT_REQUEST_TIMEOUT)
+        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+        .use_rustls_tls()
+        .https_only(true)
+        .build()
+        .unwrap();
 
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
@@ -84,10 +94,9 @@ async fn main() -> Result<(), Report> {
     )
     .await;
 
-    let api = filters::transparencies(
-        api_clients.aoe2net.clone(),
-        in_memory_db.clone(),
-    );
+    let a2n_client = A2NClient::with_client(client);
+
+    let api = filters::transparencies(a2n_client, in_memory_db.clone());
 
     let routes = api.with(warp::log("transparencies"));
 
