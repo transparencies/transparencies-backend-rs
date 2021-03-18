@@ -14,14 +14,17 @@ use std::sync::Arc;
 
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::types::{
-        requests::ApiClient,
-        InMemoryDb,
+    domain::{
+        api_handler::client_new::A2NClient,
+        types::InMemoryDb,
     },
     setup::{
         cli::ExportCommandLineSettings,
         startup::set_up_logging,
     },
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
 };
 
 use stable_eyre::eyre::{
@@ -87,12 +90,23 @@ async fn main() -> Result<(), Report> {
     //     .export_data_to_file(PathBuf::from_str(export_path.unwrap()).
     // unwrap());
 
+    let client = reqwest::Client::builder()
+        .user_agent(*APP_USER_AGENT)
+        .timeout(*CLIENT_REQUEST_TIMEOUT)
+        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+        .use_rustls_tls()
+        .https_only(true)
+        .build()
+        .unwrap();
+
+    let a2n_client = A2NClient::with_client(client.clone());
+
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
 
     preload_data(
-        Some(api_clients.github.clone()),
-        Some(api_clients.aoe2net.clone()),
+        Some(client.clone()),
+        Some(client.clone()),
         in_memory_db_clone.clone(),
         github_root,
         aoe2_net_root.clone(),
@@ -104,7 +118,7 @@ async fn main() -> Result<(), Report> {
 
     let result = build_result(
         match_info_request,
-        api_clients.aoe2net.clone(),
+        a2n_client,
         aoe2_net_root,
         in_memory_db_clone.clone(),
         export_path.clone(),
