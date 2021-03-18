@@ -1,10 +1,11 @@
 //! Collects all the configurational settings done with `config` crate
 
-use serde_aux::field_attributes::deserialize_number_from_string;
 use std::convert::{
     TryFrom,
     TryInto,
 };
+
+use serde_aux::field_attributes::deserialize_number_from_string;
 /// Contains server settings (e.g. port, hostname)
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
@@ -85,10 +86,10 @@ impl TryFrom<String> for Environment {
         match s.to_lowercase().as_str() {
             "local" => Ok(Self::Local),
             "production" => Ok(Self::Production),
-            other => Err(format!(
-                "{} is not a supported environment. Use either `local` or `production`.",
-                other
-            )),
+            other => {
+                Err(format!("{} is not a supported environment. Use either `local` or `production`.",
+                            other))
+            },
         }
     }
 }

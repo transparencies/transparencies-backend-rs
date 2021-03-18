@@ -11,12 +11,12 @@
 				players: ([
 					(
 						rating: (
-							mmr: 2437,
-							rank: 12,
-							wins: 188,
+							mmr: 2430,
+							rank: 10,
+							wins: 187,
 							losses: 102,
-							streak: 5,
-							win_rate: Some(64.82758),
+							streak: 4,
+							win_rate: Some(64.70589),
 							highest_mmr: Some(2437),
 						),
 						player_number: 1,
@@ -34,12 +34,12 @@
 				players: ([
 					(
 						rating: (
-							mmr: 2408,
-							rank: 20,
+							mmr: 2415,
+							rank: 18,
 							wins: 556,
-							losses: 277,
-							streak: -1,
-							win_rate: Some(66.7467),
+							losses: 276,
+							streak: 3,
+							win_rate: Some(66.82692),
 							highest_mmr: Some(2510),
 						),
 						player_number: 4,

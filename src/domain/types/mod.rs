@@ -1,40 +1,32 @@
 //! Collection of all the types used in this repository
 
 pub mod aoc_ref;
-pub mod aoe2net;
+
 pub mod api;
 pub mod error;
 pub mod match_data;
 pub mod requests;
 pub mod testing;
 
-use log::trace;
+use dashmap::DashMap;
 pub use match_data::MatchDataResponses;
 pub use requests::*;
+use serde::Serialize;
+use serde_json::Value as JsonValue;
+use tracing::trace;
 
 use self::aoc_ref::RefDataLists;
 use crate::STANDARD;
-use dashmap::DashMap;
-use serde::Serialize;
 
 /// The "Database" we use, which is in-memory for lookup of
 /// player names and other "more" static content
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct InMemoryDb {
     /// Translations for aoe2net
-    pub aoe2net_languages: DashMap<String, serde_json::Value>,
+    pub aoe2net_languages: DashMap<String, JsonValue>,
     /// Containing the Players (Aliases), Platforms and Teams of
     /// aoc-reference-data
     pub github_file_content: RefDataLists,
-}
-
-impl Default for InMemoryDb {
-    fn default() -> Self {
-        Self {
-            aoe2net_languages: DashMap::new(),
-            github_file_content: RefDataLists::default(),
-        }
-    }
 }
 
 impl InMemoryDb {
@@ -43,34 +35,27 @@ impl InMemoryDb {
     /// # Panics
     /// Could panic if the [`dashmap::DashMap`] in [`static@crate::STANDARD`] is
     /// returning None
-    pub fn retain_language(
-        &mut self,
-        language: &str,
-    ) -> Self {
+    pub fn retain_only_requested_language(&mut self,
+                                          language: &str)
+                                          -> Self {
         trace!("Checking DashMap for language: {:?}", language);
         if self.aoe2net_languages.contains_key(language) {
-            trace!(
-                "Cleaning DashMap of other languages than language: {:?} ...",
-                language
-            );
+            trace!("Cleaning DashMap of other languages than language: {:?} ...",
+                   language);
             self.aoe2net_languages.retain(|lang, _| lang == language);
         }
         else {
             // Set standard language value to `English`
             // if wrong language is set in `Query`
             let std_language = *(STANDARD.get(&"language").unwrap());
-            trace!(
-                "Cleaning DashMap of other languages than language: {:?} ...",
-                std_language
-            );
+            trace!("Cleaning DashMap of other languages than language: {:?} ...",
+                   std_language);
 
             self.aoe2net_languages
                 .retain(|lang, _| lang == std_language);
         }
 
-        Self {
-            aoe2net_languages: self.aoe2net_languages.clone(),
-            github_file_content: self.github_file_content.clone(),
-        }
+        Self { aoe2net_languages: self.aoe2net_languages.clone(),
+               github_file_content: self.github_file_content.clone() }
     }
 }

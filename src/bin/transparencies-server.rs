@@ -3,29 +3,28 @@
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
 
-// Error handling
-// #[macro_use]
-extern crate log;
-
 extern crate transparencies_backend_rs;
 
-use warp::Filter;
+// Threads
+use std::{
+    net::IpAddr,
+    sync::Arc,
+};
 
+#[cfg(not(debug_assertions))]
+use human_panic::setup_panic;
+use stable_eyre::eyre::{
+    Report,
+    Result,
+};
 // CLI
 use structopt::StructOpt;
-
-// Threads
-use std::sync::Arc;
-
 use tokio::sync::Mutex;
-
-use std::net::IpAddr;
-
 // Internal Configuration
 use transparencies_backend_rs::{
-    domain::types::{
-        requests::ApiClient,
-        InMemoryDb,
+    domain::{
+        api_handler::client::A2NClient,
+        types::InMemoryDb,
     },
     persistence::in_memory_db::data_preloading::get_static_data_inside_thread,
     server::filters,
@@ -34,17 +33,12 @@ use transparencies_backend_rs::{
         configuration::get_configuration,
         startup::set_up_logging,
     },
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
 };
-
-use stable_eyre::eyre::{
-    Report,
-    Result,
-};
-
 use url::Url;
-
-#[cfg(not(debug_assertions))]
-use human_panic::setup_panic;
+use warp::Filter;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {
@@ -76,26 +70,25 @@ async fn main() -> Result<(), Report> {
     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
     let in_memory_db_clone = in_memory_db.clone();
 
-    let api_clients = ApiClient::default();
-    let git_client_clone = api_clients.github.clone();
-    let aoe2net_client_clone = api_clients.aoe2net.clone();
+    let client =
+        reqwest::Client::builder().user_agent(*APP_USER_AGENT)
+                                  .timeout(*CLIENT_REQUEST_TIMEOUT)
+                                  .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+                                  .use_rustls_tls()
+                                  .https_only(true)
+                                  .build()
+                                  .unwrap();
 
     let github_root = Url::parse("https://raw.githubusercontent.com")?;
     let aoe2_net_root = Url::parse("https://aoe2.net/api")?;
 
-    get_static_data_inside_thread(
-        git_client_clone,
-        aoe2net_client_clone,
-        in_memory_db_clone,
-        github_root,
-        aoe2_net_root,
-    )
-    .await;
+    get_static_data_inside_thread(in_memory_db_clone,
+                                  github_root,
+                                  aoe2_net_root).await;
 
-    let api = filters::transparencies(
-        api_clients.aoe2net.clone(),
-        in_memory_db.clone(),
-    );
+    let a2n_client = A2NClient::with_client(client);
+
+    let api = filters::transparencies(a2n_client, in_memory_db.clone());
 
     let routes = api.with(warp::log("transparencies"));
 

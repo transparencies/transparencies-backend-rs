@@ -3,26 +3,30 @@
 //! The data structures we return to the client
 //! when calling the `match_info` endpoint
 
-use displaydoc::Display;
-use ron::ser::{
-    to_writer_pretty,
-    PrettyConfig,
-};
-
-use derive_getters::Getters;
-use serde::{
-    Deserialize,
-    Serialize,
-};
 use std::{
     fs,
     io::{
         BufReader,
         BufWriter,
     },
-    path::PathBuf,
+    path::{
+        Path,
+        PathBuf,
+    },
+};
+
+use derive_getters::Getters;
+use ron::ser::{
+    to_writer_pretty,
+    PrettyConfig,
+};
+use serde::{
+    Deserialize,
+    Serialize,
 };
 use typed_builder::TypedBuilder;
+
+use crate::domain::types::error::ErrorMessageToFrontend;
 
 /// An enum describing the different `MatchSizes` we support on our overlay
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -44,16 +48,15 @@ pub enum MatchSize {
     /// 2v2v2v2 Game (8 players, 4 teams)
     G2v2v2v2,
 }
+
+impl Default for MatchSize {
+    fn default() -> Self {
+        MatchSize::G1v1
+    }
+}
+
 /// Convenience type
 type Time = usize;
-
-#[derive(Clone, Debug, Display, Serialize, PartialEq, Deserialize)]
-pub enum ErrorMessageToFrontend {
-    /// Player has no record on AoE2.net
-    UnrecordedPlayerDetected,
-    /// Generic error from the Responder: {0}
-    GenericResponderError(String),
-}
 
 /// Status of a match derived from `Last_match` AoE2.net endpoint
 /// if a game has no finished time, we threat it as running
@@ -63,6 +66,12 @@ pub enum MatchStatus {
     Running,
     /// Game was finished at `Time` (Unix)
     Finished(Time),
+}
+
+impl Default for MatchStatus {
+    fn default() -> Self {
+        MatchStatus::Running
+    }
 }
 
 /// The servers the games can be played on
@@ -90,9 +99,21 @@ pub enum Server {
     NotFound,
 }
 
+impl Default for Server {
+    fn default() -> Self {
+        Server::NotFound
+    }
+}
+
 /// Head struct to assemble `MatchInfo` into and save `error_messages` within to
 /// delegate to the frontend
-#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
+#[derive(Clone,
+           Debug,
+           TypedBuilder,
+           Default,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct MatchInfoResult {
     /// Contains all the data about the players and the match
     #[builder(default=None, setter(strip_option))]
@@ -105,79 +126,11 @@ pub struct MatchInfoResult {
     pub error_message: Option<ErrorMessageToFrontend>,
 }
 
-impl Default for MatchInfoResult {
-    fn default() -> Self {
-        Self {
-            match_info: Some(MatchInfo {
-                game_type: "Random Map".to_string(),
-                rating_type: "1v1 Random Map".to_string(),
-                match_size: MatchSize::G1v1,
-                match_status: MatchStatus::Finished(1_614_949_859),
-                map_name: "Arabia".to_string(),
-                server: Server::India,
-                teams: Teams({
-                    vec![
-                        TeamRaw {
-                            players: Players({
-                                vec![PlayerRaw {
-                                    rating: Rating {
-                                        mmr: 2399,
-                                        rank: 24,
-                                        wins: 437,
-                                        losses: 325,
-                                        streak: 7,
-                                        win_rate: Some(57.34908),
-                                        highest_mmr: Some(2400),
-                                    },
-                                    player_number: 3,
-                                    team_number: 2,
-                                    name: "Valas".to_string(),
-                                    country: "fi".to_string(),
-                                    civilisation: "Spanish".to_string(),
-                                    requested: false,
-                                }]
-                            }),
-                            team_number: 2,
-                            team_name: None,
-                        },
-                        TeamRaw {
-                            players: Players({
-                                vec![PlayerRaw {
-                                    rating: Rating {
-                                        mmr: 2223,
-                                        rank: 70,
-                                        wins: 1905,
-                                        losses: 1432,
-                                        streak: -1,
-                                        win_rate: Some(57.087_208),
-                                        highest_mmr: Some(2345),
-                                    },
-                                    player_number: 2,
-                                    team_number: 1,
-                                    name: "Hoang".to_string(),
-                                    country: "vn".to_string(),
-                                    civilisation: "Celts".to_string(),
-                                    requested: true,
-                                }]
-                            }),
-                            team_number: 1,
-                            team_name: None,
-                        },
-                    ]
-                }),
-            }),
-            error_message: None,
-        }
-    }
-}
-
 impl MatchInfoResult {
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            match_info: None,
-            error_message: None,
-        }
+        Self { match_info: None,
+               error_message: None }
     }
 
     /// Create a [`MatchInfoResult`]from a parsed `RON` file
@@ -186,7 +139,7 @@ impl MatchInfoResult {
     /// Panics when the file can not be created or data cannot be written to the
     /// file
     #[must_use]
-    pub fn new_from_file(path: PathBuf) -> Self {
+    pub fn with_file(path: PathBuf) -> Self {
         let file = fs::File::open(path).expect("file should open read only");
         let reader = BufReader::new(file);
         ron::de::from_reader::<_, Self>(reader).unwrap()
@@ -198,15 +151,14 @@ impl MatchInfoResult {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn export_data_to_file(
-        &self,
-        path: PathBuf,
-    ) {
-        let ron_config = PrettyConfig::new()
-            .with_depth_limit(8)
-            .with_separate_tuple_members(true)
-            .with_enumerate_arrays(true)
-            .with_indentor("\t".to_owned());
+    pub fn export_to_file<P>(&self,
+                             path: P)
+        where P: Into<PathBuf> + AsRef<Path>,
+    {
+        let ron_config = PrettyConfig::new().with_depth_limit(8)
+                                            .with_separate_tuple_members(true)
+                                            .with_enumerate_arrays(true)
+                                            .with_indentor("\t".to_owned());
 
         let mut assembly_path = PathBuf::new();
         assembly_path.push(path);
@@ -225,7 +177,13 @@ impl MatchInfoResult {
 /// Basic information needed in the `MatchInfo`
 /// Used to aggregate all the other data inside
 /// a single struct
-#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
+#[derive(Clone,
+           Debug,
+           Default,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct MatchInfo {
     /// TODO: If it's matchmaking or custom lobby games, what is the difference
     /// to rating_type? Look into translation file
@@ -246,12 +204,17 @@ pub struct MatchInfo {
 }
 
 /// Wrapper struct around `PlayerRaw` for `Players`
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Players(pub Vec<PlayerRaw>);
 
-#[derive(
-    Clone, TypedBuilder, Getters, Debug, PartialEq, Serialize, Deserialize,
-)]
+#[derive(Clone,
+           TypedBuilder,
+           Default,
+           Getters,
+           Debug,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct PlayerRaw {
     rating: Rating,
     player_number: i64,
@@ -263,12 +226,18 @@ pub struct PlayerRaw {
 }
 
 /// Wrapper around `TeamRaw` for `Teams`
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct Teams(pub Vec<TeamRaw>);
 
 /// A single Team used for Builder pattern and later
 /// for assemblance of the Teams(T) wrapper
-#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
+#[derive(Clone,
+           Debug,
+           Default,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct TeamRaw {
     players: Players,
     team_number: i64,
@@ -277,7 +246,13 @@ pub struct TeamRaw {
 }
 
 /// Rating part of the our `matchinfo` endpoint
-#[derive(Clone, Debug, TypedBuilder, PartialEq, Serialize, Deserialize)]
+#[derive(Clone,
+           Default,
+           Debug,
+           TypedBuilder,
+           PartialEq,
+           Serialize,
+           Deserialize)]
 pub struct Rating {
     mmr: u32,
     rank: u64,

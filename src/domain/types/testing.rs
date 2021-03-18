@@ -4,10 +4,12 @@ use std::{
     path::PathBuf,
 };
 
+use derive_getters::Getters;
 use serde::{
     Deserialize,
     Serialize,
 };
+use serde_json::Value as JsonValue;
 
 use crate::domain::types::{
     api::{
@@ -17,8 +19,6 @@ use crate::domain::types::{
     error::TestCaseError,
 };
 
-use derive_getters::Getters;
-
 #[derive(Default, Serialize, Deserialize)]
 pub struct TestCases(pub Vec<TestCase>);
 
@@ -27,11 +27,11 @@ impl TestCases {
     ///
     /// # Errors
     // TODO
-    pub fn add_case(
-        mut self,
-        root_dir: PathBuf,
-    ) -> Result<Self, TestCaseError> {
-        self.0.push(TestCase::new_with_root(root_dir).parse_from()?);
+    pub fn add_case(mut self,
+                    root_dir: PathBuf)
+                    -> Result<Self, TestCaseError> {
+        self.0
+            .push(TestCase::with_root_dir(root_dir).parse_from_root_dir()?);
         Ok(self)
     }
 }
@@ -42,20 +42,18 @@ pub struct TestCase {
     pub parsed_request: MatchInfoRequest,
     pub parsed_result: MatchInfoResult,
     pub profile_ids: Vec<String>,
-    last_match: serde_json::Value,
+    last_match: JsonValue,
 }
 
 impl TestCase {
     #[must_use]
-    pub fn new_with_root(dir: PathBuf) -> Self {
-        Self {
-            // resource_dir: PathBuf::from(dir),
-            resource_dir: dir,
-            parsed_request: MatchInfoRequest::default(),
-            parsed_result: MatchInfoResult::default(),
-            profile_ids: Vec::with_capacity(8),
-            last_match: serde_json::Value::default(),
-        }
+    pub fn with_root_dir(dir: PathBuf) -> Self {
+        Self { // resource_dir: PathBuf::from(dir),
+               resource_dir: dir,
+               parsed_request: MatchInfoRequest::default(),
+               parsed_result: MatchInfoResult::default(),
+               profile_ids: Vec::with_capacity(8),
+               last_match: JsonValue::default() }
     }
 
     /// Create a [`MatchInfoResult`]from a parsed `RON` file
@@ -65,7 +63,7 @@ impl TestCase {
     /// # Panics
     /// Panics when the file can not be created or data cannot be written to the
     /// file
-    pub fn new_from_file(path: PathBuf) -> Result<Self, TestCaseError> {
+    pub fn with_file(path: PathBuf) -> Result<Self, TestCaseError> {
         Ok(ron::de::from_reader::<_, Self>(BufReader::new(
             fs::File::open(path)?,
         ))?)
@@ -78,14 +76,14 @@ impl TestCase {
     // TODO
     /// # Panics
     // TODO
-    pub fn parse_from(self) -> Result<Self, TestCaseError> {
-        let mut req = self.resource_dir.to_owned();
+    pub fn parse_from_root_dir(self) -> Result<Self, TestCaseError> {
+        let mut req = self.resource_dir.clone();
         req.push("match_info_request.ron");
 
-        let mut resp = self.resource_dir.to_owned();
+        let mut resp = self.resource_dir.clone();
         resp.push("match_info_result.ron");
 
-        let mut last_match = self.resource_dir.to_owned();
+        let mut last_match = self.resource_dir.clone();
         last_match.push("aoe2net");
         last_match.push("last_match.json");
 
@@ -96,7 +94,7 @@ impl TestCase {
             parsed_result: ron::de::from_reader::<_, MatchInfoResult>(
                 BufReader::new(fs::File::open(resp)?),
             )?,
-            last_match: serde_json::from_reader::<_, serde_json::Value>(
+            last_match: serde_json::from_reader::<_, JsonValue>(
                 BufReader::new(fs::File::open(last_match)?),
             )?,
             ..self

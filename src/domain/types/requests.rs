@@ -3,7 +3,6 @@
 //! Datatypes used to create and execute requests
 
 use derive_getters::Getters;
-
 use strum::AsRefStr;
 use typed_builder::TypedBuilder;
 use url::Url;
