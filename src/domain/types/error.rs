@@ -127,6 +127,10 @@ pub enum ApiRequestError {
     },
     /// HTTP-Client experienced an error: {0}
     HttpClientError(#[from] reqwest::Error),
+    /// ApiClient experienced an error: {0}
+    ApiClientError(
+        #[from] api_client::error::ClientRequestError<reqwest::Error>,
+    ),
     /// HTTP-Client error with status code: {0}
     HttpClientErrorWithStatusCode(http::StatusCode),
     /// Response NotFound: {root:?}/{endpoint:?} with {query:?}

@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use aoe2net::endpoints::leaderboard::*;
+use aoe2net::endpoints::strings::*;
 use transparencies_backend_rs::domain::api_handler::client_new::A2NClient;
 
 /// Our app name as USERAGENT for the clients
@@ -25,12 +25,9 @@ async fn main() {
 
     let client = A2NClient::with_client(base_client);
 
-    let req = GetLeaderboardRequest::builder()
-        .leaderboard_id(3)
-        .profile_id("196240")
-        .build();
+    let req = GetApiStringsRequest::builder().language("en").build();
 
-    let response = client.req_get(req).await;
+    let response = client.req_get(req).await.unwrap();
 
-    println!("{:?}", response);
+    println!("{:?}", response.data.unwrap());
 }

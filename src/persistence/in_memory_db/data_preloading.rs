@@ -1,6 +1,17 @@
 //! Everything around preloading data in another thread for future use within
 //! our in-memory DB implemented by `Arc<Mutex<T>>`
+use api_client::error::ClientRequestError;
 use dashmap::DashMap;
+
+// STATICS USED
+use crate::{
+    domain::api_handler::client_new::A2NClient,
+    APP_USER_AGENT,
+    CLIENT_CONNECTION_TIMEOUT,
+    CLIENT_REQUEST_TIMEOUT,
+    GAME_STRINGS,
+    LANGUAGE_STRINGS,
+};
 
 use std::{
     path::PathBuf,
@@ -27,7 +38,6 @@ use crate::domain::{
             FileRequestError,
         },
         requests::{
-            ApiRequest,
             File,
             FileFormat,
             GithubFileRequest,
@@ -37,19 +47,9 @@ use crate::domain::{
     util,
 };
 
+use aoe2net::endpoints::strings::*;
+
 use serde_json::Value as JsonValue;
-
-/// All of the current `language strings` of the AoE2.net API
-/// used for preloading the Language files
-pub(crate) static LANGUAGE_STRINGS: [&str; 18] = [
-    "en", "de", "el", "es", "es-MX", "fr", "hi", "it", "ja", "ko", "ms", "nl",
-    "pt", "ru", "tr", "vi", "zh", "zh-TW",
-];
-
-/// `Game strings` used for preloading and other request towards the AoE2.net
-/// API.
-/// Can be used later also for adding `AoE3DE` and/or `AoE4` support
-pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 
 /// Gets all of our static data in a separated thread
 ///
@@ -75,17 +75,26 @@ pub(crate) static GAME_STRINGS: [&str; 1] = ["aoe2de"];
 /// # Panics
 /// This function shouldn't panic.
 pub async fn get_static_data_inside_thread(
-    git_client_clone: reqwest::Client,
-    aoe2net_client_clone: reqwest::Client,
     in_memory_db_clone: Arc<Mutex<InMemoryDb>>,
     github_root: Url,
     aoe2_net_root: Url,
 ) {
+    let background_client = reqwest::Client::builder()
+        .user_agent(*APP_USER_AGENT)
+        .timeout(*CLIENT_REQUEST_TIMEOUT)
+        .connect_timeout(*CLIENT_CONNECTION_TIMEOUT)
+        .use_rustls_tls()
+        .https_only(true)
+        .build()
+        .unwrap();
+
+    let background_client_clone = background_client.clone();
+
     tokio::spawn(async move {
         loop {
             match preload_data(
-                Some(git_client_clone.clone()),
-                Some(aoe2net_client_clone.clone()),
+                Some(background_client_clone.clone()),
+                Some(background_client_clone.clone()),
                 in_memory_db_clone.clone(),
                 github_root.clone(),
                 aoe2_net_root.clone(),
@@ -229,10 +238,14 @@ pub async fn preload_aoe2_net_data(
     root: Url,
     export_path: Option<PathBuf>,
 ) -> Result<(), ApiRequestError> {
-    let language_requests = build_language_requests(&api_client, &root);
+    let language_requests = build_language_requests(&root);
 
-    let responses =
-        assemble_languages_to_dashmap(language_requests, export_path).await?;
+    let responses = assemble_languages_to_dashmap(
+        api_client,
+        language_requests,
+        export_path,
+    )
+    .await?;
 
     {
         let mut guard = in_memory_db.lock().await;
@@ -247,16 +260,21 @@ pub async fn preload_aoe2_net_data(
 ///
 /// # Errors
 // TODO
-async fn assemble_languages_to_dashmap(
-    language_requests: Vec<(String, ApiRequest)>,
+async fn assemble_languages_to_dashmap<'req>(
+    api_client: reqwest::Client,
+    language_requests: Vec<(String, GetApiStringsRequest<'req>)>,
     export_path: Option<PathBuf>,
-) -> Result<DashMap<String, JsonValue>, ApiRequestError> {
+) -> Result<DashMap<String, JsonValue>, ClientRequestError<reqwest::Error>> {
     let responses: DashMap<String, JsonValue> =
         DashMap::with_capacity(LANGUAGE_STRINGS.len());
 
+    let client = A2NClient::with_client(api_client);
+
     for (req_name, req) in language_requests {
-        let response: JsonValue = req.execute().await?;
-        responses.insert(req_name.to_string(), response.clone());
+        let response = client.req_get(req).await?;
+        let data = response.data.unwrap_or_default();
+
+        responses.insert(req_name.to_string(), data.clone());
 
         if export_path.is_some() {
             util::export_to_json(
@@ -265,7 +283,7 @@ async fn assemble_languages_to_dashmap(
                     ext: FileFormat::Json,
                 },
                 &export_path.clone().unwrap(),
-                &response,
+                &data,
             )
         }
     }
@@ -274,27 +292,18 @@ async fn assemble_languages_to_dashmap(
 }
 
 /// Builds all requests for the `LANGUAGE_STRINGS`
-fn build_language_requests(
-    api_client: &reqwest::Client,
-    root: &Url,
-) -> Vec<(String, ApiRequest)> {
-    let mut language_requests: Vec<(String, ApiRequest)> =
-        Vec::with_capacity(LANGUAGE_STRINGS.len());
+fn build_language_requests(_root: &Url) -> Vec<(String, GetApiStringsRequest)> {
+    let mut language_requests = Vec::with_capacity(LANGUAGE_STRINGS.len());
 
     // Build requests for each `GAME_STRING` with each `LANGUAGE_STRING`
-    for game in &GAME_STRINGS {
-        for language in &LANGUAGE_STRINGS {
+    for game in (*GAME_STRINGS).iter() {
+        for language in (*LANGUAGE_STRINGS).iter() {
             language_requests.push((
                 (*language).to_string(),
-                util::build_api_request(
-                    api_client.clone(),
-                    root.clone(),
-                    "strings",
-                    vec![
-                        ("game".to_string(), (*game).to_string()),
-                        ("language".to_string(), (*language).to_string()),
-                    ],
-                ),
+                GetApiStringsRequest::builder()
+                    .game(*game)
+                    .language(*language)
+                    .build(),
             ));
         }
     }
