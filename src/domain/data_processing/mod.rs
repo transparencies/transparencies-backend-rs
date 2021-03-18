@@ -4,7 +4,7 @@ mod match_data_responder;
 pub mod match_info_processor;
 
 use crate::domain::{
-    api_handler::client_new::A2NClient,
+    api_handler::client::A2NClient,
     data_processing::match_info_processor::MatchInfoProcessor,
     types::{
         api::{

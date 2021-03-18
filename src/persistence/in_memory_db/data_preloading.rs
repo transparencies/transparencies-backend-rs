@@ -5,7 +5,7 @@ use dashmap::DashMap;
 
 // STATICS USED
 use crate::{
-    domain::api_handler::client_new::A2NClient,
+    domain::api_handler::client::A2NClient,
     APP_USER_AGENT,
     CLIENT_CONNECTION_TIMEOUT,
     CLIENT_REQUEST_TIMEOUT,
@@ -136,14 +136,15 @@ pub async fn get_static_data_inside_thread(
 ///     use url::Url;
 ///
 ///     let in_memory_db = Arc::new(Mutex::new(InMemoryDb::default()));
-///     let api_clients = ApiClient::default();
+///     let request_client = reqwest::Client::default();
+///
 ///     let github_url =
 ///         Url::parse("https://raw.githubusercontent.com").unwrap();
 ///     let aoe2_net_url = Url::parse("https://aoe2.net/api").unwrap();
 ///
 ///     preload_data(
-///         Some(api_clients.github.clone()),
-///         Some(api_clients.aoe2net.clone()),
+///         Some(request_client.clone()),
+///         Some(request_client.clone()),
 ///         in_memory_db.clone(),
 ///         github_url,
 ///         aoe2_net_url,

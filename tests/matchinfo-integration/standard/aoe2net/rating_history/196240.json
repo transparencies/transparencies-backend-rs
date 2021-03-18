@@ -1,10 +1,10 @@
 [
   {
     "drops": 3,
-    "num_losses": 277,
+    "num_losses": 276,
     "num_wins": 556,
-    "rating": 2408,
-    "streak": -1,
-    "timestamp": 1615410209
+    "rating": 2415,
+    "streak": 3,
+    "timestamp": 1615409542
   }
 ]

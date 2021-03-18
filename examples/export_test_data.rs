@@ -15,7 +15,7 @@ use std::sync::Arc;
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
-        api_handler::client_new::A2NClient,
+        api_handler::client::A2NClient,
         types::InMemoryDb,
     },
     setup::{

@@ -1,7 +1,7 @@
 //! API handlers, the ends of each filter chain
 
 use crate::domain::{
-    api_handler::client_new::A2NClient,
+    api_handler::client::A2NClient,
     data_processing::build_result,
     types::{
         api::MatchInfoRequest,

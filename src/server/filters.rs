@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::{
     domain::{
-        api_handler::client_new::A2NClient,
+        api_handler::client::A2NClient,
         types::{
             api::MatchInfoRequest,
             InMemoryDb,

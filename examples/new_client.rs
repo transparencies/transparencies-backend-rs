@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use aoe2net::endpoints::strings::*;
-use transparencies_backend_rs::domain::api_handler::client_new::A2NClient;
+use transparencies_backend_rs::domain::api_handler::client::A2NClient;
 
 /// Our app name as USERAGENT for the clients
 pub(crate) static APP_USER_AGENT: &str =

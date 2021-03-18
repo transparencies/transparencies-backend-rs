@@ -20,7 +20,7 @@ use std::net::IpAddr;
 // Internal Configuration
 use transparencies_backend_rs::{
     domain::{
-        api_handler::client_new::A2NClient,
+        api_handler::client::A2NClient,
         types::InMemoryDb,
     },
     persistence::in_memory_db::data_preloading::get_static_data_inside_thread,
