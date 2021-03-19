@@ -56,9 +56,9 @@
 - [ ] collect all `SoftFail` errors within each request to our API, collect them
 at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
     - [ ] idea: <https://github.com/routerify/routerify/blob/6380089be7b423ff1ab68605c36c5876e7c15b53/examples/share_data_and_state.rs>
-    - [ ] also: `SoftFail` == `Warning`, so maybe don't use `error handling` for it
-    but a separate implementation, we can also wrap a result with a result so the
-    first stage could actually implement a `warning`, while the second implements
+    - [ ] also: `SoftFail` == `Warning`, so maybe don't use `error handling` for
+    it but a separate implementation, we can also wrap a result with a result so
+    the first stage could actually implement a `warning`, while the second implements
     the errors
 
 ### Testing
