@@ -3,14 +3,16 @@ WORKDIR transparencies-backend-rs
 # We only pay the installation cost once, 
 # it will be cached from the second build onwards
 RUN cargo install cargo-chef --version 0.1.18
-COPY . .
+# Replace with copying from filesystem
+# COPY . .
+RUN git clone https://github.com/transparencies/transparencies-backend-rs.git .
 RUN cargo chef prepare  --recipe-path recipe.json
 
 FROM rust as cacher
 WORKDIR transparencies-backend-rs
-RUN cargo install cargo-chef
+RUN cargo install cargo-chef --version 0.1.18
 COPY --from=planner /transparencies-backend-rs/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --recipe-path recipe.json
 
 FROM rust as builder
 WORKDIR transparencies-backend-rs
@@ -24,4 +26,5 @@ FROM debian as runtime
 WORKDIR transparencies-backend-rs
 COPY /transparencies-backend-rs/configuration /usr/local/bin/configuration
 COPY --from=builder /transparencies-backend-rs/target/release/transparencies-backend-rs /usr/local/bin
+EXPOSE 8000/tcp
 ENTRYPOINT ["./usr/local/bin/transparencies-backend-rs -d "]
