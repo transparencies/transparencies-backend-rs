@@ -193,6 +193,7 @@ and save the content to a `HashMap` -> for later subscriptions
     `ActiveSubs`-`HashMap` where requests are made more frequently to check for
     changes and send out a `delta`
 - [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
+- [ ] Implement translation using <https://crates.io/crates/libretranslate>
 
 ### Intended Procedure
 
