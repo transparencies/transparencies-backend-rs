@@ -56,10 +56,14 @@
 - [ ] collect all `SoftFail` errors within each request to our API, collect them
 at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
     - [ ] idea: <https://github.com/routerify/routerify/blob/6380089be7b423ff1ab68605c36c5876e7c15b53/examples/share_data_and_state.rs>
+    - [ ] also: `SoftFail` == `Warning`, so maybe don't use `error handling` for it
+    but a separate implementation, we can also wrap a result with a result so the
+    first stage could actually implement a `warning`, while the second implements
+    the errors
 
 ### Testing
 
-- [ ] implement functionality to download a specific match via `/api/match` for
+- [X] implement functionality to download a specific match via `/api/match` for
 usage in test cases
     - [ ] create a command-line parameter for `export-test-data` example to run
     it with a specific `matchid`/`match-uuid` (UUID is probably preferable because
@@ -125,13 +129,8 @@ from `ron` file for ease of testing/exporting
     for `integration` testing
 - [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
+- [X] make creating requests easier and less boilerplate (trait
 objects, etc.)
-    - [ ] Create API client struct that wraps `ApiRequests` and `ApiResponses`
-    - [ ] Also think about the openAPI parsing and request generating logics
-    for the future
-    - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
-    - [ ] `ParsableRequest` trait
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
@@ -193,6 +192,7 @@ and save the content to a `HashMap` -> for later subscriptions
     - [ ] `active subscribed` profile ids get copied from this `HashMap` into an
     `ActiveSubs`-`HashMap` where requests are made more frequently to check for
     changes and send out a `delta`
+- [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
 
 ### Intended Procedure
 
