@@ -77,7 +77,7 @@ api-client = { path = "crates/api_client", version = "*" }
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
 thiserror = "1.0.24"
-displaydoc = "0.2.0"
+displaydoc = "0.2.1"
 
 # Tracing/Logging
 tracing-log = "0.1.2"
@@ -101,7 +101,7 @@ ron = "0.6.4"
 # HTTP
 reqwest = { version = "0.11.2", features = ["json", "rustls-tls"] }
 warp = "0.3.1"
-hyper = "0.14.4"
+hyper = "0.14.5"
 url = { version = "2.2.1", features = ["serde"] }
 http = "0.2.3"
 
