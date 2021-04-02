@@ -35,10 +35,16 @@
     - [ ] then the remaining players either by name or by rating. highest
     rating after `vec[0] == requested player`
 - [ ] make frequent requested `profile_ids`/`steam_ids` persistent with [structsy](https://crates.io/crates/structsy)
-    - [ ] load on program start and write back to file database after update (new profile_id/steam_id)
-        - [ ] check doublettes if people give sometimes their `profile_id` and sometimes their `steam_id` so we don't make unnessecary requests
-    - [ ] request `last_match` frequently (timing to be determined) for these IDs and cache result (or save hash of result/size of result) to determine if updates were happeneing between last request and new request, preparation for `WebSockets PubSub API` (milestone)
-    - [ ] think more about implementation details like how do we send matchinfo result then, just a diff? etc.
+    - [ ] load on program start and write back to file database after update
+    (new profile_id/steam_id)
+        - [ ] check doublettes if people give sometimes their `profile_id` and
+        sometimes their `steam_id` so we don't make unnessecary requests
+    - [ ] request `last_match` frequently (timing to be determined) for these IDs
+    and cache result (or save hash of result/size of result) to determine if update
+    were happeneing between last request and new request, preparation for
+    `WebSockets PubSub API` (milestone)
+    - [ ] think more about implementation details like how do we send matchinfo
+    result then, just a diff? etc.
 
 ### Error Handling
 
