@@ -22,4 +22,4 @@ async-trait = "0.1.48"
 api-client = { path = "../../api_client", version = "*" }
 reqwest = { version = "0.11.2", features = ["json", "rustls-tls"] }
 url = { version = "2.2.1", features = ["serde"] }
-http = "0.2.3"
+http = "0.2.4"
