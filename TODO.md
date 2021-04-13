@@ -206,7 +206,9 @@ and save the content to a `HashMap` -> for later subscriptions
     changes and send out a `delta`
 - [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
 - [ ] Implement translation using <https://crates.io/crates/libretranslate>
-- [ ] Serialize and send `diff` to client: <https://github.com/chinedufn/dipa> 
+- [ ] Serialize and send `diff` to client
+    - [ ] serde-diff: <https://github.com/amethyst/serde-diff> 
+    - [ ] dipa: <https://github.com/chinedufn/dipa>
 
 ### Intended Procedure
 
