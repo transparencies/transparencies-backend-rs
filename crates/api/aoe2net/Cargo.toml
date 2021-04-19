@@ -15,11 +15,11 @@ typed-builder = "0.9.0"
 uuid = "0.8.2"
 
 # async
-tokio = { version = "1.4.0", features = ["full"] }
-async-trait = "0.1.48"
+tokio = { version = "1.5.0", features = ["full"] }
+async-trait = "0.1.50"
 
 # HTTP
 api-client = { path = "../../api_client", version = "*" }
-reqwest = { version = "0.11.2", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.11.3", features = ["json", "rustls-tls"] }
 url = { version = "2.2.1", features = ["serde"] }
 http = "0.2.4"
