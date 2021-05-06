@@ -81,11 +81,11 @@ displaydoc = "0.2.1"
 
 # Tracing/Logging
 tracing-log = "0.1.2"
-tracing = "0.1.25"
-tracing-subscriber = { version = "0.2.17", features = ["registry", "env-filter"] }
+tracing = "0.1.26"
+tracing-subscriber = { version = "0.2.18", features = ["registry", "env-filter"] }
 tracing-tree = "0.1.9"
 tracing-futures = "0.2.5"
-tracing-bunyan-formatter = "0.2.0"
+tracing-bunyan-formatter = "0.2.4"
 tracing-error = "0.1.2"
 
 # CLI
@@ -101,7 +101,7 @@ ron = "0.6.4"
 # HTTP
 reqwest = { version = "0.11.3", features = ["json", "rustls-tls"] }
 warp = "0.3.1"
-hyper = "0.14.5"
+hyper = "0.14.7"
 url = { version = "2.2.1", features = ["serde"] }
 http = "0.2.4"
 
