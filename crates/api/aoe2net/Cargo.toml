@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 displaydoc = "0.2.1"
-serde = { version = "1.0.125", features = ["derive"] }
+serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
 derive-getters = "0.2.0"
 thiserror = "1.0.24"
@@ -21,5 +21,5 @@ async-trait = "0.1.50"
 # HTTP
 api-client = { path = "../../api_client", version = "*" }
 reqwest = { version = "0.11.3", features = ["json", "rustls-tls"] }
-url = { version = "2.2.1", features = ["serde"] }
+url = { version = "2.2.2", features = ["serde"] }
 http = "0.2.4"
