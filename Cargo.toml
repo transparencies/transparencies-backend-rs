@@ -13,10 +13,6 @@ categories = [""]
 description = """
 A foundation for building dynamic stream overlays written in Rust
 """
-[package.metadata.release]
-upload-doc = true
-no-dev-version = true
-pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
 [workspace]
 members = [
