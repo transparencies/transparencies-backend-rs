@@ -34,6 +34,17 @@
     on `vec[0]`
     - [ ] then the remaining players either by name or by rating. highest
     rating after `vec[0] == requested player`
+- [ ] make frequent requested `profile_ids`/`steam_ids` persistent with [structsy](https://crates.io/crates/structsy)
+    - [ ] load on program start and write back to file database after update
+    (new profile_id/steam_id)
+        - [ ] check doublettes if people give sometimes their `profile_id` and
+        sometimes their `steam_id` so we don't make unnessecary requests
+    - [ ] request `last_match` frequently (timing to be determined) for these IDs
+    and cache result (or save hash of result/size of result) to determine if update
+    were happeneing between last request and new request, preparation for
+    `WebSockets PubSub API` (milestone)
+    - [ ] think more about implementation details like how do we send matchinfo
+    result then, just a diff? etc.
 
 ### Error Handling
 
@@ -56,10 +67,14 @@
 - [ ] collect all `SoftFail` errors within each request to our API, collect them
 at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
     - [ ] idea: <https://github.com/routerify/routerify/blob/6380089be7b423ff1ab68605c36c5876e7c15b53/examples/share_data_and_state.rs>
+    - [ ] also: `SoftFail` == `Warning`, so maybe don't use `error handling` for
+    it but a separate implementation, we can also wrap a result with a result so
+    the first stage could actually implement a `warning`, while the second implements
+    the errors
 
 ### Testing
 
-- [ ] implement functionality to download a specific match via `/api/match` for
+- [X] implement functionality to download a specific match via `/api/match` for
 usage in test cases
     - [ ] create a command-line parameter for `export-test-data` example to run
     it with a specific `matchid`/`match-uuid` (UUID is probably preferable because
@@ -125,13 +140,8 @@ from `ron` file for ease of testing/exporting
     for `integration` testing
 - [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
+- [X] make creating requests easier and less boilerplate (trait
 objects, etc.)
-    - [ ] Create API client struct that wraps `ApiRequests` and `ApiResponses`
-    - [ ] Also think about the openAPI parsing and request generating logics
-    for the future
-    - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
-    - [ ] `ParsableRequest` trait
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
@@ -151,6 +161,7 @@ get rid of unnecessary boilerplate
 - [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
 - [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
+- [ ] Use `once_cell` or <https://crates.io/crates/static_init> instead of `lazy_static`
 
 ### Documentation
 
@@ -193,6 +204,11 @@ and save the content to a `HashMap` -> for later subscriptions
     - [ ] `active subscribed` profile ids get copied from this `HashMap` into an
     `ActiveSubs`-`HashMap` where requests are made more frequently to check for
     changes and send out a `delta`
+- [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
+- [ ] Implement translation using <https://crates.io/crates/libretranslate>
+- [ ] Serialize and send `diff` to client
+    - [ ] serde-diff: <https://github.com/amethyst/serde-diff> 
+    - [ ] dipa: <https://github.com/chinedufn/dipa>
 
 ### Intended Procedure
 

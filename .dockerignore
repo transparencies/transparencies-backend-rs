@@ -1,0 +1,6 @@
+# Files we don't need in the build context within Docker
+target
+logs
+docs
+.github
+.git
