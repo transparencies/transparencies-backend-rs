@@ -168,6 +168,7 @@ get rid of unnecessary boilerplate
     - [ ] implement benchmark getting all ’MatchInfoResult’s for the To100
     - [ ] what architectural changes need to be made to support many clients
     on our api
+- [ ] smoke test with https://github.com/tarekziade/salvo 
 - [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features
 on stable
 - [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more
