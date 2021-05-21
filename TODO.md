@@ -152,6 +152,8 @@ get rid of unnecessary boilerplate
 - [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 - [ ] [parking_lot](https://github.com/Amanieu/parking_lot) use for Mutex (faster)
+- [ ] `impl Into<String>` for stringly-typed parameters, because we may not need a String but something that can be turned into one
+    - [ ] if a conversion can fail we can do it with `impl TryInto<String>` 
 
 ### Documentation
 
