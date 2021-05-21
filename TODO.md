@@ -194,7 +194,8 @@ and save the content to a `HashMap` -> for later subscriptions
     within a `ron` file that gets parsed on startup
     - [ ] `active subscribed` profile ids get copied from this `HashMap` into an
     `ActiveSubs`-`HashMap` where requests are made more frequently to check for
-    changes and send out a `delta`
+    changes and send out a `delta
+- [ ] Add automatic translation of user facing strings with https://crates.io/crates/libretranslate
 
 ### Intended Procedure
 
