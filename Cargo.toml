@@ -13,6 +13,10 @@ categories = [""]
 description = """
 A foundation for building dynamic stream overlays written in Rust
 """
+[package.metadata.release]
+upload-doc = true
+no-dev-version = true
+pre-release-commit-message = "Release {{crate_name}} {{version}} / {{date}}"
 
 [workspace]
 members = [
@@ -69,10 +73,10 @@ aoe2net = { path = "crates/api/aoe2net", version = "*" }
 api-client = { path = "crates/api_client", version = "*" }
 
 # Error handling
-#human-panic = "1.0.3"
+human-panic = "1.0.3"
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
-thiserror = "1.0.24"
+thiserror = "1.0.25"
 displaydoc = "0.2.1"
 
 # Tracing/Logging
@@ -96,12 +100,12 @@ ron = "0.6.4"
 # HTTP
 reqwest = { version = "0.11.3", features = ["json", "rustls-tls"] }
 warp = "0.3.1"
-hyper = "0.14.7"
+hyper = "0.14.8"
 url = { version = "2.2.2", features = ["serde"] }
 http = "0.2.4"
 
 # async
-tokio = { version = "1.5.0", features = ["full"] }
+tokio = { version = "1.6.1", features = ["full"] }
 futures = "0.3.15"
 
 # De-/Serialisation
@@ -114,10 +118,10 @@ bytes = "1.0.1"
 
 # Templating
 # askama = "0.10"
-tera = "1.8.0"
+tera = "1.10.0"
 
 # Persistence
-sqlx = { version = "0.5.2", features = [ "runtime-tokio-rustls" ] }
+sqlx = { version = "0.5.5", features = [ "runtime-tokio-rustls" ] }
 
 # OpenAPI
 #openapi_utils = "0.2.0"
@@ -156,7 +160,7 @@ codegen-units = 4
 
 [profile.release]
 opt-level=3
-debug = true    # true for profiling
+debug = false    # true for profiling
 rpath = false
 lto = "fat"
 debug-assertions = false
