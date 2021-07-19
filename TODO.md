@@ -93,6 +93,7 @@ to use them inside the integration tests and be able to update frequently
     made by the `api_handler`
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
+- [ ] Use https://crates.io/crates/walkdir for walking test directory tree 
 
 ### Fixes
 
