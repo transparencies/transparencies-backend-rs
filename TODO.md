@@ -108,8 +108,8 @@ to use them inside the integration tests and be able to update frequently
     made by the `api_handler`
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
-- [ ] Use https://crates.io/crates/walkdir for walking test directory tree
-- [ ] Use https://crates.io/crates/automod for adding (regression) tests dynamically
+- [ ] Use <https://crates.io/crates/walkdir> for walking test directory tree
+- [ ] Use <https://crates.io/crates/automod> for adding (regression) tests dynamically
 
 ### Fixes
 
@@ -165,8 +165,9 @@ get rid of unnecessary boilerplate
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 - [ ] Use `once_cell` or <https://crates.io/crates/static_init> instead of `lazy_static`
 - [ ] [parking_lot](https://github.com/Amanieu/parking_lot) use for Mutex (faster)
-- [ ] `impl Into<String>` for stringly-typed parameters, because we may not need a String but something that can be turned into one
-    - [ ] if a conversion can fail we can do it with `impl TryInto<String>` 
+- [ ] `impl Into<String>` for stringly-typed parameters, because we may not need
+a String but something that can be turned into one
+    - [ ] if a conversion can fail we can do it with `impl TryInto<String>`
 
 ### Documentation
 
@@ -183,7 +184,7 @@ get rid of unnecessary boilerplate
     - [ ] implement benchmark getting all ’MatchInfoResult’s for the To100
     - [ ] what architectural changes need to be made to support many clients
     on our api
-- [ ] smoke test with https://github.com/tarekziade/salvo 
+- [ ] smoke test with <https://github.com/tarekziade/salvo>
 - [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features
 on stable
 - [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more
@@ -213,9 +214,9 @@ and save the content to a `HashMap` -> for later subscriptions
 - [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
 - [ ] Implement translation using <https://crates.io/crates/libretranslate>
 - [ ] Serialize and send `diff` to client
-    - [ ] serde-diff: <https://github.com/amethyst/serde-diff> 
+    - [ ] serde-diff: <https://github.com/amethyst/serde-diff>
     - [ ] dipa: <https://github.com/chinedufn/dipa>
-- [ ] Add automatic translation of user facing strings with https://crates.io/crates/libretranslate
+- [ ] Add automatic translation of user facing strings with <https://crates.io/crates/libretranslate>
 
 ### Intended Procedure
 
