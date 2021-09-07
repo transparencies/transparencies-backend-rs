@@ -76,20 +76,20 @@ api-client = { path = "crates/api_client", version = "*" }
 human-panic = "1.0.3"
 eyre = "0.6.5"
 stable-eyre = "0.2.2"
-thiserror = "1.0.25"
-displaydoc = "0.2.1"
+thiserror = "1.0.29"
+displaydoc = "0.2.3"
 
 # Tracing/Logging
 tracing-log = "0.1.2"
 tracing = "0.1.26"
-tracing-subscriber = { version = "0.2.18", features = ["registry", "env-filter"] }
-tracing-tree = "0.1.9"
+tracing-subscriber = { version = "0.2.20", features = ["registry", "env-filter"] }
+tracing-tree = "0.1.10"
 tracing-futures = "0.2.5"
-tracing-bunyan-formatter = "0.2.4"
+tracing-bunyan-formatter = "0.2.5"
 tracing-error = "0.1.2"
 
 # CLI
-structopt = "0.3.21"
+structopt = "0.3.23"
 
 # Configuration
 config = "0.11.0"
@@ -98,39 +98,39 @@ lazy_static = "1.4.0"
 ron = "0.6.4"
 
 # HTTP
-reqwest = { version = "0.11.3", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.11.4", features = ["json", "rustls-tls"] }
 warp = "0.3.1"
-hyper = "0.14.8"
+hyper = "0.14.12"
 url = { version = "2.2.2", features = ["serde"] }
 http = "0.2.4"
 
 # async
-tokio = { version = "1.6.1", features = ["full"] }
-futures = "0.3.15"
+tokio = { version = "1.11.0", features = ["full"] }
+futures = "0.3.17"
 
 # De-/Serialisation
-serde = { version = "1.0.126", features = ["derive"] }
-serde_json = "1.0.64"
-serde_yaml = "0.8.17"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.67"
+serde_yaml = "0.8.20"
 #serde_any = { git = "https://github.com/simonsan/serde_any.git", version = "0.5.1", default-features = false, features = ["yaml", "toml", "json"]}
 serde-aux = "2.2.0"
-bytes = "1.0.1"
+bytes = "1.1.0"
 
 # Templating
 # askama = "0.10"
-tera = "1.10.0"
+tera = "1.12.1"
 
 # Persistence
-sqlx = { version = "0.5.5", features = [ "runtime-tokio-rustls" ] }
+sqlx = { version = "0.5.7", features = [ "runtime-tokio-rustls" ] }
 
 # OpenAPI
 #openapi_utils = "0.2.0"
 #openapiv3 = "0.3.2"
 
 # Utility
-typed-builder = "0.9.0"
+typed-builder = "0.9.1"
 #itertools = "0.10.0"
-strum = { version = "0.20.0", features = ["derive"] }
+strum = { version = "0.21.0", features = ["derive"] }
 #derive_more = "0.99.11"
 derive-getters = "0.2.0"
 dashmap = { version = "4.0.2", features = ["serde", "rayon"] }
@@ -147,7 +147,7 @@ uuid = { version = "0.8.2", features = ["serde", "v4"] }
 pretty_assertions = "0.7.2"
 #claim = "0.5.0"
 #rstest = "0.6.4"
-wiremock = "0.5.2"
+wiremock = "0.5.7"
 lazy_static = "1.4.0"
 
 [profile.dev]
