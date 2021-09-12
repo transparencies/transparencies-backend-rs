@@ -157,6 +157,7 @@ accordingly
 - [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
 to satisfy the borrow checker
 - [ ] check where enums in parameters are more applicable (no stringly typed apis)
+    - [ ] use `&'static str` instead of `String` as parameters for performance gains 
 - [ ] no `self` on `with_` alternative constructors
 - [ ] having a struct for exporting/mocking/maintenance to spare parameters and get
 get rid of unnecessary boilerplate
