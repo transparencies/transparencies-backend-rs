@@ -177,6 +177,8 @@ a String but something that can be turned into one
 
 ### Performance
 
+- [ ] https://github.com/udoprog/fixed-map vs. https://gitlab.com/KonradBorowski/enum-map
+
 [Rust Performance Book](https://nnethercote.github.io/perf-book/)
 
 #### Benchmarking
