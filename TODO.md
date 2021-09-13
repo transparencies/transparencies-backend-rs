@@ -111,6 +111,7 @@ to use them inside the integration tests and be able to update frequently
     memory from the offline data
 - [ ] Use <https://crates.io/crates/walkdir> for walking test directory tree
 - [ ] Use <https://crates.io/crates/automod> for adding (regression) tests dynamically
+- [ ] Testing library? <https://github.com/aaronabramov/k9> 
 
 ### Fixes
 
