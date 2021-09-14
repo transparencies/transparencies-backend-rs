@@ -72,6 +72,7 @@ at the end in `MatchInfoProcessor` and write them back to `error_message` in `Ma
     it but a separate implementation, we can also wrap a result with a result so
     the first stage could actually implement a `warning`, while the second implements
     the errors
+- [ ] Add better error reports with <https://github.com/zkat/miette>
 
 ### Testing
 
