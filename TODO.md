@@ -158,6 +158,7 @@ accordingly
 - [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 - [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
 to satisfy the borrow checker
+- [ ] Check if refactoring to <https://github.com/sokomishalov/lombok-rs> makes sense for getters/setters
 - [ ] check where enums in parameters are more applicable (no stringly typed apis)
     - [ ] use `&'static str` instead of `String` as parameters for performance gains 
 - [ ] no `self` on `with_` alternative constructors
