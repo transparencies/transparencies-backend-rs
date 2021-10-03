@@ -46,6 +46,7 @@
     - [ ] think more about implementation details like how do we send matchinfo
     result then, just a diff? etc.
 - [ ] Add caching of requests based on <https://github.com/moka-rs/moka>
+    - [ ] maybe implement on top of <https://crates.io/crates/sled> and flush to disk? 
 
 ### Error Handling
 
