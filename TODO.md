@@ -34,6 +34,19 @@
     on `vec[0]`
     - [ ] then the remaining players either by name or by rating. highest
     rating after `vec[0] == requested player`
+- [ ] make frequent requested `profile_ids`/`steam_ids` persistent with [structsy](https://crates.io/crates/structsy)
+    - [ ] load on program start and write back to file database after update
+    (new profile_id/steam_id)
+        - [ ] check doublettes if people give sometimes their `profile_id` and
+        sometimes their `steam_id` so we don't make unnessecary requests
+    - [ ] request `last_match` frequently (timing to be determined) for these IDs
+    and cache result (or save hash of result/size of result) to determine if update
+    were happeneing between last request and new request, preparation for
+    `WebSockets PubSub API` (milestone)
+    - [ ] think more about implementation details like how do we send matchinfo
+    result then, just a diff? etc.
+- [ ] Add caching of requests based on <https://github.com/moka-rs/moka>
+    - [ ] maybe implement on top of <https://crates.io/crates/sled> and flush to disk? 
 
 ### Error Handling
 
@@ -56,10 +69,15 @@
 - [ ] collect all `SoftFail` errors within each request to our API, collect them
 at the end in `MatchInfoProcessor` and write them back to `error_message` in `MatchInfoResult`
     - [ ] idea: <https://github.com/routerify/routerify/blob/6380089be7b423ff1ab68605c36c5876e7c15b53/examples/share_data_and_state.rs>
+    - [ ] also: `SoftFail` == `Warning`, so maybe don't use `error handling` for
+    it but a separate implementation, we can also wrap a result with a result so
+    the first stage could actually implement a `warning`, while the second implements
+    the errors
+- [ ] Add better error reports with <https://github.com/zkat/miette>
 
 ### Testing
 
-- [ ] implement functionality to download a specific match via `/api/match` for
+- [X] implement functionality to download a specific match via `/api/match` for
 usage in test cases
     - [ ] create a command-line parameter for `export-test-data` example to run
     it with a specific `matchid`/`match-uuid` (UUID is probably preferable because
@@ -93,8 +111,9 @@ to use them inside the integration tests and be able to update frequently
     made by the `api_handler`
     - [X] Compare our parsed initial response (manually checked) with the one in
     memory from the offline data
-- [ ] Use https://crates.io/crates/walkdir for walking test directory tree
-- [ ] Use https://crates.io/crates/automod for adding (regression) tests dynamically
+- [ ] Use <https://crates.io/crates/walkdir> for walking test directory tree
+- [ ] Use <https://crates.io/crates/automod> for adding (regression) tests dynamically
+- [ ] Testing library? <https://github.com/aaronabramov/k9> 
 
 ### Fixes
 
@@ -127,13 +146,8 @@ from `ron` file for ease of testing/exporting
     for `integration` testing
 - [X] Refactor both, parsing and mock binding logic in full integration test
 - [X] create only new clients for each new api-root not for each request to us
-- [ ] **Q:** how can we make creating requests easier and less boilerplate? (trait
+- [X] make creating requests easier and less boilerplate (trait
 objects, etc.)
-    - [ ] Create API client struct that wraps `ApiRequests` and `ApiResponses`
-    - [ ] Also think about the openAPI parsing and request generating logics
-    for the future
-    - [ ] `parse_into::<T>` method for `ApiRequest` and `FileRequest`
-    - [ ] `ParsableRequest` trait
 - [X] async stuff done right?
 - [X] use <https://docs.rs/reqwest/0.11.0/reqwest/struct.Url.html#method.join>
 for `base_path` and joining files for DS: `reqwest::Url`
@@ -145,7 +159,9 @@ accordingly
 - [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 - [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
 to satisfy the borrow checker
+- [ ] Check if refactoring to <https://github.com/sokomishalov/lombok-rs> makes sense for getters/setters
 - [ ] check where enums in parameters are more applicable (no stringly typed apis)
+    - [ ] use `&'static str` instead of `String` as parameters for performance gains 
 - [ ] no `self` on `with_` alternative constructors
 - [ ] having a struct for exporting/mocking/maintenance to spare parameters and get
 get rid of unnecessary boilerplate
@@ -153,9 +169,11 @@ get rid of unnecessary boilerplate
 - [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
 - [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
+- [ ] Use `once_cell` or <https://crates.io/crates/static_init> instead of `lazy_static`
 - [ ] [parking_lot](https://github.com/Amanieu/parking_lot) use for Mutex (faster)
-- [ ] `impl Into<String>` for stringly-typed parameters, because we may not need a String but something that can be turned into one
-    - [ ] if a conversion can fail we can do it with `impl TryInto<String>` 
+- [ ] `impl Into<String>` for stringly-typed parameters, because we may not need
+a String but something that can be turned into one
+    - [ ] if a conversion can fail we can do it with `impl TryInto<String>`
 
 ### Documentation
 
@@ -163,6 +181,8 @@ get rid of unnecessary boilerplate
 - [ ] Add more documentation
 
 ### Performance
+
+- [ ] https://github.com/udoprog/fixed-map vs. https://gitlab.com/KonradBorowski/enum-map
 
 [Rust Performance Book](https://nnethercote.github.io/perf-book/)
 
@@ -172,7 +192,7 @@ get rid of unnecessary boilerplate
     - [ ] implement benchmark getting all ’MatchInfoResult’s for the To100
     - [ ] what architectural changes need to be made to support many clients
     on our api
-- [ ] smoke test with https://github.com/tarekziade/salvo 
+- [ ] smoke test with <https://github.com/tarekziade/salvo>
 - [ ] Use [bencher](https://crates.io/crates/bencher) for benchmarking features
 on stable
 - [ ] Maybe [criterion](https://github.com/bheisler/criterion.rs) which is a more
@@ -198,8 +218,13 @@ and save the content to a `HashMap` -> for later subscriptions
     within a `ron` file that gets parsed on startup
     - [ ] `active subscribed` profile ids get copied from this `HashMap` into an
     `ActiveSubs`-`HashMap` where requests are made more frequently to check for
-    changes and send out a `delta
-- [ ] Add automatic translation of user facing strings with https://crates.io/crates/libretranslate
+    changes and send out a `delta`
+- [ ] Deamonize: <https://docs.rs/daemonize/0.4.1/daemonize/index.html>
+- [ ] Implement translation using <https://crates.io/crates/libretranslate>
+- [ ] Serialize and send `diff` to client
+    - [ ] serde-diff: <https://github.com/amethyst/serde-diff>
+    - [ ] dipa: <https://github.com/chinedufn/dipa>
+- [ ] Add automatic translation of user facing strings with <https://crates.io/crates/libretranslate>
 
 ### Intended Procedure
 

@@ -1,6 +1,8 @@
 //! Core logic of the application within the library
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
+#![deny(clippy::result_unwrap_used)]
+#![forbid(unsafe_code)]
 #![allow(clippy::module_name_repetitions)]
 // TODO: Deny again, when more doc content is in
 #![allow(missing_docs)]

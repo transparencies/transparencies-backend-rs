@@ -1,0 +1,230 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'aoe2net'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=aoe2net"
+                ],
+                "filter": {
+                    "name": "aoe2net",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'api-client'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=api-client"
+                ],
+                "filter": {
+                    "name": "api-client",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'transparencies-backend-rs'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "transparencies-backend-rs",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'transparencies-backend-rs'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=transparencies-backend-rs",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "transparencies-backend-rs",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'transparencies-backend-rs'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=transparencies-backend-rs",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "transparencies-backend-rs",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'export-test-data'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=export-test-data",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "export-test-data",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'export-test-data'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=export-test-data",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "export-test-data",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'new_client'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=new_client",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "new_client",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'new_client'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=new_client",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "new_client",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'full-integration'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=full-integration",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "full-integration",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'endpoints'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=endpoints",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "endpoints",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test '_test_cli'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=_test_cli",
+                    "--package=transparencies-backend-rs"
+                ],
+                "filter": {
+                    "name": "_test_cli",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
