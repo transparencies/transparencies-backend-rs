@@ -217,3 +217,7 @@ and save the content to a `HashMap` -> for later subscriptions
 
 - [ ] User database (PostgreSQL/MariaDB), user log-in and dashboard
 - [ ] Transparency management in user dashboard
+
+
+# Notes
+- [Channels only remote](https://github.com/ENQT-GmbH/remoc)
