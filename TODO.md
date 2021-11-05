@@ -156,6 +156,8 @@ get rid of unnecessary boilerplate
 - [ ] [parking_lot](https://github.com/Amanieu/parking_lot) use for Mutex (faster)
 - [ ] `impl Into<String>` for stringly-typed parameters, because we may not need a String but something that can be turned into one
     - [ ] if a conversion can fail we can do it with `impl TryInto<String>` 
+- [ ] Use `bail!` and `ensure!` macros from `anynhow` where applicable
+
 
 ### Documentation
 
