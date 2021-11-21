@@ -152,6 +152,7 @@ get rid of unnecessary boilerplate
 - [ ] make use of conversion traits: `fn foo<P: Into<PathBuf>>(p: P)`
 - [ ] use case for [enum with str representation](https://play.rust-lang.org/?gist=c5610c31b8469422e57c23721cba09f8&version=nightly&backtrace=0)?
 - [ ] implement `FromStr` for types? <https://doc.rust-lang.org/std/str/trait.FromStr.html>
+- [ ] no stringly typed function parameters: <https://hermanradtke.com/2015/05/06/creating-a-rust-function-that-accepts-string-or-str.html>
 - [ ] [crossbeam-deque](https://crates.io/crates/crossbeam-deque) use case?
 - [ ] [parking_lot](https://github.com/Amanieu/parking_lot) use for Mutex (faster)
 - [ ] `impl Into<String>` for stringly-typed parameters, because we may not need a String but something that can be turned into one
