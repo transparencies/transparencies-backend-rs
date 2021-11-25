@@ -34,6 +34,9 @@
     on `vec[0]`
     - [ ] then the remaining players either by name or by rating. highest
     rating after `vec[0] == requested player`
+- [ ] Add Daemon
+  - [ ] <https://github.com/knsd/daemonize>
+  - [ ] <https://github.com/DarthUdp/daemonize-me>
 
 ### Error Handling
 
