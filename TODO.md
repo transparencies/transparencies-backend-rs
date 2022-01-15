@@ -146,6 +146,8 @@ accordingly
     - [X] use [tracing-tree](https://github.com/transparencies/tracing-tree) for
     structured summaries of tracing
 - [X] Use a concurrent hashmap instead of a HashMap: <https://crates.io/crates/dashmap>
+- [ ] (?) Migrate to [Axum](https://github.com/tokio-rs/axum/blob/main/examples/key-value-store/src/main.rs) from warp
+- [ ] Use RwLock instead of Mutex for non-blocking aoc-ref-data lookup with multiple readers
 - [ ] Check value of <https://crates.io/crates/indexmap> for the player alias indexing
 - [ ] Use [`cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html) for less cloning
 to satisfy the borrow checker
