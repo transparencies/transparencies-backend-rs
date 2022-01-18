@@ -124,6 +124,7 @@ to use them inside the integration tests and be able to update frequently
 
 ### Refactoring
 
+- [ ] Migrate to clap v3 from structopt
 - [X] Parse `MatchInfoRequest` for `export-sample-data` and `full-integration` test
 from `ron` file for ease of testing/exporting
     - [X] create struct that contains a `MatchInfoRequest` and a folder-layout and
