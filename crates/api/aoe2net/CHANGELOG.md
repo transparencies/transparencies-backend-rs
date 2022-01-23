@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.1.0 (2022-01-23)
 
 ### Documentation
 
@@ -32,6 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  * **[#20](https://github.com/transparencies/transparencies-backend-rs/issues/20)**
     - New api-client, other fixes ([`9a9d8e6`](https://github.com/transparencies/transparencies-backend-rs/commit/9a9d8e61cbd47d3b13ef8960c240d84599d4bff1))
  * **Uncategorized**
-    - Add changelog to workspace crates ([`2168685`](https://github.com/transparencies/transparencies-backend-rs/commit/2168685dbb8874b802dd87ba3fff2e99694bd26a))
+    - Set options for easier future releases ([`5a37cb8`](https://github.com/transparencies/transparencies-backend-rs/commit/5a37cb8fad58a11f74fc6ff78618e67f49643028))
 </details>
 
