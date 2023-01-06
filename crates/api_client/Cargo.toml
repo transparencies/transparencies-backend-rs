@@ -17,5 +17,5 @@ url = { version = "2.2.2", features = ["serde"] }
 http = "0.2.6"
 
 # async
-tokio = { version = "1.15.0", features = ["full"] }
+tokio = { version = "1.18.4", features = ["full"] }
 async-trait = "0.1.52"
