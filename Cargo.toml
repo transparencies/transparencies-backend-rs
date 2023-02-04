@@ -104,7 +104,7 @@ url = { version = "2.2.2", features = ["serde"] }
 http = "0.2.6"
 
 # async
-tokio = { version = "1.15.0", features = ["full"] }
+tokio = { version = "1.18.5", features = ["full"] }
 futures = "0.3.19"
 
 # De-/Serialisation
